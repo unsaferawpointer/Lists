@@ -21,7 +21,9 @@ struct SidebarView: View {
 
 	@State var selection: Set<UUID> = []
 
+	#if os(iOS)
 	@State var editMode: EditMode = .inactive
+	#endif
 
 	var body: some View {
 			List(selection: $selection) {
@@ -36,7 +38,9 @@ struct SidebarView: View {
 					.listRowSeparator(.hidden)
 				}
 			}
+			#if os(iOS)
 			.environment(\.editMode, $editMode)
+			#endif
 			.contextMenu(forSelectionType: UUID.self) { selection in
 				Button(role: .destructive) {
 					withAnimation {
