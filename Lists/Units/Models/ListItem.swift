@@ -13,6 +13,8 @@ struct ListItem {
 
 	var text: String
 
+	var strikeThrough: Bool = false
+
 	var subitems: [ListItem]?
 }
 

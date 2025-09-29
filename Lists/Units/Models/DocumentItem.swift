@@ -13,6 +13,8 @@ struct DocumentItem {
 
 	var name: String
 	var iconName: String
+
+	var items: [ListItem] = []
 }
 
 // MARK: - Identifiable

@@ -26,11 +26,10 @@ struct ListsApp: App {
 	var body: some Scene {
 		WindowGroup {
 			NavigationSplitView {
-				DocumentsView()
+				SidebarView()
 			} detail: {
 				Text("Empty")
 			}
-
 		}
 		.modelContainer(sharedModelContainer)
 	}

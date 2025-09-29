@@ -17,7 +17,13 @@ struct ItemDetailsView: View {
 		NavigationStack {
 			Form {
 				TextField("Document name", text: $item.text)
+				Toggle(isOn: $item.strikeThrough) {
+					Text("Strikethrougth")
+				}
+				.toggleStyle(.switch)
 			}
+			.formStyle(.grouped)
+			.scrollIndicators(.hidden)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
 					Button {
@@ -33,9 +39,9 @@ struct ItemDetailsView: View {
 					} label: {
 						Label("Save", systemImage: "checkmark")
 					}
-
 				}
 			}
+			.navigationTitle("Edit item")
 		}
 	}
 }

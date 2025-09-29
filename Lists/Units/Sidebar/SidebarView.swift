@@ -1,5 +1,5 @@
 //
-//  DocumentsView.swift
+//  SidebarView.swift
 //  Lists
 //
 //  Created by Anton Cherkasov on 18.09.2025.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DocumentsView: View {
+struct SidebarView: View {
 
 	@State var documents: [DocumentItem] =
 	[
@@ -19,30 +19,31 @@ struct DocumentsView: View {
 
 	@State var presentedDocument: DocumentItem? = nil
 
+	@State var selection: Set<UUID> = []
+
+	@State var editMode: EditMode = .inactive
+
 	var body: some View {
-			List {
+			List(selection: $selection) {
 				ForEach(documents, id: \.id) { document in
 					NavigationLink(value: document.id) {
 						HStack(alignment: .firstTextBaseline) {
 							Image(systemName: document.iconName)
+								.foregroundStyle(.secondary)
 							Text(document.name)
 						}
 					}
-					.contextMenu {
-						Button {
-							self.presentedDocument = document
-						} label: {
-							Label("Edit...", systemImage: "pencil")
-						}
-						Divider()
-						Button(role: .destructive) {
-							withAnimation {
-								documents.removeAll(where: { $0.id == document.id })
-							}
-						} label: {
-							Label("Delete", systemImage: "trash")
-						}
+					.listRowSeparator(.hidden)
+				}
+			}
+			.environment(\.editMode, $editMode)
+			.contextMenu(forSelectionType: UUID.self) { selection in
+				Button(role: .destructive) {
+					withAnimation {
+						documents.removeAll(where: { selection.contains($0.id) })
 					}
+				} label: {
+					Label("Delete", systemImage: "trash")
 				}
 			}
 			.navigationTitle("Documents")
@@ -53,20 +54,42 @@ struct DocumentsView: View {
 				DocumentDetailsView(document: document)
 			}
 			.toolbar {
+				#if os(iOS)
+				ToolbarItem(placement: .navigationBarTrailing) {
+					Button(editMode.isEditing ? "Done" : "Edit") {
+						withAnimation {
+							editMode = editMode.isEditing ? .inactive : .active
+						}
+					}
+				}
 				ToolbarItem(placement: .bottomBar) {
 					Spacer()
 				}
-				ToolbarItem(placement: .bottomBar) {
+				if editMode != .active {
+					ToolbarItem(placement: .bottomBar) {
+						Button {
+							presentedDocument = .init(name: "New Document", iconName: "doc.text")
+						} label: {
+							Label("Add Item", systemImage: "plus")
+						}
+					}
+				}
+				#elseif os(macOS)
+				ToolbarItem {
+					Spacer()
+				}
+				ToolbarItem(placement: .primaryAction) {
 					Button {
 						presentedDocument = .init(name: "New Document", iconName: "doc.text")
 					} label: {
 						Label("Add Item", systemImage: "plus")
 					}
 				}
+				#endif
 			}
 	}
 }
 
 #Preview {
-	DocumentsView()
+	SidebarView()
 }

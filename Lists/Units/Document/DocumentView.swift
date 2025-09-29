@@ -9,62 +9,25 @@ import SwiftUI
 
 struct DocumentView: View {
 
-	@State var items: [ListItem] =
-	[
-		.init(text: "Закрыть спринт"),
-		.init(text: "Купить книгу"),
-		.init(text: "Починить кроссовки"),
-		.init(
-			text: "Закрыть спринт",
-			subitems:
-				[
-					.init(text: "Закрыть спринт"),
-					.init(text: "Купить книгу"),
-					.init(text: "Починить кроссовки"),
-					.init(
-						text: "Закрыть спринт",
-						subitems:
-							[
-								.init(text: "Закрыть спринт"),
-								.init(text: "Купить книгу"),
-								.init(text: "Закрыть спринт"),
-							]
-					),
-					.init(text: "Закрыть спринт"),
-					.init(text: "Закрыть спринт"),
-					.init(text: "Закрыть спринт"),
-					.init(text: "Закрыть спринт"),
-					.init(text: "Закрыть спринт"),
-				]
-		),
-		.init(text: "Закрыть спринт"),
-		.init(text: "Закрыть спринт"),
-		.init(text: "Закрыть спринт"),
-		.init(text: "Закрыть спринт"),
-		.init(text: "Закрыть спринт"),
-	]
+	var model: DocumentModel = DocumentModel()
 
 	@State var selection: Set<UUID> = []
 
 	@State var presentedItem: ListItem? = nil
 
 	var body: some View {
-		List(items, children: \.subitems, selection: $selection) { item in
+		List(model.items, children: \.subitems, selection: $selection) { item in
 			Text(item.text)
 		}
 		.listStyle(.inset)
 		.contextMenu(forSelectionType: UUID.self) { selection in
 			guard selection.count > 1 else {
 				return Button("Edit...") {
-					self.presentedItem = items.first(where: { selection.contains($0.id) })
+					self.presentedItem = model.items.first(where: { selection.contains($0.id) })
 				}
 			}
 			return Button("Delete") {
-
-			}
-		} primaryAction: { selection in
-			Button("Delete") {
-
+				model.deleteItems(with: selection)
 			}
 		}
 		.sheet(item: $presentedItem) { item in
@@ -72,6 +35,7 @@ struct DocumentView: View {
 		}
 		.navigationTitle("Backlog")
 		.toolbar {
+			#if os(iOS)
 			ToolbarItem {
 				EditButton()
 			}
@@ -80,11 +44,20 @@ struct DocumentView: View {
 			}
 			ToolbarItem(placement: .bottomBar) {
 				Button {
-
+					self.presentedItem = .init(text: "New Item")
 				} label: {
 					Label("Add Item", systemImage: "plus")
 				}
 			}
+			#elseif os(macOS)
+			ToolbarItem(placement: .automatic) {
+				Button {
+					self.presentedItem = .init(text: "New Item")
+				} label: {
+					Label("Add Item", systemImage: "plus")
+				}
+			}
+			#endif
 		}
 	}
 }
