@@ -26,7 +26,7 @@ struct ListsApp: App {
 	var body: some Scene {
 		WindowGroup {
 			NavigationSplitView {
-				SidebarView()
+				BrowserView()
 					.modelContainer(sharedModelContainer)
 			} detail: {
 				Text("Empty")
