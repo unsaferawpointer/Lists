@@ -5,17 +5,13 @@
 //  Created by Anton Cherkasov on 18.09.2025.
 //
 
+import SwiftData
 import SwiftUI
 
 struct SidebarView: View {
 
-	@State var documents: [DocumentItem] =
-	[
-		.init(name: "Today", iconName: "doc.text"),
-		.init(name: "Backlog", iconName: "doc.text"),
-		.init(name: "Покупки", iconName: "doc.text"),
-		.init(name: "Инвентаризация", iconName: "doc.text")
-	]
+	@Environment(\.modelContext) private var modelContext
+	@Query(animation: .default) private var documents: [DocumentEntity]
 
 	@State var presentedDocument: DocumentItem? = nil
 
@@ -27,12 +23,12 @@ struct SidebarView: View {
 
 	var body: some View {
 			List(selection: $selection) {
-				ForEach(documents, id: \.id) { document in
-					NavigationLink(value: document.id) {
+				ForEach(documents) { document in
+					NavigationLink(value: document.uuid) {
 						HStack(alignment: .firstTextBaseline) {
-							Image(systemName: document.iconName)
+							Image(systemName: "doc.text")
 								.foregroundStyle(.secondary)
-							Text(document.name)
+							Text(document.name ?? "")
 						}
 					}
 					.listRowSeparator(.hidden)
@@ -43,9 +39,7 @@ struct SidebarView: View {
 			#endif
 			.contextMenu(forSelectionType: UUID.self) { selection in
 				Button(role: .destructive) {
-					withAnimation {
-						documents.removeAll(where: { selection.contains($0.id) })
-					}
+					delete(ids: selection)
 				} label: {
 					Label("Delete", systemImage: "trash")
 				}
@@ -58,42 +52,76 @@ struct SidebarView: View {
 				DocumentDetailsView(document: document)
 			}
 			.toolbar {
-				#if os(iOS)
-				ToolbarItem(placement: .navigationBarTrailing) {
-					Button(editMode.isEditing ? "Done" : "Edit") {
-						withAnimation {
-							editMode = editMode.isEditing ? .inactive : .active
-						}
-					}
-				}
-				ToolbarItem(placement: .bottomBar) {
-					Spacer()
-				}
-				if editMode != .active {
-					ToolbarItem(placement: .bottomBar) {
-						Button {
-							presentedDocument = .init(name: "New Document", iconName: "doc.text")
-						} label: {
-							Label("Add Item", systemImage: "plus")
-						}
-					}
-				}
-				#elseif os(macOS)
-				ToolbarItem {
-					Spacer()
-				}
-				ToolbarItem(placement: .primaryAction) {
-					Button {
-						presentedDocument = .init(name: "New Document", iconName: "doc.text")
-					} label: {
-						Label("Add Item", systemImage: "plus")
-					}
-				}
-				#endif
+				buildToolbar()
 			}
 	}
 }
 
+// MARK: - Helpers
+private extension SidebarView {
+
+	#if os(iOS)
+	@ToolbarContentBuilder
+	func buildToolbar() -> some ToolbarContent {
+		ToolbarItem(placement: .navigationBarTrailing) {
+			Button(editMode.isEditing ? "Done" : "Edit") {
+				withAnimation {
+					editMode = editMode.isEditing ? .inactive : .active
+				}
+			}
+		}
+		ToolbarItem(placement: .bottomBar) {
+			Spacer()
+		}
+		if editMode != .active {
+			ToolbarItem(placement: .bottomBar) {
+				Button {
+					addItem()
+				} label: {
+					Label("Add Item", systemImage: "plus")
+				}
+			}
+		}
+	}
+	#elseif os(macOS)
+	@ToolbarContentBuilder
+	func buildToolbar() -> some ToolbarContent {
+		ToolbarItem {
+			Spacer()
+		}
+		ToolbarItem(placement: .primaryAction) {
+			Button {
+				presentedDocument = .init(name: "New Document", iconName: "doc.text")
+			} label: {
+				Label("Add Item", systemImage: "plus")
+			}
+		}
+	}
+	#endif
+}
+
+// MARK: - Helpers
+private extension SidebarView {
+
+	func addItem() {
+		withAnimation {
+			let newItem = DocumentEntity(name: "New Document")
+			modelContext.insert(newItem)
+		}
+	}
+
+	func delete(ids: Set<UUID>) {
+		withAnimation {
+			let models = documents.filter { ids.contains($0.uuid) }
+			for model in models {
+				modelContext.delete(model)
+			}
+		}
+	}
+}
+
 #Preview {
-	SidebarView()
+	NavigationStack {
+		SidebarView()
+	}
 }
