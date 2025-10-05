@@ -11,22 +11,29 @@ import SwiftData
 struct SidebarView: View {
 
 	@Environment(\.modelContext) private var modelContext
-	@Query(animation: .default) private var lists: [ListEntity]
+	@Query(sort: \ListEntity.timestamp, animation: .default) private var lists: [ListEntity]
 
 	@FocusState private var focusedItem: PersistentIdentifier?
-	@State var selection: PersistentIdentifier?
+	@State var selection: Selection = .all
+
+	@State var presented: ListEntity?
+
+	@State var isPresented: Bool = false
 
 	var body: some View {
-		List(selection: $selection) {
-			NavigationLink(value: 0) {
+		List {
+			NavigationLink {
+				ContentView(list: nil)
+			} label: {
 				Label("All", systemImage: "square.grid.2x2")
 			}
 			.listRowSeparator(.hidden)
+			.tag(Selection.all)
 
 			Section("Library") {
 				ForEach(lists, id:\.id) { list in
 					NavigationLink {
-						ListView()
+						ContentView(list: list)
 					} label: {
 						ListCell(list: list)
 							.focused($focusedItem, equals: list.id)
@@ -36,12 +43,21 @@ struct SidebarView: View {
 					.contextMenu {
 						buildContextMenu(for: list)
 					}
+					.tag(Selection.list(id: list.id))
 				}
 				.onDelete(perform: deleteItems)
 			}
 		}
 		.listStyle(.sidebar)
-		.navigationTitle("Lists")
+		.sheet(item: $presented) { list in
+			ListEditor(list: list)
+		}
+		.sheet(isPresented: $isPresented) {
+			ListEditor(list: nil)
+		}
+		.onAppear {
+			self.selection = .all
+		}
 		#if os(macOS)
 		.navigationSplitViewColumnWidth(min: 180, ideal: 200)
 		#endif
@@ -69,21 +85,24 @@ struct SidebarView: View {
 	}
 }
 
+// MARK: - Nested data structs
+extension SidebarView {
+
+	enum Selection: Hashable {
+		case all
+		case list(id: PersistentIdentifier)
+	}
+}
+
 private extension SidebarView {
 
 	@ViewBuilder
 	func buildContextMenu(for list: ListEntity) -> some View {
-		Picker("Icon", selection: Binding(get: {
-			list.icon ?? .textPage
-		}, set: { newValue in
-			list.icon = newValue
-		})) {
-			ForEach(Icon.allCases, id: \.self) { icon in
-				Image(systemName: icon.iconName)
-					.tag(icon)
-			}
+		Button {
+			self.presented = list
+		} label: {
+			Label("Edit...", systemImage: "square.and.pencil")
 		}
-
 		Divider()
 		Button(role: .destructive) {
 			deleteItem(list.id)
@@ -100,7 +119,7 @@ private extension SidebarView {
 		withAnimation {
 			let newItem = ListEntity(timestamp: Date(), name: "New Item", icon: .noIcon)
 			modelContext.insert(newItem)
-			selection = newItem.id
+			selection = .list(id: newItem.id)
 			focusedItem = newItem.id
 		}
 	}

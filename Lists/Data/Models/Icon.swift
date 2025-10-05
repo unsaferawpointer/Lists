@@ -13,6 +13,8 @@ enum Icon: Int, Codable {
 	case tray = 2
 	case document
 	case textPage
+	case star
+	case stack
 }
 
 // MARK: - CaseIterable
@@ -30,16 +32,13 @@ extension Icon {
 
 	var iconName: String {
 		switch self {
-		case .noIcon:
-			return "folder"
-		case .folder:
-			return "folder"
-		case .tray:
-			return "tray.full"
-		case .document:
-			return "text.document"
-		case .textPage:
-			return "text.page"
+		case .noIcon:		"folder"
+		case .folder:		"folder"
+		case .tray:			"tray.full"
+		case .document:		"text.document"
+		case .textPage:		"text.page"
+		case .star:			"star"
+		case .stack:		"square.stack"
 		}
 	}
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024px" height="1024px">
+  <g transform="matrix(0.811746, 0, 0, 0.811746, 98.932091, 37.071762)" style="">
+    <ellipse style="fill: rgb(216, 216, 216);" cx="170.966" cy="361.07" rx="56" ry="56"/>
+    <rect style="fill: rgb(216, 216, 216);" x="276.401" y="305.07" width="626.36" height="112" rx="56" ry="56"/>
+    <ellipse style="fill: rgb(216, 216, 216);" cx="170.966" cy="585.07" rx="56" ry="56"/>
+    <rect style="fill: rgb(216, 216, 216);" x="276.401" y="529.07" width="626.36" height="112" rx="56" ry="56"/>
+    <ellipse style="fill: rgb(216, 216, 216);" cx="170.966" cy="809.07" rx="56" ry="56"/>
+    <rect style="fill: rgb(216, 216, 216);" x="276.401" y="753.07" width="626.36" height="112" rx="56" ry="56"/>
+  </g>
+</svg>

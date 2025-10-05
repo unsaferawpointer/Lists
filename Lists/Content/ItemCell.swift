@@ -37,13 +37,18 @@ struct ItemCell: View {
 
 	var body: some View {
 		HStack {
+			Circle()
+				.foregroundStyle(.tertiary)
+				.frame(width: 4, height: 4)
 			VStack(alignment: .leading) {
-				TextField("", text: $item.title)
+				Text(item.title)
 					.foregroundStyle(.primary)
 					.font(.headline)
-				Text(UUID().uuidString)
-					.foregroundStyle(.secondary)
-					.font(.caption)
+				if let subtitle = item.subtitle, !subtitle.isEmpty {
+					Text(subtitle)
+						.foregroundStyle(.secondary)
+						.font(.caption)
+				}
 			}
 		}
 	}
