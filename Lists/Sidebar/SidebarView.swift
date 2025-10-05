@@ -31,21 +31,29 @@ struct SidebarView: View {
 			.tag(Selection.all)
 
 			Section("Library") {
-				ForEach(lists, id:\.id) { list in
-					NavigationLink {
-						ContentView(list: list)
-					} label: {
-						ListCell(list: list)
-							.focused($focusedItem, equals: list.id)
+				if lists.isEmpty {
+					ContentUnavailableView(
+						"No Items",
+						systemImage: "square.dashed",
+						description: Text("To add a new list, tap the '+' button")
+					)
+				} else {
+					ForEach(lists, id:\.id) { list in
+						NavigationLink {
+							ContentView(list: list)
+						} label: {
+							ListCell(list: list)
+								.focused($focusedItem, equals: list.id)
+						}
+						.listItemTint(.primary)
+						.listRowSeparator(.hidden)
+						.contextMenu {
+							buildContextMenu(for: list)
+						}
+						.tag(Selection.list(id: list.id))
 					}
-					.listItemTint(.primary)
-					.listRowSeparator(.hidden)
-					.contextMenu {
-						buildContextMenu(for: list)
-					}
-					.tag(Selection.list(id: list.id))
+					.onDelete(perform: deleteItems)
 				}
-				.onDelete(perform: deleteItems)
 			}
 		}
 		.listStyle(.sidebar)
