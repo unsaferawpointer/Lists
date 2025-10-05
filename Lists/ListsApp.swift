@@ -29,7 +29,7 @@ struct ListsApp: App {
 			NavigationSplitView {
 				SidebarView()
 			} detail: {
-				Text("Detail")
+				ContentView(list: nil)
 			}
 		}
 		.modelContainer(sharedModelContainer)

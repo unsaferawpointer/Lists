@@ -48,6 +48,15 @@ struct ContentView: View {
 			}
 		}
 		.listStyle(.inset)
+		.overlay {
+			if items.isEmpty {
+				ContentUnavailableView(
+					"No Items",
+					systemImage: "square.dashed",
+					description: Text("To add a new item, tap the '+' button")
+				)
+			}
+		}
 		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
 			if selected.count == 1 {
 				Button {
