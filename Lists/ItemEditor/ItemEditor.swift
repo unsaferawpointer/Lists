@@ -10,14 +10,24 @@ import SwiftUI
 
 struct ItemEditor: View {
 
+	// MARK: - Enviroment
+
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.modelContext) private var modelContext
+
+	// MARK: - Entities
 
 	var item: ItemEntity?
 
 	var list: ListEntity?
 
-	@State var title: String = ""
+	// MARK: - Local State
+
+	@State private var title: String = ""
+
+	@FocusState private var isTitleFocused: Bool
+
+	// MARK: - Initialization
 
 	init(item: ItemEntity?, list: ListEntity? = nil) {
 		self.item = item
@@ -30,6 +40,15 @@ struct ItemEditor: View {
 			Form {
 				Section {
 					TextField("Item Title", text: $title)
+						.focused($isTitleFocused)
+						.submitLabel(.done)
+						.onSubmit {
+							save()
+							dismiss()
+						}
+						.onAppear {
+							isTitleFocused = true
+						}
 				} footer: {
 					if !isValid() {
 						Text("Textfield is Empty")
