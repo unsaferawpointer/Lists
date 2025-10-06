@@ -28,7 +28,15 @@ struct ItemEditor: View {
 	var body: some View {
 		NavigationStack {
 			Form {
-				TextField("Item Title", text: $title)
+				Section {
+					TextField("Item Title", text: $title)
+				} footer: {
+					if !isValid() {
+						Text("Textfield is Empty")
+							.foregroundStyle(.red)
+							.font(.callout)
+					}
+				}
 			}
 			.formStyle(.grouped)
 			.toolbar {
@@ -42,6 +50,7 @@ struct ItemEditor: View {
 						save()
 						dismiss()
 					}
+					.disabled(!isValid())
 				}
 			}
 		}
@@ -61,6 +70,10 @@ private extension ItemEditor {
 			item.title = title
 			try? modelContext.save()
 		}
+	}
+
+	func isValid() -> Bool {
+		return !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 	}
 }
 
