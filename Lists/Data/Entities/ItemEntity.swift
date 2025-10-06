@@ -17,15 +17,18 @@ final class ItemEntity {
 
 	var subtitle: String?
 
+	var strikeThrough: Bool
+
 	@Relationship(deleteRule: .nullify)
 	var list: ListEntity?
 
 	// MARK: - Initialization
 
-	init(timestamp: Date, title: String, subtitle: String? = nil, list: ListEntity?) {
+	init(timestamp: Date, title: String, subtitle: String? = nil, strikeThrough: Bool = false, list: ListEntity?) {
 		self.timestamp = timestamp
 		self.title = title
 		self.subtitle = subtitle
+		self.strikeThrough = strikeThrough
 		self.list = list
 	}
 }

@@ -13,13 +13,24 @@ struct ContentView: View {
 	var list: ListEntity?
 
 	@Environment(\.modelContext) private var modelContext
-	@Query(sort: \ItemEntity.timestamp, animation: .default) private var items: [ItemEntity]
+	@Query(animation: .default) private var items: [ItemEntity]
 
 	@State var selection: Set<PersistentIdentifier> = []
 
 	@State var presented: ItemEntity?
 
 	@State var isPresented: Bool = false
+
+	func itemBindings(for ids: Set<PersistentIdentifier>) -> [Binding<Bool>] {
+		items
+			.filter { ids.contains($0.id) }
+			.map { item in
+				Binding<Bool>(
+					get: { item.strikeThrough },
+					set: { newValue in item.strikeThrough = newValue }
+				)
+			}
+	}
 
 	// MARK: - Initialization
 
@@ -38,10 +49,12 @@ struct ContentView: View {
 			}
 		}()
 
+		let sortByTimestamp = SortDescriptor(\ItemEntity.timestamp)
+		let sortByStrikethrough = SortDescriptor(\ItemEntity.strikeThrough)
+
 		self._items = Query(
 			filter: predicate,
-			sort: \ItemEntity.timestamp,
-			order: .forward,
+			sort: [sortByStrikethrough, sortByTimestamp],
 			animation: .default
 		)
 	}
@@ -71,17 +84,9 @@ struct ContentView: View {
 					Label("Edit...", systemImage: "square.and.pencil")
 				}
 				Divider()
-				Button(role: .destructive) {
-					deleteItems(selected)
-				} label: {
-					Label("Delete", systemImage: "trash")
-				}
+				makeMenu(for: selected)
 			} else if !selected.isEmpty {
-				Button {
-					deleteItems(selected)
-				} label: {
-					Label("Delete", systemImage: "trash")
-				}
+				makeMenu(for: selected)
 			} else {
 				Button {
 					addItem()
@@ -93,10 +98,7 @@ struct ContentView: View {
 		.sheet(item: $presented) { item in
 			ItemEditor(item: item, list: list)
 				.presentationDetents([.medium, .large])
-						.presentationDragIndicator(.visible)
-						.presentationBackground(.regularMaterial)
-						.presentationCornerRadius(25)
-						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+				.presentationDragIndicator(.visible)
 		}
 		.sheet(isPresented: $isPresented) {
 			ItemEditor(item: nil, list: list)
@@ -150,7 +152,32 @@ private extension ContentView {
 	}
 }
 
+// MARK: - Helpersa
+private extension ContentView {
+
+	@ViewBuilder
+	func makeMenu(for ids: Set<PersistentIdentifier>) -> some View {
+		Toggle(sources: itemBindings(for: ids), isOn: \.self) {
+			Label("Strikethrough", systemImage: "strikethrough")
+		}
+		Divider()
+		Button(role: .destructive) {
+			deleteItems(ids)
+		} label: {
+			Label("Delete", systemImage: "trash")
+		}
+	}
+}
+
 #Preview {
 	ContentView(list: nil)
 		.modelContainer(for: ItemEntity.self, inMemory: true)
+}
+
+extension Bool: @retroactive Comparable {
+
+	public static func < (lhs: Bool, rhs: Bool) -> Bool {
+		// Реализация по умолчанию: false < true
+		return !lhs && rhs
+	}
 }

@@ -18,13 +18,24 @@ struct ItemCell: View {
 				.foregroundStyle(.tertiary)
 				.frame(width: 4, height: 4)
 			VStack(alignment: .leading) {
-				TextField("", text: $item.title)
-					.foregroundStyle(.primary)
-					.font(.headline)
+				Text(item.title)
+					.strikethrough(
+						item.strikeThrough,
+						pattern: .solid,
+						color: .secondary
+					)
+					.foregroundStyle(item.strikeThrough ? .primary : .primary)
+					.font(.body)
+					.textFieldStyle(.plain)
 				if item.subtitle?.isEmpty == false {
 					TextField("", text: .init($item.subtitle, default: ""))
 						.foregroundStyle(.secondary)
 						.font(.caption)
+						.strikethrough(
+							item.strikeThrough,
+							pattern: .solid,
+							color: .secondary
+						)
 				}
 			}
 		}
@@ -43,11 +54,21 @@ struct ItemCell: View {
 			VStack(alignment: .leading) {
 				Text(item.title)
 					.foregroundStyle(.primary)
-					.font(.headline)
+					.font(.body)
+					.strikethrough(
+						item.strikeThrough,
+						pattern: .solid,
+						color: .secondary
+					)
 				if let subtitle = item.subtitle, !subtitle.isEmpty {
 					Text(subtitle)
 						.foregroundStyle(.secondary)
 						.font(.caption)
+						.strikethrough(
+							item.strikeThrough,
+							pattern: .solid,
+							color: .primary
+						)
 				}
 			}
 		}
@@ -56,5 +77,5 @@ struct ItemCell: View {
 #endif
 
 #Preview(traits: .sizeThatFitsLayout) {
-	ItemCell(item: .init(timestamp: .now, title: "Default Item", list: nil))
+	ItemCell(item: .init(timestamp: .now, title: "Default Item", strikeThrough: true, list: nil))
 }
