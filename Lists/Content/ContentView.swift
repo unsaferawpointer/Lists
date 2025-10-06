@@ -104,12 +104,21 @@ struct ContentView: View {
 			ToolbarItem(placement: .navigationBarTrailing) {
 				EditButton()
 			}
-			#endif
-			ToolbarItem {
+			ToolbarItem(placement: .bottomBar) {
+				Spacer()
+			}
+			ToolbarItem(placement: .bottomBar) {
 				Button(action: addItem) {
 					Label("Add Item", systemImage: "plus")
 				}
 			}
+			#else
+			ToolbarItem(placement: .primaryAction) {
+				Button(action: addItem) {
+					Label("Add Item", systemImage: "plus")
+				}
+			}
+			#endif
 		}
 	}
 }

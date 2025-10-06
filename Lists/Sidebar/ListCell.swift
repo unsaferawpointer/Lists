@@ -26,7 +26,7 @@ struct ListCell: View {
 	@Bindable var list: ListEntity
 
 	var body: some View {
-		Label(list.name, systemImage: (list.icon ?? .noIcon).iconName)
+		Label(list.name, systemImage: (list.appearence?.icon ?? .noIcon).iconName)
 	}
 }
 #endif
