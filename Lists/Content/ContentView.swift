@@ -26,11 +26,17 @@ struct ContentView: View {
 	init(list: ListEntity?) {
 
 		self.list = list
-		let id = list?.id
 
-		let predicate = #Predicate<ItemEntity> { item in
-			item.list?.id == id
-		}
+		let predicate: Predicate<ItemEntity>? = {
+			if let list {
+				let id = list.id
+				return #Predicate<ItemEntity> { item in
+					item.list?.id == id
+				}
+			} else {
+				return nil
+			}
+		}()
 
 		self._items = Query(
 			filter: predicate,
