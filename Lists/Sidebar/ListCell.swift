@@ -16,7 +16,7 @@ struct ListCell: View {
 		Label {
 			TextField("", text: $list.name)
 		} icon: {
-			Image(systemName: (list.icon ?? .noIcon).iconName)
+			Image(systemName: (list.appearence?.icon ?? .noIcon).iconName)
 		}
 	}
 }
@@ -32,5 +32,5 @@ struct ListCell: View {
 #endif
 
 #Preview(traits: .sizeThatFitsLayout) {
-	ListCell(list: .init(timestamp: .now, name: "New List", icon: .folder, items: []))
+	ListCell(list: .init(timestamp: .now, name: "New List", appearence: .init(icon: .folder), items: []))
 }

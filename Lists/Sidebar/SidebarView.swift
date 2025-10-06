@@ -11,7 +11,13 @@ import SwiftData
 struct SidebarView: View {
 
 	@Environment(\.modelContext) private var modelContext
-	@Query(sort: \ListEntity.timestamp, animation: .default) private var lists: [ListEntity]
+	@Query(
+		filter: #Predicate{ list in
+			list.isHidden == false
+		},
+		sort: \ListEntity.timestamp,
+		animation: .default
+	) private var lists: [ListEntity]
 
 	@FocusState private var focusedItem: PersistentIdentifier?
 	@State var selection: Selection = .all
@@ -125,7 +131,11 @@ private extension SidebarView {
 
 	func addItem() {
 		withAnimation {
-			let newItem = ListEntity(timestamp: Date(), name: "New Item", icon: .noIcon)
+			let newItem = ListEntity(
+				timestamp: Date(),
+				name: "New Item",
+				appearence: .init(icon: .folder)
+			)
 			modelContext.insert(newItem)
 			selection = .list(id: newItem.id)
 			focusedItem = newItem.id

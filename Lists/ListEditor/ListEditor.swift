@@ -21,7 +21,7 @@ struct ListEditor: View {
 
 	init(list: ListEntity?) {
 		self.list = list
-		self._icon = State(initialValue: list?.icon ?? .folder)
+		self._icon = State(initialValue: list?.appearence?.icon ?? .folder)
 		self._name = State(initialValue: list?.name ?? "")
 	}
 
@@ -57,17 +57,17 @@ private extension ListEditor {
 	func save() {
 		withAnimation {
 			guard let list else {
-				let newList = ListEntity(timestamp: .now, name: "New List", icon: icon)
+				let newList = ListEntity(timestamp: .now, name: "New List", appearence: .init(icon: icon))
 				modelContext.insert(newList)
 				return
 			}
 			list.name = name
-			list.icon = icon
+			list.appearence = ListAppearence(icon: icon)
 			try? modelContext.save()
 		}
 	}
 }
 
 #Preview {
-	ListEditor(list: .init(timestamp: .now, name: "New List", icon: .document))
+	ListEditor(list: .init(timestamp: .now, name: "New List", appearence: .init(icon: .document)))
 }

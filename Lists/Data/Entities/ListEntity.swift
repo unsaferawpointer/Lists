@@ -13,19 +13,32 @@ final class ListEntity {
 
 	var timestamp: Date
 
+	var offset: Int
+
 	var name: String
 
-	var icon: Icon?
+	var appearence: ListAppearence?
+
+	var isHidden: Bool
 
 	@Relationship(deleteRule: .cascade, inverse: \ItemEntity.list)
 	var items: [ItemEntity]
 
 	// MARK: - Initialization
 
-	init(timestamp: Date, name: String, icon: Icon, items: [ItemEntity] = []) {
+	init(
+		timestamp: Date,
+		offset: Int = 0,
+		name: String,
+		isHidden: Bool = false,
+		appearence: ListAppearence?,
+		items: [ItemEntity] = []
+	) {
 		self.timestamp = timestamp
+		self.offset = offset
 		self.name = name
-		self.icon = icon
+		self.appearence = appearence
+		self.isHidden = isHidden
 		self.items = items
 	}
 }
