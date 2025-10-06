@@ -21,6 +21,7 @@ struct ListEditor: View {
 
 	init(list: ListEntity?) {
 		self.list = list
+		self._icon = State(initialValue: list?.icon ?? .folder)
 		self._name = State(initialValue: list?.name ?? "")
 	}
 
@@ -28,13 +29,9 @@ struct ListEditor: View {
 		NavigationStack {
 			Form {
 				TextField("Name", text: $name)
-				Picker("Icon", selection: $icon) {
-					ForEach(Icon.allCases, id: \.self) { icon in
-						Image(systemName: icon.iconName)
-							.tag(icon)
-					}
+				Section("Icon") {
+					IconPicker(selectedIcon: $icon)
 				}
-
 			}
 			.formStyle(.grouped)
 			.toolbar {
