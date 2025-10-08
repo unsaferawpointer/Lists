@@ -51,7 +51,6 @@ struct SidebarView: View {
 							ListCell(list: list)
 								.focused($focusedItem, equals: list.id)
 						}
-						.listItemTint(.primary)
 						.listRowSeparator(.hidden)
 						.contextMenu {
 							buildContextMenu(for: list)
