@@ -8,45 +8,87 @@
 import SwiftData
 import SwiftUI
 
-struct ListEditor: View {
+struct ListEditor {
+
+	// MARK: - Enviroment
 
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.modelContext) private var modelContext
 
+	// MARK: - DI
+
 	var list: ListEntity?
 
-	@State var name: String = ""
+	// MARK: - Internal State
 
-	@State var icon: Icon = .document
+	@State private var name: String = ""
+
+	@State private var icon: Icon = .document
+
+	@FocusState private var isFocused: Bool
+
+	// MARK: - Initialization
 
 	init(list: ListEntity?) {
 		self.list = list
 		self._icon = State(initialValue: list?.appearence?.icon ?? .folder)
 		self._name = State(initialValue: list?.name ?? "")
 	}
+}
+
+// MARK: - View
+extension ListEditor: View {
 
 	var body: some View {
 		NavigationStack {
 			Form {
-				TextField("Name", text: $name)
+				Section {
+					TextField("Name", text: $name)
+						.focused($isFocused)
+						.submitLabel(.done)
+						.onSubmit {
+							save()
+							dismiss()
+						}
+						.onAppear {
+							self.isFocused = true
+						}
+				} footer: {
+					if !isValid() {
+						Text("Textfield is Empty")
+							.foregroundStyle(.red)
+							.font(.callout)
+					}
+				}
 				Section("Icon") {
 					IconPicker(selectedIcon: $icon)
 				}
 			}
 			.formStyle(.grouped)
+			.scrollDismissesKeyboard(.immediately)
 			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button(role: .close) {
-						dismiss()
-					}
-				}
-				ToolbarItem(placement: .confirmationAction) {
-					Button(role: .confirm) {
-						save()
-						dismiss()
-					}
-				}
+				buildToolbar()
 			}
+		}
+	}
+}
+
+// MARK: - Helpers
+private extension ListEditor {
+
+	@ToolbarContentBuilder
+	func buildToolbar() -> some ToolbarContent {
+		ToolbarItem(placement: .cancellationAction) {
+			Button(role: .close) {
+				dismiss()
+			}
+		}
+		ToolbarItem(placement: .confirmationAction) {
+			Button(role: .confirm) {
+				save()
+				dismiss()
+			}
+			.disabled(!isValid())
 		}
 	}
 }
@@ -65,6 +107,12 @@ private extension ListEditor {
 			list.appearence = ListAppearence(icon: icon)
 			try? modelContext.save()
 		}
+	}
+
+	func isValid() -> Bool {
+		return !name
+			.trimmingCharacters(in: .whitespacesAndNewlines)
+			.isEmpty
 	}
 }
 

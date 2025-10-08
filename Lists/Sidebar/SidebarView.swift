@@ -131,14 +131,7 @@ private extension SidebarView {
 
 	func addItem() {
 		withAnimation {
-			let newItem = ListEntity(
-				timestamp: Date(),
-				name: "New Item",
-				appearence: .init(icon: .folder)
-			)
-			modelContext.insert(newItem)
-			selection = .list(id: newItem.id)
-			focusedItem = newItem.id
+			isPresented = true
 		}
 	}
 
