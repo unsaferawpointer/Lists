@@ -8,18 +8,27 @@
 import SwiftUI
 import SwiftData
 
-struct ContentView: View {
+struct ContentView {
+
+	// MARK: - Enviroment
+
+	@Environment(\.modelContext) private var modelContext
+
+	// MARK: - Data
 
 	var list: ListEntity?
 
-	@Environment(\.modelContext) private var modelContext
 	@Query(animation: .default) private var items: [ItemEntity]
 
-	@State var selection: Set<PersistentIdentifier> = []
+	// MARK: - Internal State
 
-	@State var presented: ItemEntity?
+	@State private var selection: Set<PersistentIdentifier> = []
 
-	@State var isPresented: Bool = false
+	@State private var presented: ItemEntity?
+
+	@State private var isPresented: Bool = false
+
+	// MARK: - Calculated Propertiers
 
 	func itemBindings(for ids: Set<PersistentIdentifier>) -> [Binding<Bool>] {
 		items
@@ -58,6 +67,10 @@ struct ContentView: View {
 			animation: .default
 		)
 	}
+}
+
+// MARK: - View
+extension ContentView: View {
 
 	var body: some View {
 		List(selection: $selection) {

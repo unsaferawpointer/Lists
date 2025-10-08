@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-struct ItemEditor: View {
+struct ItemEditor {
 
 	// MARK: - Enviroment
 
@@ -25,7 +25,14 @@ struct ItemEditor: View {
 
 	@State private var title: String = ""
 
-	@FocusState private var isTitleFocused: Bool
+	@State private var subtitle: String = ""
+
+	@FocusState private var focusedField: Field?
+
+	enum Field {
+		case title
+		case subtitle
+	}
 
 	// MARK: - Initialization
 
@@ -33,22 +40,35 @@ struct ItemEditor: View {
 		self.item = item
 		self.list = list
 		self._title = State(initialValue: item?.title ?? "")
+		self._subtitle = State(initialValue: item?.subtitle ?? "")
 	}
+}
+
+// MARK: - View
+extension ItemEditor: View {
 
 	var body: some View {
 		NavigationStack {
 			Form {
 				Section {
-					TextField("Item Title", text: $title)
-						.focused($isTitleFocused)
+					TextField("Title", text: $title)
+						.focused($focusedField, equals: .title)
+						.submitLabel(.next)
+						.onSubmit {
+							focusedField = .subtitle
+						}
+						.onAppear {
+							focusedField = .title
+						}
+					TextField("Note", text: $subtitle)
+						.focused($focusedField, equals: .subtitle)
 						.submitLabel(.done)
 						.onSubmit {
 							save()
 							dismiss()
 						}
-						.onAppear {
-							isTitleFocused = true
-						}
+				} header: {
+					EmptyView()
 				} footer: {
 					if !isValid() {
 						Text("Textfield is Empty")
@@ -58,20 +78,31 @@ struct ItemEditor: View {
 				}
 			}
 			.formStyle(.grouped)
+			.navigationTitle(item == nil ? "New Item" : "Edit Item")
+			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button(role: .close) {
-						dismiss()
-					}
-				}
-				ToolbarItem(placement: .confirmationAction) {
-					Button(role: .confirm) {
-						save()
-						dismiss()
-					}
-					.disabled(!isValid())
-				}
+				buildToolbar()
 			}
+		}
+	}
+}
+
+// MARK: - Helpers
+private extension ItemEditor {
+
+	@ToolbarContentBuilder
+	func buildToolbar() -> some ToolbarContent {
+		ToolbarItem(placement: .cancellationAction) {
+			Button(role: .close) {
+				dismiss()
+			}
+		}
+		ToolbarItem(placement: .confirmationAction) {
+			Button(role: .confirm) {
+				save()
+				dismiss()
+			}
+			.disabled(!isValid())
 		}
 	}
 }
@@ -82,11 +113,17 @@ private extension ItemEditor {
 	func save() {
 		withAnimation {
 			guard let item else {
-				let newItem = ItemEntity(timestamp: .now, title: title, list: list)
+				let newItem = ItemEntity(
+					timestamp: .now,
+					title: title,
+					subtitle: subtitle.isEmpty ? nil : subtitle,
+					list: list
+				)
 				modelContext.insert(newItem)
 				return
 			}
 			item.title = title
+			item.subtitle = subtitle.isEmpty ? nil : subtitle
 			try? modelContext.save()
 		}
 	}
