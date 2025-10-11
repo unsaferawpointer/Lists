@@ -110,11 +110,13 @@ extension ContentView: View {
 		}
 		.sheet(item: $presented) { item in
 			ItemEditor(item: item, list: list)
-				.presentationDetents([.medium, .large])
+				.presentationDetents([.medium])
 				.presentationDragIndicator(.visible)
 		}
 		.sheet(isPresented: $isPresented) {
 			ItemEditor(item: nil, list: list)
+				.presentationDetents([.medium])
+				.presentationDragIndicator(.visible)
 		}
 		.navigationTitle(list?.name ?? "All")
 		#if os(macOS)
