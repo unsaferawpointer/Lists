@@ -25,13 +25,10 @@ struct ItemEditor {
 
 	@State private var title: String = ""
 
-	@State private var subtitle: String = ""
-
 	@FocusState private var focusedField: Field?
 
 	enum Field {
 		case title
-		case subtitle
 	}
 
 	// MARK: - Initialization
@@ -40,7 +37,6 @@ struct ItemEditor {
 		self.item = item
 		self.list = list
 		self._title = State(initialValue: item?.title ?? "")
-		self._subtitle = State(initialValue: item?.subtitle ?? "")
 	}
 }
 
@@ -53,19 +49,13 @@ extension ItemEditor: View {
 				Section {
 					TextField("Title", text: $title)
 						.focused($focusedField, equals: .title)
-						.submitLabel(.next)
-						.onSubmit {
-							focusedField = .subtitle
-						}
-						.onAppear {
-							focusedField = .title
-						}
-					TextField("Note", text: $subtitle)
-						.focused($focusedField, equals: .subtitle)
 						.submitLabel(.done)
 						.onSubmit {
 							save()
 							dismiss()
+						}
+						.onAppear {
+							focusedField = .title
 						}
 				} header: {
 					EmptyView()
@@ -116,14 +106,12 @@ private extension ItemEditor {
 				let newItem = ItemEntity(
 					timestamp: .now,
 					title: title,
-					subtitle: subtitle.isEmpty ? nil : subtitle,
 					list: list
 				)
 				modelContext.insert(newItem)
 				return
 			}
 			item.title = title
-			item.subtitle = subtitle.isEmpty ? nil : subtitle
 			try? modelContext.save()
 		}
 	}

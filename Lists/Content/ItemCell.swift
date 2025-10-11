@@ -53,23 +53,13 @@ struct ItemCell: View {
 				.frame(width: 4, height: 4)
 			VStack(alignment: .leading) {
 				Text(item.title)
-					.foregroundStyle(.primary)
+					.foregroundStyle(item.strikeThrough ? .secondary : .primary)
 					.font(.body)
 					.strikethrough(
 						item.strikeThrough,
 						pattern: .solid,
 						color: .secondary
 					)
-				if let subtitle = item.subtitle, !subtitle.isEmpty {
-					Text(subtitle)
-						.foregroundStyle(.secondary)
-						.font(.caption)
-						.strikethrough(
-							item.strikeThrough,
-							pattern: .solid,
-							color: .primary
-						)
-				}
 			}
 		}
 	}
