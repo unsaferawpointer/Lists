@@ -51,7 +51,7 @@ struct IconCell: View {
 					RoundedRectangle(cornerRadius: 8)
 						.fill(
 							isSelected
-								? Color.blue
+								? Color.accentColor
 								: Color.gray.opacity(0.05)
 						)
 				)
