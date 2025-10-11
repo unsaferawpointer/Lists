@@ -99,7 +99,7 @@ private extension ListEditor {
 	func save() {
 		withAnimation {
 			guard let list else {
-				let newList = ListEntity(timestamp: .now, name: "New List", appearence: .init(icon: icon))
+				let newList = ListEntity(timestamp: .now, name: name, appearence: .init(icon: icon))
 				modelContext.insert(newList)
 				return
 			}
