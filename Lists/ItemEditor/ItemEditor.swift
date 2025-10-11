@@ -69,7 +69,9 @@ extension ItemEditor: View {
 			}
 			.formStyle(.grouped)
 			.navigationTitle(item == nil ? "New Item" : "Edit Item")
+			#if os(iOS)
 			.navigationBarTitleDisplayMode(.inline)
+			#endif
 			.toolbar {
 				buildToolbar()
 			}
