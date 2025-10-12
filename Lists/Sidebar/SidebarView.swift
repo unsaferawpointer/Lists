@@ -11,20 +11,30 @@ import SwiftData
 struct SidebarView: View {
 
 	@Environment(\.modelContext) private var modelContext
-	@Query(
-		filter: #Predicate{ list in
+	@Query private var lists: [ListEntity]
+
+	// MARK: - Local State
+
+	@State private var selection: Selection = .all
+
+	@State private var presented: ListEntity?
+
+	@State private var isPresented: Bool = false
+
+	init() {
+		let predicate: Predicate<ListEntity> = #Predicate{ list in
 			list.isHidden == false
-		},
-		sort: \ListEntity.timestamp,
-		animation: .default
-	) private var lists: [ListEntity]
+		}
 
-	@FocusState private var focusedItem: PersistentIdentifier?
-	@State var selection: Selection = .all
+		let sortByTimestamp = SortDescriptor(\ListEntity.timestamp)
+		let sortByOffset = SortDescriptor(\ListEntity.offset)
 
-	@State var presented: ListEntity?
-
-	@State var isPresented: Bool = false
+		self._lists = Query(
+			filter: predicate,
+			sort: [sortByOffset, sortByTimestamp],
+			animation: .default
+		)
+	}
 
 	var body: some View {
 		List {
@@ -49,7 +59,6 @@ struct SidebarView: View {
 							ContentView(list: list)
 						} label: {
 							ListCell(list: list)
-								.focused($focusedItem, equals: list.id)
 						}
 						.listRowSeparator(.hidden)
 						.contextMenu {
@@ -58,6 +67,9 @@ struct SidebarView: View {
 						.tag(Selection.list(id: list.id))
 					}
 					.onDelete(perform: deleteItems)
+					.onMove { indices, target in
+						moveItem(indices, to: target)
+					}
 				}
 			}
 		}
@@ -88,7 +100,7 @@ struct SidebarView: View {
 				}
 			}
 			#else
-			ToolbarItem {
+			ToolbarItem(placement: .primaryAction) {
 				Button(action: addItem) {
 					Label("Add Item", systemImage: "plus")
 				}
@@ -148,6 +160,17 @@ private extension SidebarView {
 				return
 			}
 			modelContext.delete(lists[index])
+		}
+	}
+
+	func moveItem(_ indices: IndexSet, to target: Int) {
+		withAnimation {
+			var modificated = lists.enumerated().map(\.offset)
+			modificated.move(fromOffsets: indices, toOffset: target)
+
+			for (offset, index) in modificated.enumerated() {
+				lists[index].offset = offset
+			}
 		}
 	}
 }
