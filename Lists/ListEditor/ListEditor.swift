@@ -17,6 +17,8 @@ struct ListEditor {
 
 	// MARK: - DI
 
+	var offset: Int
+
 	var list: ListEntity?
 
 	// MARK: - Internal State
@@ -29,8 +31,9 @@ struct ListEditor {
 
 	// MARK: - Initialization
 
-	init(list: ListEntity?) {
+	init(list: ListEntity?, with offset: Int) {
 		self.list = list
+		self.offset = offset
 		self._icon = State(initialValue: list?.appearence?.icon ?? .folder)
 		self._name = State(initialValue: list?.name ?? "")
 	}
@@ -100,9 +103,11 @@ private extension ListEditor {
 		withAnimation {
 			guard let list else {
 				let newList = ListEntity(timestamp: .now, name: name, appearence: .init(icon: icon))
+				newList.offset = offset
 				modelContext.insert(newList)
 				return
 			}
+			list.offset = offset
 			list.name = name
 			list.appearence = ListAppearence(icon: icon)
 			try? modelContext.save()
@@ -117,5 +122,12 @@ private extension ListEditor {
 }
 
 #Preview {
-	ListEditor(list: .init(timestamp: .now, name: "New List", appearence: .init(icon: .document)))
+	ListEditor(
+		list: .init(
+			timestamp: .now,
+			name: "New List",
+			appearence: .init(icon: .document)
+		),
+		with: 0
+	)
 }

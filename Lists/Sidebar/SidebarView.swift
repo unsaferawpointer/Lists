@@ -15,11 +15,9 @@ struct SidebarView: View {
 
 	// MARK: - Local State
 
-	@State private var selection: Selection = .all
+	private typealias Selection = SidebarModel.Selection
 
-	@State private var presented: ListEntity?
-
-	@State private var isPresented: Bool = false
+	@Bindable var model = SidebarModel()
 
 	init() {
 		let predicate: Predicate<ListEntity> = #Predicate{ list in
@@ -37,7 +35,7 @@ struct SidebarView: View {
 	}
 
 	var body: some View {
-		List {
+		List(selection: $model.selection) {
 			NavigationLink {
 				ContentView(list: nil)
 			} label: {
@@ -66,22 +64,30 @@ struct SidebarView: View {
 						}
 						.tag(Selection.list(id: list.id))
 					}
-					.onDelete(perform: deleteItems)
+					.onDelete { indices in
+						withAnimation {
+							model.deleteItems(offsets: indices, in: modelContext, lists: lists)
+						}
+					}
 					.onMove { indices, target in
-						moveItem(indices, to: target)
+						withAnimation {
+							model.moveItem(indices, to: target, lists: lists)
+						}
 					}
 				}
 			}
 		}
 		.listStyle(.sidebar)
-		.sheet(item: $presented) { list in
-			ListEditor(list: list)
+		.sheet(item: $model.presented) { list in
+			ListEditor(list: list, with: lists.indices.last ?? 0)
 		}
-		.sheet(isPresented: $isPresented) {
-			ListEditor(list: nil)
+		.sheet(isPresented: $model.isPresented) {
+			ListEditor(list: nil, with: lists.indices.last ?? 0)
 		}
 		.onAppear {
-			self.selection = .all
+			Task { @MainActor in
+				self.model.selection = .all
+			}
 		}
 		#if os(macOS)
 		.navigationSplitViewColumnWidth(min: 180, ideal: 200)
@@ -95,13 +101,19 @@ struct SidebarView: View {
 				Spacer()
 			}
 			ToolbarItem(placement: .bottomBar) {
-				Button(action: addItem) {
+				Button {
+					model.addItem()
+				} label: {
 					Label("Add Item", systemImage: "plus")
 				}
 			}
 			#else
 			ToolbarItem(placement: .primaryAction) {
-				Button(action: addItem) {
+				Button {
+					withAnimation {
+						model.addItem()
+					}
+				} label: {
 					Label("Add Item", systemImage: "plus")
 				}
 			}
@@ -110,67 +122,24 @@ struct SidebarView: View {
 	}
 }
 
-// MARK: - Nested data structs
-extension SidebarView {
-
-	enum Selection: Hashable {
-		case all
-		case list(id: PersistentIdentifier)
-	}
-}
-
 private extension SidebarView {
 
 	@ViewBuilder
 	func buildContextMenu(for list: ListEntity) -> some View {
 		Button {
-			self.presented = list
+			withAnimation {
+				model.presented = list
+			}
 		} label: {
 			Label("Edit...", systemImage: "square.and.pencil")
 		}
 		Divider()
 		Button(role: .destructive) {
-			deleteItem(list.id)
+			withAnimation {
+				model.deleteItem(list.id, in: modelContext, lists: lists)
+			}
 		} label: {
 			Label("Delete", systemImage: "trash")
-		}
-	}
-}
-
-// MARK: - Helpers
-private extension SidebarView {
-
-	func addItem() {
-		withAnimation {
-			isPresented = true
-		}
-	}
-
-	func deleteItems(offsets: IndexSet) {
-		withAnimation {
-			for index in offsets {
-				modelContext.delete(lists[index])
-			}
-		}
-	}
-
-	func deleteItem(_ id: PersistentIdentifier) {
-		withAnimation {
-			guard let index = lists.firstIndex(where: { $0.id == id}) else {
-				return
-			}
-			modelContext.delete(lists[index])
-		}
-	}
-
-	func moveItem(_ indices: IndexSet, to target: Int) {
-		withAnimation {
-			var modificated = lists.enumerated().map(\.offset)
-			modificated.move(fromOffsets: indices, toOffset: target)
-
-			for (offset, index) in modificated.enumerated() {
-				lists[index].offset = offset
-			}
 		}
 	}
 }
