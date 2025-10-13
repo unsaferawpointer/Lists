@@ -17,7 +17,11 @@ struct SidebarView: View {
 
 	private typealias Selection = SidebarModel.Selection
 
-	@Bindable var model = SidebarModel()
+	#if os(iOS)
+	@State private var editMode: EditMode = .inactive
+	#endif
+
+	@Bindable private var model = SidebarModel()
 
 	// MARK: - Initialization
 
@@ -68,6 +72,10 @@ struct SidebarView: View {
 				}
 			}
 		}
+		#if os(iOS)
+		.environment(\.editMode, $editMode)
+		.navigationLinkIndicatorVisibility(editMode == .active ? .hidden : .visible)
+		#endif
 		.listStyle(.sidebar)
 		.sheet(item: $model.presented) { list in
 			ListEditor(list: list, with: lists.indices.last ?? 0)
@@ -81,7 +89,14 @@ struct SidebarView: View {
 		.toolbar {
 			#if os(iOS)
 			ToolbarItem(placement: .navigationBarTrailing) {
-				EditButton()
+				Button {
+					withAnimation {
+						editMode = editMode == .active ? .inactive : .active
+					}
+				} label: {
+					Text(editMode == .inactive ? "Edit" : "Done")
+				}
+
 			}
 			ToolbarItem(placement: .bottomBar) {
 				Spacer()
