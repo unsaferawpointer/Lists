@@ -33,8 +33,8 @@ class ContentViewController: UIViewController {
 		let view = UITableView(frame: .zero, style: .plain)
 		view.separatorStyle = .singleLine
 		view.showsVerticalScrollIndicator = false
-		view.allowsSelection = true
-		view.allowsMultipleSelection = true
+		view.allowsSelection = false
+		view.allowsMultipleSelection = false
 		view.allowsMultipleSelectionDuringEditing = true
 
 		view.dataSource = self
