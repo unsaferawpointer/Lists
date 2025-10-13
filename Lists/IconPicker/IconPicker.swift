@@ -20,18 +20,20 @@ struct IconPicker: View {
 	}
 
 	var body: some View {
-		LazyVGrid(columns: columns, spacing: 16) {
-			ForEach(icons) { icon in
-				IconCell(
-					icon: icon,
-					isSelected: selectedIcon.iconName == icon.iconName
-				)
-				.onTapGesture {
-					selectedIcon = icon
+		ScrollView(.horizontal) {
+			LazyVGrid(columns: columns, spacing: 16) {
+				ForEach(icons) { icon in
+					IconCell(
+						icon: icon,
+						isSelected: selectedIcon.iconName == icon.iconName
+					)
+					.onTapGesture {
+						selectedIcon = icon
+					}
 				}
 			}
+			.padding()
 		}
-		.padding()
 	}
 }
 

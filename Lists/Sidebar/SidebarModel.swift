@@ -11,7 +11,7 @@ import SwiftUI
 @Observable
 final class SidebarModel {
 
-	var selection: Selection?
+	var selection: Selection? = .all
 
 	var presented: ListEntity?
 
@@ -25,30 +25,22 @@ extension SidebarModel {
 	}
 
 	func deleteItems(offsets: IndexSet, in context: ModelContext, lists: [ListEntity]) {
-		withAnimation {
-			for index in offsets {
-				context.delete(lists[index])
-			}
+		let ids = offsets.map {
+			lists[$0].id
 		}
+		Storage.deleteLists(ids, in: context)
 	}
 
 	func deleteItem(_ id: PersistentIdentifier, in context: ModelContext, lists: [ListEntity]) {
-		withAnimation {
-			guard let index = lists.firstIndex(where: { $0.id == id}) else {
-				return
-			}
-			context.delete(lists[index])
-		}
+		Storage.deleteLists([id], in: context)
 	}
 
 	func moveItem(_ indices: IndexSet, to target: Int, lists: [ListEntity]) {
-		withAnimation {
-			var modificated = lists.enumerated().map(\.offset)
-			modificated.move(fromOffsets: indices, toOffset: target)
+		var modificated = lists.enumerated().map(\.offset)
+		modificated.move(fromOffsets: indices, toOffset: target)
 
-			for (offset, index) in modificated.enumerated() {
-				lists[index].offset = offset
-			}
+		for (offset, index) in modificated.enumerated() {
+			lists[index].offset = offset
 		}
 	}
 }

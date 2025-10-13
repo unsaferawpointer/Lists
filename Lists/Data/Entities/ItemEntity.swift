@@ -32,3 +32,4 @@ final class ItemEntity {
 		self.list = list
 	}
 }
+

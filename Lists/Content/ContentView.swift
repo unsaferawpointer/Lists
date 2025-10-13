@@ -44,28 +44,8 @@ struct ContentView {
 	// MARK: - Initialization
 
 	init(list: ListEntity?) {
-
 		self.list = list
-
-		let predicate: Predicate<ItemEntity>? = {
-			if let list {
-				let id = list.id
-				return #Predicate<ItemEntity> { item in
-					item.list?.id == id
-				}
-			} else {
-				return nil
-			}
-		}()
-
-		let sortByTimestamp = SortDescriptor(\ItemEntity.timestamp)
-		let sortByStrikethrough = SortDescriptor(\ItemEntity.strikeThrough)
-
-		self._items = Query(
-			filter: predicate,
-			sort: [sortByStrikethrough, sortByTimestamp],
-			animation: .default
-		)
+		self._items = Storage.itemsQuery(in: list)
 	}
 }
 

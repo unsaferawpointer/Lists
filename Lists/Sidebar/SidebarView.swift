@@ -19,19 +19,10 @@ struct SidebarView: View {
 
 	@Bindable var model = SidebarModel()
 
+	// MARK: - Initialization
+
 	init() {
-		let predicate: Predicate<ListEntity> = #Predicate{ list in
-			list.isHidden == false
-		}
-
-		let sortByTimestamp = SortDescriptor(\ListEntity.timestamp)
-		let sortByOffset = SortDescriptor(\ListEntity.offset)
-
-		self._lists = Query(
-			filter: predicate,
-			sort: [sortByOffset, sortByTimestamp],
-			animation: .default
-		)
+		self._lists = Storage.listsQuery()
 	}
 
 	var body: some View {
@@ -83,11 +74,6 @@ struct SidebarView: View {
 		}
 		.sheet(isPresented: $model.isPresented) {
 			ListEditor(list: nil, with: lists.indices.last ?? 0)
-		}
-		.onAppear {
-			Task { @MainActor in
-				self.model.selection = .all
-			}
 		}
 		#if os(macOS)
 		.navigationSplitViewColumnWidth(min: 180, ideal: 200)
