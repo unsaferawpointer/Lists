@@ -57,6 +57,10 @@ extension ContentView: View {
 			ForEach(items) { item in
 				ItemCell(item: item)
 					.listRowSeparator(.visible)
+			}.onMove { indices, target in
+				withAnimation {
+					moveItem(indices, to: target, items: items)
+				}
 			}
 		}
 		.listStyle(.inset)
@@ -137,12 +141,16 @@ private extension ContentView {
 
 	func deleteItems(_ ids: Set<PersistentIdentifier>) {
 		withAnimation {
-			let deleted = items.filter {
-				ids.contains($0.id)
-			}
-			for item in deleted {
-				modelContext.delete(item)
-			}
+			Storage.deleteItems(ids, in: modelContext)
+		}
+	}
+
+	func moveItem(_ indices: IndexSet, to target: Int, items: [ItemEntity]) {
+		var modificated = items.enumerated().map(\.offset)
+		modificated.move(fromOffsets: indices, toOffset: target)
+
+		for (offset, index) in modificated.enumerated() {
+			items[index].offset = offset
 		}
 	}
 }

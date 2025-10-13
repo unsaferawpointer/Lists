@@ -13,7 +13,7 @@ protocol StorageProtocol {
 	static func listsQuery() -> Query<ListEntity, [ListEntity]>
 	static func itemsQuery(in list: ListEntity?) -> Query<ItemEntity, [ItemEntity]>
 
-	static func deleteItems(_ ids: [PersistentIdentifier], in context: ModelContext)
+	static func deleteItems<S: Sequence>(_ ids: S, in context: ModelContext) where S.Element == PersistentIdentifier
 	static func deleteLists(_ ids: [PersistentIdentifier], in context: ModelContext)
 }
 
@@ -46,13 +46,13 @@ extension Storage: StorageProtocol {
 
 		let sorting =
 		[
-			SortDescriptor(\ItemEntity.strikeThrough),
+			SortDescriptor(\ItemEntity.offset),
 			SortDescriptor(\ItemEntity.timestamp)
 		]
 		return Query(filter: predicate, sort: sorting, animation: .default)
 	}
 
-	static func deleteItems(_ ids: [PersistentIdentifier], in context: ModelContext) {
+	static func deleteItems<S>(_ ids: S, in context: ModelContext) where S : Sequence, S.Element == PersistentIdentifier {
 		let items = ids.compactMap {
 			context.model(for: $0) as? ItemEntity
 		}.filter {

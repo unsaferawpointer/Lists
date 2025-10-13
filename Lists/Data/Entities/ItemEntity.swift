@@ -13,6 +13,8 @@ final class ItemEntity {
 
 	var timestamp: Date
 
+	var offset: Int
+
 	var title: String
 
 	var subtitle: String?
@@ -24,8 +26,9 @@ final class ItemEntity {
 
 	// MARK: - Initialization
 
-	init(timestamp: Date, title: String, subtitle: String? = nil, strikeThrough: Bool = false, list: ListEntity?) {
+	init(timestamp: Date, offset: Int = 0, title: String, subtitle: String? = nil, strikeThrough: Bool = false, list: ListEntity?) {
 		self.timestamp = timestamp
+		self.offset = offset
 		self.title = title
 		self.subtitle = subtitle
 		self.strikeThrough = strikeThrough
