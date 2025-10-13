@@ -17,7 +17,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		}
 
 		window = UIWindow(windowScene: windowScene)
-		window?.rootViewController = UIViewController(nibName: nil, bundle: nil)
+
+		let splitViewController = UISplitViewController(style: .doubleColumn)
+
+		let sidebar = SidebarViewController()
+		sidebar.delegate = self
+
+		splitViewController.setViewController(sidebar, for: .primary)
+		splitViewController.setViewController(ContentViewController(), for: .secondary)
+		splitViewController.preferredDisplayMode = .oneBesideSecondary
+		splitViewController.displayModeButtonVisibility = .automatic
+		splitViewController.primaryBackgroundStyle = .sidebar
+
+		window?.rootViewController = splitViewController
 		window?.makeKeyAndVisible()
 	}
 
@@ -51,7 +63,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		// Save changes in the application's managed object context when the application transitions to the background.
 		(UIApplication.shared.delegate as? AppDelegate)?.saveContext()
 	}
-
-
 }
 
+// MARK: - SidebarViewDelegate
+extension SceneDelegate: SidebarViewDelegate {
+
+	func didSelectItem(_ indexPath: IndexPath) {
+		guard let splitViewController = window?.rootViewController as? UISplitViewController else {
+			return
+		}
+		let detailViewController = ContentViewController()
+		splitViewController.showDetailViewController(detailViewController, sender: nil)
+	}
+}
