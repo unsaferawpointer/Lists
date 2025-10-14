@@ -13,19 +13,9 @@ class ContentViewController: UIViewController {
 
 	// MARK: - Data
 
-	var items: [ContentItem] =
-	[
-		.init(title: "Item 1"),
-		.init(title: "Item 1"),
-		.init(title: "Item 1"),
-		.init(title: "Item 1"),
-		.init(title: "Item 1"),
-		.init(title: "Item 1"),
-		.init(title: "Item 1"),
-		.init(title: "Item 1"),
-		.init(title: "Item 1"),
-		.init(title: "Item 1")
-	]
+	lazy var adapter: ContentTableAdapter = {
+		return ContentTableAdapter(tableView: tableView)
+	}()
 
 	// MARK: - UI
 
@@ -36,10 +26,6 @@ class ContentViewController: UIViewController {
 		view.allowsSelection = false
 		view.allowsMultipleSelection = false
 		view.allowsMultipleSelectionDuringEditing = true
-
-		view.dataSource = self
-		view.delegate = self
-
 		return view
 	}()
 
@@ -53,6 +39,7 @@ class ContentViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+		adapter.reload(newItems: [.init(title: "First"), .init(title: "Second")])
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
@@ -95,66 +82,5 @@ private extension ContentViewController {
 
 			}))
 		]
-	}
-}
-
-// MARK: - UITableViewDataSource
-extension ContentViewController: UITableViewDataSource {
-
-	func numberOfSections(in tableView: UITableView) -> Int {
-		return 1
-	}
-
-	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return items.count
-	}
-
-	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-		let item = items[indexPath.row]
-
-		var configuration = UIListContentConfiguration.cell()
-		configuration.text = item.title
-		configuration.textProperties.color = .label
-
-		let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-		cell.selectionStyle = .default
-		cell.contentConfiguration = configuration
-		return cell
-	}
-
-	func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-		return true
-	}
-}
-
-extension ContentViewController: UITableViewDelegate {
-
-	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		delegate?.didSelectItem(indexPath)
-	}
-}
-
-extension ContentViewController {
-
-	func tableView(
-		_ tableView: UITableView,
-		contextMenuConfigurationForRowAt indexPath: IndexPath,
-		point: CGPoint
-	) -> UIContextMenuConfiguration? {
-		guard !tableView.isEditing else {
-			return nil
-		}
-		let configuration = UIContextMenuConfiguration { _ in
-			return UIMenu(
-				children:
-					[
-						UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-
-						}
-					]
-			)
-		}
-		return configuration
 	}
 }
