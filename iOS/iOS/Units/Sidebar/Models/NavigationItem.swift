@@ -5,21 +5,50 @@
 //  Created by Anton Cherkasov on 13.10.2025.
 //
 
-import Foundation
+import UIKit
 
 struct NavigationItem {
 
+	let id: Identifier
+
 	let iconName: String
-
 	let title: String
-
 	let isEditable: Bool
 
 	// MARK: - Initialization
 
-	init(iconName: String, title: String, isEditable: Bool = false) {
+	init(
+		id: Identifier,
+		iconName: String,
+		title: String,
+		isEditable: Bool = false
+	) {
+		self.id = id
 		self.iconName = iconName
 		self.title = title
 		self.isEditable = isEditable
+	}
+}
+
+// MARK: - Nested Data Structs
+extension NavigationItem {
+
+	enum Identifier: Hashable {
+		case all
+		case list(id: UUID)
+	}
+}
+
+// MARK: - Identifiable
+extension NavigationItem: Identifiable { }
+
+// MARK: - Configuration
+extension NavigationItem {
+
+	var configuration: UIListContentConfiguration {
+		var result = UIListContentConfiguration.cell()
+		result.image = UIImage(systemName: iconName)
+		result.text = title
+		return result
 	}
 }
