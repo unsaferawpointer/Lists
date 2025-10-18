@@ -11,39 +11,25 @@ class SidebarViewController: UIViewController {
 
 	var delegate: SidebarViewDelegate?
 
-//	// MARK: - Data
-//
-//	var sections: [NavigationSection] = [
-//		.init(
-//			title: nil, items:
-//				[
-//					.init(id: .all,iconName: "square.grid.2x2", title: "All")
-//				]
-//		),
-//		.init(
-//			title: "Collection",
-//			items:
-//				[
-//					.init(id: .list(id: UUID()), iconName: "star", title: "Today", isEditable: true),
-//					.init(id: .list(id: UUID()), iconName: "doc.text", title: "Backlog", isEditable: true),
-//					.init(id: .list(id: UUID()), iconName: "doc.text", title: "To Buy", isEditable: true)
-//				]
-//		)
-//	]
-
-	// MARK: - Data
-
 	lazy var adapter: SidebarTableAdapter = {
-		return SidebarTableAdapter(tableView: tableView)
+		SidebarTableAdapter(collectionView: collectionView)
 	}()
 
 	// MARK: - UI
 
-	lazy var tableView: UITableView = {
-		let view = UITableView(frame: .zero, style: .insetGrouped)
-		view.separatorStyle = .none
-		view.showsVerticalScrollIndicator = false
-		view.allowsSelection = true
+	lazy var collectionView: UICollectionView = {
+
+		let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, layoutEnvironment in
+			var layoutConfig = UICollectionLayoutListConfiguration(appearance: .sidebar)
+			layoutConfig.showsSeparators = false
+
+			layoutConfig.headerMode = sectionIndex == 0 ? .none : .supplementary
+
+			 return NSCollectionLayoutSection.list(using: layoutConfig, layoutEnvironment: layoutEnvironment)
+		 }
+
+		let view = UICollectionView(frame: .zero, collectionViewLayout: layout)
+		view.dragInteractionEnabled = true
 		return view
 	}()
 
@@ -56,13 +42,27 @@ class SidebarViewController: UIViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-		adapter.reload(newItems:
-						[
-							.init(id: .list(id: UUID()), iconName: "star", title: "First"),
-							.init(id: .list(id: UUID()), iconName: "book", title: "Second")
-						]
+
+		collectionView.register(
+			UICollectionViewListCell.self,
+			forCellWithReuseIdentifier: "cell"
 		)
+		collectionView.register(
+			UICollectionViewListCell.self,
+			forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+			withReuseIdentifier: "header"
+		)
+
+		let collection: [NavigationItem] = [
+			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
+			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
+			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
+			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
+			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
+			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
+			.init(id: .list(id: UUID()), iconName: "star", title: "Default List")
+		]
+		adapter.reload(newItems: collection)
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
@@ -72,7 +72,7 @@ class SidebarViewController: UIViewController {
 
 	override func setEditing(_ editing: Bool, animated: Bool) {
 		super.setEditing(editing, animated: animated)
-		tableView.setEditing(editing, animated: animated)
+		collectionView.isEditing = editing
 	}
 }
 
@@ -80,15 +80,15 @@ class SidebarViewController: UIViewController {
 private extension SidebarViewController {
 
 	func configureConstraints() {
-		tableView.translatesAutoresizingMaskIntoConstraints = false
-		view.addSubview(tableView)
+		collectionView.translatesAutoresizingMaskIntoConstraints = false
+		view.addSubview(collectionView)
 
 		NSLayoutConstraint.activate(
 			[
-				tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-				tableView.topAnchor.constraint(equalTo: view.topAnchor),
-				tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-				tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+				collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+				collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+				collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+				collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
 			]
 		)
 	}
@@ -106,4 +106,10 @@ private extension SidebarViewController {
 			}))
 		]
 	}
+}
+
+import SwiftUI
+
+#Preview {
+	SidebarViewController(nibName: nil, bundle: nil)
 }
