@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol ContentViewDelegate {
+protocol ContentViewDelegate: AnyObject {
 	func viewDidLoad()
 	func editorDidCommit(text: String)
 }
@@ -25,17 +25,21 @@ class ContentViewController: UIViewController {
 	// MARK: - Data
 
 	lazy var adapter: ContentTableAdapter = {
-		return ContentTableAdapter(tableView: tableView)
+		return ContentTableAdapter(collectionView: collectionView)
 	}()
 
 	// MARK: - UI
 
-	lazy var tableView: UITableView = {
-		let view = UITableView(frame: .zero, style: .plain)
-		view.separatorStyle = .singleLine
-		view.showsVerticalScrollIndicator = false
-		view.allowsSelection = false
-		view.allowsMultipleSelection = false
+	lazy var collectionView: UICollectionView = {
+
+		let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, layoutEnvironment in
+			var layoutConfig = UICollectionLayoutListConfiguration(appearance: .plain)
+			layoutConfig.showsSeparators = true
+			 return NSCollectionLayoutSection.list(using: layoutConfig, layoutEnvironment: layoutEnvironment)
+		 }
+
+		let view = UICollectionView(frame: .zero, collectionViewLayout: layout)
+		view.dragInteractionEnabled = true
 		view.allowsMultipleSelectionDuringEditing = true
 		return view
 	}()
@@ -47,7 +51,7 @@ class ContentViewController: UIViewController {
 		}
 
 		let interaction = UIScrollEdgeElementContainerInteraction()
-		interaction.scrollView = tableView
+		interaction.scrollView = collectionView
 		interaction.edge = .bottom
 
 		view.addInteraction(interaction)
@@ -63,7 +67,11 @@ class ContentViewController: UIViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+		collectionView.register(
+			UICollectionViewListCell.self,
+			forCellWithReuseIdentifier: "cell"
+		)
+		adapter.delegate = delegate
 		delegate?.viewDidLoad()
 	}
 
@@ -74,12 +82,12 @@ class ContentViewController: UIViewController {
 
 	override func viewDidLayoutSubviews() {
 		super.viewDidLayoutSubviews()
-		tableView.contentInset.bottom = editorView.frame.height
+		collectionView.contentInset.bottom = editorView.frame.height
 	}
 
 	override func setEditing(_ editing: Bool, animated: Bool) {
 		super.setEditing(editing, animated: animated)
-		tableView.setEditing(editing, animated: animated)
+		collectionView.isEditing = isEditing
 	}
 }
 
@@ -95,7 +103,7 @@ extension ContentViewController: ContentView {
 	}
 
 	func scroll(to id: UUID) {
-		adapter.scroll(to: id)
+//		adapter.scroll(to: id)
 	}
 }
 
@@ -103,15 +111,15 @@ extension ContentViewController: ContentView {
 private extension ContentViewController {
 
 	func configureConstraints() {
-		tableView.translatesAutoresizingMaskIntoConstraints = false
-		view.addSubview(tableView)
+		collectionView.translatesAutoresizingMaskIntoConstraints = false
+		view.addSubview(collectionView)
 
 		NSLayoutConstraint.activate(
 			[
-				tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-				tableView.topAnchor.constraint(equalTo: view.topAnchor),
-				tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-				tableView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor)
+				collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+				collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+				collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+				collectionView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor)
 			]
 		)
 	}

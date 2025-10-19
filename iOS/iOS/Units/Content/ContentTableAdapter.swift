@@ -9,18 +9,22 @@ import UIKit
 
 final class ContentTableAdapter: NSObject {
 
-	unowned var tableView: UITableView
+	unowned var collectionView: UICollectionView
+
+	weak var delegate: ContentViewDelegate?
 
 	// MARK: - Data
 
-	private var items: [ContentItem] = []
+	var items: [ContentItem] = []
 
 	// MARK: - Initialization
 
-	init(tableView: UITableView) {
-		self.tableView = tableView
+	init(collectionView: UICollectionView) {
+		self.collectionView = collectionView
 		super.init()
-		tableView.dataSource = self
+
+		collectionView.dataSource = self
+		collectionView.delegate = self
 	}
 }
 
@@ -31,17 +35,16 @@ extension ContentTableAdapter {
 
 		let (removing, inserting) = calculate(newItems: newItems)
 
-		tableView.beginUpdates()
-		tableView.deleteRows(at: removing, with: .left)
-		tableView.insertRows(at: inserting, with: .right)
-		tableView.endUpdates()
+		collectionView.performBatchUpdates {
+			self.items = newItems
+
+			collectionView.deleteItems(at: removing)
+			collectionView.insertItems(at: inserting)
+		}
 	}
 
-	func scroll(to id: UUID) {
-		guard let row = items.firstIndex(where: { $0.id == id }) else {
-			return
-		}
-		tableView.scrollToRow(at: .init(row: row, section: 0), at: .bottom, animated: true)
+	var isEmpty: Bool {
+		return items.isEmpty
 	}
 }
 
@@ -49,6 +52,7 @@ extension ContentTableAdapter {
 private extension ContentTableAdapter {
 
 	func calculate(newItems: [ContentItem]) -> ([IndexPath], [IndexPath]) {
+
 		let diff = newItems.difference(from: items) { old, new in
 			return old.id == new.id
 		}
@@ -71,34 +75,83 @@ private extension ContentTableAdapter {
 			IndexPath(row: $0, section: 0)
 		}
 
-		self.items = newItems
-
 		return (removing, inserting)
 	}
 }
 
-// MARK: - UITableViewDataSource
-extension ContentTableAdapter: UITableViewDataSource {
+// MARK: - UICollectionViewDataSource
+extension ContentTableAdapter: UICollectionViewDataSource {
 
-	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return items.count
+	func numberOfSections(in collectionView: UICollectionView) -> Int {
+		return 1
 	}
-	
-	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-		configure(cell: cell, at: indexPath.row)
+
+	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+		items.count
+	}
+
+	func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+
+		let model = items[indexPath.row]
+
+		var configuration = UIListContentConfiguration.cell()
+		configuration.text = model.title
+
+		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! UICollectionViewListCell
+		cell.contentConfiguration = configuration
+
+		cell.accessories =
+		[
+			UICellAccessory.multiselect(displayed: .whenEditing, options: .init(tintColor: .accent)),
+			UICellAccessory.reorder(displayed: .whenEditing, options: .init(tintColor: .systemGray))
+		]
+
 		return cell
 	}
 }
 
-// MARK: - Helpers
-private extension ContentTableAdapter {
+extension ContentTableAdapter {
 
-	func numberOfRows() -> Int {
-		return items.count
+	func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
+		return true
 	}
 
-	func configure(cell: UITableViewCell, at row: Int) {
-		cell.contentConfiguration = items[row].configuration
+	func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+
+	}
+}
+
+// MARK: - Menu Support
+extension ContentTableAdapter: UICollectionViewDelegate {
+
+	func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
+
+		return UIContextMenuConfiguration(
+			actionProvider: { [weak self] _ in
+				UIMenu(
+					children:
+						[
+							UIMenu(
+								options: .displayInline,
+								children:
+									[
+										UIAction(title: "Edit...", image: UIImage(systemName: "trash")) { [weak self] _ in
+
+										}
+									]
+							),
+							UIMenu(
+								options: .displayInline,
+								children:
+									[
+										UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+
+										}
+									]
+							)
+						]
+				)
+			}
+		)
 	}
 }
