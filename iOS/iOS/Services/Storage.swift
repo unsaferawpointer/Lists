@@ -9,6 +9,7 @@ import Foundation
 
 protocol StorageProtocol {
 	func fetchItems(in list: UUID?) async throws -> [Item]
+	func fetchItem(with id: UUID) async throws -> Item?
 	func fecthLists() async throws -> [List]
 }
 
@@ -32,7 +33,11 @@ extension Storage: StorageProtocol {
 	func fetchItems(in list: UUID?) async throws -> [Item] {
 		return []
 	}
-	
+
+	func fetchItem(with id: UUID) async throws -> Item? {
+		return nil
+	}
+
 	func fecthLists() async throws -> [List] {
 		return lists
 	}

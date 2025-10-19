@@ -23,9 +23,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		let splitViewController = UISplitViewController(style: .doubleColumn)
 
 		let sidebar = SidebarAssembly.build(storage: storage)
+		let content = ContentAssembly.build(id: nil, storage: storage)
 
 		splitViewController.setViewController(sidebar, for: .primary)
-		splitViewController.setViewController(ContentViewController(), for: .secondary)
+		splitViewController.setViewController(content, for: .secondary)
 		splitViewController.preferredDisplayMode = .oneBesideSecondary
 		splitViewController.displayModeButtonVisibility = .automatic
 		splitViewController.primaryBackgroundStyle = .sidebar

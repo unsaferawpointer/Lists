@@ -8,7 +8,7 @@
 import UIKit
 
 struct ContentItem {
-	let uuid = UUID()
+	let uuid: UUID
 	let title: String
 }
 

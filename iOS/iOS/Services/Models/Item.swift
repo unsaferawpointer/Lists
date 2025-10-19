@@ -10,13 +10,13 @@ import Foundation
 struct Item {
 
 	var uuid: UUID
-	var item: String
+	var title: String
 
 	// MARK: - Initialization
 
-	init(uuid: UUID, item: String) {
+	init(uuid: UUID, title: String) {
 		self.uuid = uuid
-		self.item = item
+		self.title = title
 	}
 }
 

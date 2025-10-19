@@ -7,9 +7,17 @@
 
 import UIKit
 
+protocol ContentViewDelegate {
+	func viewDidLoad()
+}
+
+protocol ContentView: AnyObject {
+	func display(newItems: [ContentItem])
+}
+
 class ContentViewController: UIViewController {
 
-	var delegate: SidebarViewDelegate?
+	var delegate: ContentViewDelegate?
 
 	// MARK: - Data
 
@@ -29,6 +37,20 @@ class ContentViewController: UIViewController {
 		return view
 	}()
 
+	lazy var editorView: UIView = {
+		let view = ItemEditorView(frame: .zero)
+		view.action = { newText in
+			
+		}
+
+		let interaction = UIScrollEdgeElementContainerInteraction()
+		interaction.scrollView = tableView
+		interaction.edge = .bottom
+
+		view.addInteraction(interaction)
+		return view
+	}()
+
 	override func loadView() {
 		self.view = UIView()
 		configureConstraints()
@@ -39,7 +61,7 @@ class ContentViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-		adapter.reload(newItems: [.init(title: "First"), .init(title: "Second")])
+		delegate?.viewDidLoad()
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
@@ -50,6 +72,14 @@ class ContentViewController: UIViewController {
 	override func setEditing(_ editing: Bool, animated: Bool) {
 		super.setEditing(editing, animated: animated)
 		tableView.setEditing(editing, animated: animated)
+	}
+}
+
+// MARK: - ContentView
+extension ContentViewController: ContentView {
+
+	func display(newItems: [ContentItem]) {
+		adapter.reload(newItems: newItems)
 	}
 }
 
@@ -75,12 +105,20 @@ private extension ContentViewController {
 	}
 
 	func configureBottomBar() {
-		toolbarItems =
-		[
-			.flexibleSpace(),
-			UIBarButtonItem(primaryAction: UIAction(title: "Add List", image: UIImage(systemName: "plus"), handler: { _ in
+		view.addSubview(editorView)
+		editorView.translatesAutoresizingMaskIntoConstraints = false
 
-			}))
-		]
+		NSLayoutConstraint.activate(
+			[
+				editorView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
+				editorView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
+				editorView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: 0)
+			]
+		)
+
 	}
+}
+
+#Preview {
+	ContentAssembly.build(id: nil, storage: PreviewStorage())
 }

@@ -13,7 +13,11 @@ final class PreviewStorage { }
 extension PreviewStorage: StorageProtocol {
 
 	func fetchItems(in list: UUID?) async throws -> [Item] {
-		return []
+		Array(repeating: Item(uuid: .init(), title: "Default Item"), count: 240)
+	}
+
+	func fetchItem(with id: UUID) async throws -> Item? {
+		return .init(uuid: .init(), title: "First Item")
 	}
 
 	func fecthLists() async throws -> [List] {
