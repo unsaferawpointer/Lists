@@ -11,6 +11,14 @@ class ItemEditorView: UIView {
 
 	var action: ((String) -> Void)?
 
+	// MARK: - Data
+
+	var model: ItemEditorModel? {
+		didSet {
+			configureInterface()
+		}
+	}
+
 	// MARK: - UI
 
 	lazy var textfield: UITextField = {
@@ -30,6 +38,13 @@ class ItemEditorView: UIView {
 		view.configuration = .prominentGlass()
 		view.setContentHuggingPriority(.defaultHigh, for: .horizontal)
 		view.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+		let action = UIAction { [weak self] _ in
+			guard let self else {
+				return
+			}
+			self.action?(self.textfield.text ?? "")
+		}
+		view.addAction(action, for: .touchUpInside)
 		return view
 	}()
 
@@ -49,6 +64,15 @@ class ItemEditorView: UIView {
 	
 	required init?(coder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
+	}
+}
+
+// MARK: - Helpers
+private extension ItemEditorView {
+
+	func configureInterface() {
+		textfield.text = model?.text
+		button.isEnabled = !(model?.disabled ?? false)
 	}
 }
 

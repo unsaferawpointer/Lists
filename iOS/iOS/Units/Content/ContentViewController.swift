@@ -9,10 +9,13 @@ import UIKit
 
 protocol ContentViewDelegate {
 	func viewDidLoad()
+	func editorDidCommit(text: String)
 }
 
 protocol ContentView: AnyObject {
 	func display(newItems: [ContentItem])
+	func displayEditor(_ model: ItemEditorModel)
+	func scroll(to id: UUID)
 }
 
 class ContentViewController: UIViewController {
@@ -37,10 +40,10 @@ class ContentViewController: UIViewController {
 		return view
 	}()
 
-	lazy var editorView: UIView = {
+	lazy var editorView: ItemEditorView = {
 		let view = ItemEditorView(frame: .zero)
-		view.action = { newText in
-			
+		view.action = { [weak self] newText in
+			self?.delegate?.editorDidCommit(text: newText)
 		}
 
 		let interaction = UIScrollEdgeElementContainerInteraction()
@@ -69,6 +72,11 @@ class ContentViewController: UIViewController {
 		navigationController?.setToolbarHidden(false, animated: true)
 	}
 
+	override func viewDidLayoutSubviews() {
+		super.viewDidLayoutSubviews()
+		tableView.contentInset.bottom = editorView.frame.height
+	}
+
 	override func setEditing(_ editing: Bool, animated: Bool) {
 		super.setEditing(editing, animated: animated)
 		tableView.setEditing(editing, animated: animated)
@@ -80,6 +88,14 @@ extension ContentViewController: ContentView {
 
 	func display(newItems: [ContentItem]) {
 		adapter.reload(newItems: newItems)
+	}
+
+	func displayEditor(_ model: ItemEditorModel) {
+		editorView.model = model
+	}
+
+	func scroll(to id: UUID) {
+		adapter.scroll(to: id)
 	}
 }
 
@@ -95,7 +111,7 @@ private extension ContentViewController {
 				tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
 				tableView.topAnchor.constraint(equalTo: view.topAnchor),
 				tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-				tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+				tableView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor)
 			]
 		)
 	}

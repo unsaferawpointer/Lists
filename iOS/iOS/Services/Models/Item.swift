@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Item {
+struct Item: Sendable {
 
 	var uuid: UUID
 	var title: String

@@ -36,6 +36,13 @@ extension ContentTableAdapter {
 		tableView.insertRows(at: inserting, with: .right)
 		tableView.endUpdates()
 	}
+
+	func scroll(to id: UUID) {
+		guard let row = items.firstIndex(where: { $0.id == id }) else {
+			return
+		}
+		tableView.scrollToRow(at: .init(row: row, section: 0), at: .bottom, animated: true)
+	}
 }
 
 // MARK: - Helpers

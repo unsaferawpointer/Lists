@@ -15,10 +15,18 @@ final class ContentPresenter {
 
 	weak var view: ContentView?
 
+	// MARK: - Local State
+
+	private var editedItem: UUID?
+
 	// MARK: - Initialization
 
 	init(interactor: ContentInteractorProtocol) {
 		self.interactor = interactor
+	}
+
+	deinit {
+		
 	}
 }
 
@@ -32,6 +40,26 @@ extension ContentPresenter: ContentViewDelegate {
 				ContentItem(uuid: $0.id, title: $0.title)
 			}
 			view?.display(newItems: models ?? [])
+		}
+	}
+
+	func editorDidCommit(text: String) {
+		guard let id = editedItem else {
+			let item = Item(uuid: UUID(), title: text)
+			Task { @MainActor in
+				try? await interactor.addItem(item)
+				let items = try? await interactor.fetchItems()
+				let models = items?.map {
+					ContentItem(uuid: $0.id, title: $0.title)
+				}
+				view?.display(newItems: models ?? [])
+				view?.scroll(to: item.id)
+				view?.displayEditor(.init(text: "", disabled: false))
+			}
+			return
+		}
+		Task { @MainActor in
+			try? await interactor.setText(text, for: id)
 		}
 	}
 }

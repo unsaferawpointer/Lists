@@ -12,6 +12,10 @@ final class PreviewStorage { }
 // MARK: - StorageProtocol
 extension PreviewStorage: StorageProtocol {
 
+	func addItem(_ item: Item) async throws { }
+
+	func setText(_ text: String, for item: UUID) async throws { }
+
 	func fetchItems(in list: UUID?) async throws -> [Item] {
 		Array(repeating: Item(uuid: .init(), title: "Default Item"), count: 240)
 	}
