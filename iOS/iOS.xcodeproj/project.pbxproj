@@ -30,7 +30,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4CA6EFBC2E9D75CC006AAF74 /* Exceptions for "iOS" folder in "iOS" target */ = {
+		4C62B94D2EA436E70046F5B2 /* Exceptions for "iOS" folder in "iOS" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -40,10 +40,10 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4CA6EF922E9D75CA006AAF74 /* iOS */ = {
+		4C62B93C2EA436E70046F5B2 /* iOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				4CA6EFBC2E9D75CC006AAF74 /* Exceptions for "iOS" folder in "iOS" target */,
+				4C62B94D2EA436E70046F5B2 /* Exceptions for "iOS" folder in "iOS" target */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -88,7 +88,7 @@
 		4CA6EF872E9D75CA006AAF74 = {
 			isa = PBXGroup;
 			children = (
-				4CA6EF922E9D75CA006AAF74 /* iOS */,
+				4C62B93C2EA436E70046F5B2 /* iOS */,
 				4CA6EFAD2E9D75CC006AAF74 /* iOSTests */,
 				4CA6EFB72E9D75CC006AAF74 /* iOSUITests */,
 				4CA6EF912E9D75CA006AAF74 /* Products */,
@@ -121,7 +121,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				4CA6EF922E9D75CA006AAF74 /* iOS */,
+				4C62B93C2EA436E70046F5B2 /* iOS */,
 			);
 			name = iOS;
 			packageProductDependencies = (

@@ -6,10 +6,13 @@
 //
 
 import UIKit
+import SwiftUI
 
 final class SidebarTableAdapter: NSObject {
 
 	unowned var collectionView: UICollectionView
+
+	weak var delegate: SidebarViewDelegate?
 
 	// MARK: - Data
 
@@ -41,6 +44,10 @@ extension SidebarTableAdapter {
 			collectionView.deleteItems(at: removing)
 			collectionView.insertItems(at: inserting)
 		}
+	}
+
+	var isEmpty: Bool {
+		return collection.isEmpty
 	}
 }
 
@@ -175,11 +182,19 @@ extension SidebarTableAdapter {
 extension SidebarTableAdapter: UICollectionViewDelegate {
 
 	func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
-		guard !collectionView.isEditing else {
+		guard
+			!collectionView.isEditing, indexPaths.count == 1,
+			let indexPath = indexPaths.first, indexPath.section == 1 else {
 			return nil
 		}
+
+		let item = collection[indexPath.row]
+		guard case let .list(id) = item.id else {
+			return nil
+		}
+
 		return UIContextMenuConfiguration(
-			actionProvider: { _ in
+			actionProvider: { [weak self] _ in
 				UIMenu(
 					children:
 						[
@@ -187,8 +202,8 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 								options: .displayInline,
 								children:
 									[
-										UIAction(title: "Edit...", image: UIImage(systemName: "trash")) { _ in
-
+										UIAction(title: "Edit...", image: UIImage(systemName: "trash")) { [weak self] _ in
+											self?.delegate?.contextMenu(didSelect: "edit", for: id)
 										}
 									]
 							),
@@ -196,8 +211,8 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 								options: .displayInline,
 								children:
 									[
-										UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-
+										UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+											self?.delegate?.contextMenu(didSelect: "delete", for: id)
 										}
 									]
 							)

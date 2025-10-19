@@ -7,6 +7,11 @@
 
 import UIKit
 
+@MainActor
+protocol SidebarView: AnyObject {
+	func display(newItems: [NavigationItem])
+}
+
 class SidebarViewController: UIViewController {
 
 	var delegate: SidebarViewDelegate?
@@ -53,16 +58,8 @@ class SidebarViewController: UIViewController {
 			withReuseIdentifier: "header"
 		)
 
-		let collection: [NavigationItem] = [
-			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
-			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
-			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
-			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
-			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
-			.init(id: .list(id: UUID()), iconName: "star", title: "Default List"),
-			.init(id: .list(id: UUID()), iconName: "star", title: "Default List")
-		]
-		adapter.reload(newItems: collection)
+		adapter.delegate = delegate
+		delegate?.viewDidLoad()
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
@@ -73,6 +70,14 @@ class SidebarViewController: UIViewController {
 	override func setEditing(_ editing: Bool, animated: Bool) {
 		super.setEditing(editing, animated: animated)
 		collectionView.isEditing = editing
+	}
+}
+
+// MARK: - SidebarView
+extension SidebarViewController: SidebarView {
+
+	func display(newItems: [NavigationItem]) {
+		adapter.reload(newItems: newItems)
 	}
 }
 
@@ -111,5 +116,5 @@ private extension SidebarViewController {
 import SwiftUI
 
 #Preview {
-	SidebarViewController(nibName: nil, bundle: nil)
+	SidebarAssembly.build(storage: PreviewStorage())
 }

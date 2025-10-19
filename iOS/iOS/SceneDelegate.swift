@@ -11,6 +11,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 	var window: UIWindow?
 
+	private var storage: StorageProtocol = Storage.shared
+
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else {
 			return
@@ -20,8 +22,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 		let splitViewController = UISplitViewController(style: .doubleColumn)
 
-		let sidebar = SidebarViewController()
-		sidebar.delegate = self
+		let sidebar = SidebarAssembly.build(storage: storage)
 
 		splitViewController.setViewController(sidebar, for: .primary)
 		splitViewController.setViewController(ContentViewController(), for: .secondary)
@@ -62,17 +63,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 		// Save changes in the application's managed object context when the application transitions to the background.
 		(UIApplication.shared.delegate as? AppDelegate)?.saveContext()
-	}
-}
-
-// MARK: - SidebarViewDelegate
-extension SceneDelegate: SidebarViewDelegate {
-
-	func didSelectItem(_ indexPath: IndexPath) {
-		guard let splitViewController = window?.rootViewController as? UISplitViewController else {
-			return
-		}
-		let detailViewController = ContentViewController()
-		splitViewController.showDetailViewController(detailViewController, sender: nil)
 	}
 }

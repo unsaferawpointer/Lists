@@ -13,7 +13,6 @@ struct NavigationItem {
 
 	let iconName: String
 	let title: String
-	let isEditable: Bool
 
 	// MARK: - Initialization
 
@@ -21,12 +20,10 @@ struct NavigationItem {
 		id: Identifier,
 		iconName: String,
 		title: String,
-		isEditable: Bool = false
 	) {
 		self.id = id
 		self.iconName = iconName
 		self.title = title
-		self.isEditable = isEditable
 	}
 }
 

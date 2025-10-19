@@ -8,5 +8,8 @@
 import Foundation
 
 protocol SidebarViewDelegate: AnyObject {
-	func didSelectItem(_ indexPath: IndexPath)
+
+	func viewDidLoad()
+
+	func contextMenu(didSelect menuItem: String, for item: UUID)
 }
