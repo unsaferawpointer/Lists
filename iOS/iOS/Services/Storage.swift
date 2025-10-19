@@ -12,6 +12,7 @@ protocol StorageProtocol {
 	func fetchItem(with id: UUID) async throws -> Item?
 	func addItem(_ item: Item) async throws
 	func setText(_ text: String, for item: UUID) async throws
+	func deleteItems(with ids: [UUID]) async throws
 
 	func fecthLists() async throws -> [List]
 }
@@ -52,6 +53,12 @@ extension Storage: StorageProtocol {
 			return
 		}
 		items[index].title = text
+	}
+
+	func deleteItems(with ids: [UUID]) async throws {
+		items.removeAll {
+			ids.contains($0.id)
+		}
 	}
 
 	func fecthLists() async throws -> [List] {

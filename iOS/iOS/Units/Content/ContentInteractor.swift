@@ -9,8 +9,10 @@ import Foundation
 
 protocol ContentInteractorProtocol {
 	func fetchItems() async throws -> [Item]
+	func fetchItem(with id: UUID) async throws -> Item?
 	func addItem(_ item: Item) async throws
 	func setText(_ text: String, for item: UUID) async throws
+	func deleteItems(with ids: [UUID]) async throws
 }
 
 final class ContentInteractor {
@@ -40,11 +42,19 @@ extension ContentInteractor: ContentInteractorProtocol {
 		return try await storage.fetchItems(in: id)
 	}
 
+	func fetchItem(with id: UUID) async throws -> Item? {
+		return try await storage.fetchItem(with: id)
+	}
+
 	func addItem(_ item: Item) async throws {
 		try await storage.addItem(item)
 	}
 
 	func setText(_ text: String, for item: UUID) async throws {
 		try await storage.setText(text, for: item)
+	}
+
+	func deleteItems(with ids: [UUID]) async throws {
+		try await storage.deleteItems(with: ids)
 	}
 }

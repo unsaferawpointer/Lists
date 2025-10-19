@@ -10,6 +10,7 @@ import UIKit
 protocol ContentViewDelegate: AnyObject {
 	func viewDidLoad()
 	func editorDidCommit(text: String)
+	func contextMenuSelected(menuItem: String, with selection: [UUID])
 }
 
 protocol ContentView: AnyObject {

@@ -9,5 +9,6 @@ import Foundation
 
 struct ItemEditorModel {
 	let text: String
-	let disabled: Bool
+	let iconName: String
+	let inFocus: Bool
 }

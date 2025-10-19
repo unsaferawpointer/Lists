@@ -82,10 +82,6 @@ private extension ContentTableAdapter {
 // MARK: - UICollectionViewDataSource
 extension ContentTableAdapter: UICollectionViewDataSource {
 
-	func numberOfSections(in collectionView: UICollectionView) -> Int {
-		return 1
-	}
-
 	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
 		items.count
 	}
@@ -126,6 +122,42 @@ extension ContentTableAdapter: UICollectionViewDelegate {
 
 	func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
 
+		let ids = indexPaths.map(\.row).map {
+			items[$0].id
+		}
+
+		if ids.count == 1 {
+			return UIContextMenuConfiguration(
+				actionProvider: { [weak self] _ in
+					UIMenu(
+						children:
+							[
+								UIMenu(
+									options: .displayInline,
+									children:
+										[
+											UIAction(title: "Edit...", image: UIImage(systemName: "trash")) { [weak self] _ in
+												self?.delegate?.contextMenuSelected(menuItem: "edit", with: ids)
+											}
+										]
+								),
+								UIMenu(
+									options: .displayInline,
+									children:
+										[
+											UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+												self?.delegate?.contextMenuSelected(menuItem: "delete", with: ids)
+											}
+										]
+								)
+							]
+					)
+				}
+			)
+		}
+
+		print("___TEST ids.count = \(ids.count)")
+
 		return UIContextMenuConfiguration(
 			actionProvider: { [weak self] _ in
 				UIMenu(
@@ -135,17 +167,8 @@ extension ContentTableAdapter: UICollectionViewDelegate {
 								options: .displayInline,
 								children:
 									[
-										UIAction(title: "Edit...", image: UIImage(systemName: "trash")) { [weak self] _ in
-
-										}
-									]
-							),
-							UIMenu(
-								options: .displayInline,
-								children:
-									[
 										UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
-
+											self?.delegate?.contextMenuSelected(menuItem: "delete", with: ids)
 										}
 									]
 							)

@@ -72,7 +72,11 @@ private extension ItemEditorView {
 
 	func configureInterface() {
 		textfield.text = model?.text
-		button.isEnabled = !(model?.disabled ?? false)
+		button.setImage(UIImage(systemName: model?.iconName ?? ""), for: .normal)
+
+		if model?.inFocus == true {
+			textfield.becomeFirstResponder()
+		}
 	}
 }
 

@@ -54,12 +54,46 @@ extension ContentPresenter: ContentViewDelegate {
 				}
 				view?.display(newItems: models ?? [])
 				view?.scroll(to: item.id)
-				view?.displayEditor(.init(text: "", disabled: false))
+				view?.displayEditor(.init(text: "", iconName: "arrow.up", inFocus: false))
 			}
 			return
 		}
 		Task { @MainActor in
 			try? await interactor.setText(text, for: id)
+			editedItem = nil
+			view?.displayEditor(.init(text: "", iconName: "arrow.up", inFocus: false))
+			let items = try? await interactor.fetchItems()
+			let models = items?.map {
+				ContentItem(uuid: $0.id, title: $0.title)
+			}
+			view?.display(newItems: models ?? [])
+		}
+	}
+
+	func contextMenuSelected(menuItem: String, with selection: [UUID]) {
+		switch menuItem {
+		case "edit":
+			Task { @MainActor in
+				guard let first = selection.first else {
+					return
+				}
+				editedItem = selection.first
+				guard let item = try? await interactor.fetchItem(with: first) else {
+					return
+				}
+				view?.displayEditor(.init(text: item.title, iconName: "checkmark", inFocus: true))
+			}
+		case "delete":
+			Task { @MainActor in
+				try? await interactor.deleteItems(with: selection)
+				let items = try? await interactor.fetchItems()
+				let models = items?.map {
+					ContentItem(uuid: $0.id, title: $0.title)
+				}
+				view?.display(newItems: models ?? [])
+			}
+		default:
+			break
 		}
 	}
 }
