@@ -62,6 +62,8 @@ private extension ContentTableAdapter {
 			return old.id == new.id
 		}
 
+		updateCells(newItems: newItems, in: 0)
+
 		let removing = diff.compactMap { change -> Int? in
 			guard case .remove(let offset, _, _) = change else {
 				return nil
@@ -81,6 +83,38 @@ private extension ContentTableAdapter {
 		}
 
 		return (removing, inserting)
+	}
+
+	func updateCells(newItems: [ContentItem], in section: Int) {
+
+		var newCache: [UUID: Int] = [:]
+		var oldCache: [UUID: Int] = [:]
+
+		for (index, item) in items.enumerated() {
+			oldCache[item.id] = index
+		}
+
+		for (index, item) in newItems.enumerated() {
+			newCache[item.id] = index
+		}
+
+		let intersection = Set(newItems.map(\.id)).intersection(items.map(\.id))
+		for id in intersection {
+			guard let oldIndex = oldCache[id], let newIndex = newCache[id] else {
+				continue
+			}
+			let newModel = newItems[newIndex]
+			let indexPath = IndexPath(row: oldIndex, section: section)
+			let cell = collectionView.cellForItem(at: indexPath)
+
+			let configuration = UIHostingConfiguration {
+				Text(newModel.title)
+					.foregroundStyle(newModel.isStrikethrough ? .secondary : .primary)
+					.font(.body).strikethrough(newModel.isStrikethrough)
+			}
+
+			cell?.contentConfiguration = configuration
+		}
 	}
 }
 
