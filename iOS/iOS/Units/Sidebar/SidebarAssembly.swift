@@ -6,12 +6,19 @@
 //
 
 import UIKit
+import CoreData
 
 final class SidebarAssembly {
 
-	static func build(storage: StorageProtocol) -> UIViewController {
+	static func build(storage: StorageProtocol, persistentContainer: NSPersistentContainer) -> UIViewController {
 
-		let interactor = SidebarInteractor(storage: storage)
+		let coreDataProvider = CoreDataProvider<ListEntity>(
+			persistentContainer: persistentContainer,
+			sortDescriptors: [NSSortDescriptor(keyPath: \ListEntity.creationDate, ascending: true)]
+		)
+		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ListsConverter())
+
+		let interactor = SidebarInteractor(storage: storage, provider: provider)
 		let presenter = SidebarPresenter(interactor: interactor)
 		interactor.presenter = presenter
 

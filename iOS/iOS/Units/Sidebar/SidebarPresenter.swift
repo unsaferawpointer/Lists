@@ -7,7 +7,9 @@
 
 import Foundation
 
-protocol SidebarPresenterProtocol: AnyObject { }
+protocol SidebarPresenterProtocol: AnyObject {
+	func present(lists: [List])
+}
 
 final class SidebarPresenter {
 
@@ -44,10 +46,22 @@ extension SidebarPresenter: SidebarViewDelegate {
 		}
 	}
 
+	func newList() {
+		interactor?.addList(with: "New List Default")
+	}
+
 }
 
 // MARK: - SidebarPresenterProtocol
-extension SidebarPresenter: SidebarPresenterProtocol { }
+extension SidebarPresenter: SidebarPresenterProtocol {
+
+	func present(lists: [List]) {
+		Task { @MainActor in
+			let items = convert(lists: lists)
+			view?.display(newItems: items)
+		}
+	}
+}
 
 // MARK: - Helpers
 private extension SidebarPresenter {

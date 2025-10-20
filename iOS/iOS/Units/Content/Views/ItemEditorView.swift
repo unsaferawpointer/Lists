@@ -29,6 +29,8 @@ class ItemEditorView: UIView {
 		view.returnKeyType = .done
 		view.setContentHuggingPriority(.defaultLow, for: .horizontal)
 		view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+		view.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
 		return view
 	}()
 
@@ -73,10 +75,24 @@ private extension ItemEditorView {
 	func configureInterface() {
 		textfield.text = model?.text
 		button.setImage(UIImage(systemName: model?.iconName ?? ""), for: .normal)
+		button.isEnabled = !(model?.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
 		if model?.inFocus == true {
 			textfield.becomeFirstResponder()
 		}
+	}
+}
+
+// MARK: - Actions
+extension ItemEditorView {
+
+	@objc
+	func textFieldDidChange(_ textField: UITextField) {
+		guard let text = textField.text else {
+			button.isEnabled = false
+			return
+		}
+		button.isEnabled = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 	}
 }
 

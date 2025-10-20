@@ -9,7 +9,7 @@ import Foundation
 
 protocol SidebarInteractorProtocol: AnyObject {
 	func fetchLists() async throws -> [List]
-
+	func addList(with name: String)
 	func deleteList(with id: UUID)
 }
 
@@ -23,10 +23,18 @@ final class SidebarInteractor {
 
 	private let storage: StorageProtocol
 
+	private let provider: DataProvider<List, ListEntity>
+
 	// MARK: - Initialization
 
-	init(storage: StorageProtocol) {
+	init(storage: StorageProtocol, provider: DataProvider<List, ListEntity>) {
 		self.storage = storage
+		self.provider = provider
+		Task { @MainActor in
+			for await change in provider.contentChanges {
+				presenter?.present(lists: change)
+			}
+		}
 	}
 }
 
@@ -37,7 +45,13 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 
 	}
 
+	func addList(with name: String) {
+		let newList = List(uuid: UUID(), name: name)
+//		provider.add(item: newList)
+	}
+
 	func fetchLists() async throws -> [List] {
-		try await storage.fecthLists()
+		provider.fetch()
+		return []
 	}
 }

@@ -106,8 +106,8 @@ private extension SidebarViewController {
 		toolbarItems =
 		[
 			.flexibleSpace(),
-			UIBarButtonItem(primaryAction: UIAction(title: "Add List", image: UIImage(systemName: "plus"), handler: { _ in
-
+			UIBarButtonItem(primaryAction: UIAction(title: "Add List", image: UIImage(systemName: "plus"), handler: { [weak self] _ in
+				self?.delegate?.newList()
 			}))
 		]
 	}
@@ -115,6 +115,6 @@ private extension SidebarViewController {
 
 import SwiftUI
 
-#Preview {
-	SidebarAssembly.build(storage: PreviewStorage())
-}
+//#Preview {
+//	SidebarAssembly.build(storage: PreviewStorage(), persistentContainer: <#NSPersistentContainer#>)
+//}

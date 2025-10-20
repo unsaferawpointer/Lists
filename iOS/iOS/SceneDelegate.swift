@@ -22,7 +22,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 		let splitViewController = UISplitViewController(style: .doubleColumn)
 
-		let sidebar = SidebarAssembly.build(storage: storage)
+		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: (UIApplication.shared.delegate as! AppDelegate).persistentContainer)
 		let content = ContentAssembly.build(id: nil, storage: storage)
 
 		splitViewController.setViewController(sidebar, for: .primary)
@@ -63,6 +63,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		// to restore the scene back to its current state.
 
 		// Save changes in the application's managed object context when the application transitions to the background.
-		(UIApplication.shared.delegate as? AppDelegate)?.saveContext()
 	}
 }
