@@ -27,8 +27,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 		let storage = Storage(persistentContainer: persistentContainer)
 
-		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: persistentContainer)
-		let content = ContentAssembly.build(id: nil, storage: storage)
+		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: persistentContainer, selectionDelegate: self)
+		let content = ContentAssembly.build(id: nil, storage: storage, persistentContainer: persistentContainer)
 
 		splitViewController.setViewController(sidebar, for: .primary)
 		splitViewController.setViewController(content, for: .secondary)
@@ -68,5 +68,28 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		// to restore the scene back to its current state.
 
 		// Save changes in the application's managed object context when the application transitions to the background.
+	}
+}
+
+// MARK: - SelectionDelegate
+extension SceneDelegate: SelectionDelegate {
+
+	func didSelect(item: NavigationItem) {
+		guard let splitViewController = window?.rootViewController as? UISplitViewController else {
+			return
+		}
+
+		let storage = Storage(persistentContainer: persistentContainer)
+
+		let id: UUID? = switch item.id {
+		case .all:
+			nil
+		case let .list(id):
+			id
+		}
+
+		let content = ContentAssembly.build(id: id, storage: storage, persistentContainer: persistentContainer)
+
+		splitViewController.showDetailViewController(content, sender: self)
 	}
 }

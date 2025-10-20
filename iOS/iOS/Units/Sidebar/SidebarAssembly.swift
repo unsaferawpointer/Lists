@@ -10,11 +10,12 @@ import CoreData
 
 final class SidebarAssembly {
 
-	static func build(storage: StorageProtocol, persistentContainer: NSPersistentContainer) -> UIViewController {
+	static func build(storage: StorageProtocol, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
 
 		let coreDataProvider = CoreDataProvider<ListEntity>(
 			persistentContainer: persistentContainer,
-			sortDescriptors: [NSSortDescriptor(keyPath: \ListEntity.creationDate, ascending: true)]
+			sortDescriptors: [NSSortDescriptor(keyPath: \ListEntity.creationDate, ascending: true)],
+			predicate: nil
 		)
 		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ListsConverter())
 
@@ -24,6 +25,7 @@ final class SidebarAssembly {
 
 		let viewController = SidebarViewController()
 		viewController.delegate = presenter
+		viewController.selectionDelegate = selectionDelegate
 		presenter.view = viewController
 
 		let router = Router()

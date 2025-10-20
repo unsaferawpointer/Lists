@@ -16,8 +16,14 @@ class SidebarViewController: UIViewController {
 
 	var delegate: SidebarViewDelegate?
 
+	weak var selectionDelegate: SelectionDelegate?
+
 	lazy var adapter: SidebarTableAdapter = {
-		SidebarTableAdapter(collectionView: collectionView)
+		let adapter = SidebarTableAdapter(collectionView: collectionView)
+		adapter.onSelect = { [weak self] model in
+			self?.selectionDelegate?.didSelect(item: model)
+		}
+		return adapter
 	}()
 
 	// MARK: - UI
@@ -60,11 +66,17 @@ class SidebarViewController: UIViewController {
 
 		adapter.delegate = delegate
 		delegate?.viewDidLoad()
+
+		collectionView.selectItem(at: .init(row: 0, section: 0), animated: true, scrollPosition: .top)
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		navigationController?.setToolbarHidden(false, animated: true)
+	}
+
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
 	}
 
 	override func setEditing(_ editing: Bool, animated: Bool) {

@@ -27,11 +27,20 @@ final class ContentInteractor {
 
 	private let storage: StorageProtocol
 
+	private let dataProvider: DataProvider<Item, ItemEntity>
+
 	// MARK: - Initialization
 
-	init(id: UUID?, storage: StorageProtocol) {
+	init(id: UUID?, storage: StorageProtocol, dataProvider: DataProvider<Item, ItemEntity>) {
 		self.id = id
 		self.storage = storage
+		self.dataProvider = dataProvider
+
+		Task { @MainActor in
+			for await change in dataProvider.contentChanges {
+				presenter?.present(items: change)
+			}
+		}
 	}
 }
 
@@ -39,7 +48,8 @@ final class ContentInteractor {
 extension ContentInteractor: ContentInteractorProtocol {
 
 	func fetchItems() async throws -> [Item] {
-		return try await storage.fetchItems(in: id)
+		dataProvider.fetch()
+		return []
 	}
 
 	func fetchItem(with id: UUID) async throws -> Item? {
@@ -47,7 +57,7 @@ extension ContentInteractor: ContentInteractorProtocol {
 	}
 
 	func addItem(_ item: Item) async throws {
-		try await storage.addItem(item)
+		try await storage.addItem(item, to: id)
 	}
 
 	func setText(_ text: String, for item: UUID) async throws {

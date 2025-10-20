@@ -6,12 +6,26 @@
 //
 
 import UIKit
+import CoreData
 
 final class ContentAssembly {
 
-	static func build(id: UUID?, storage: StorageProtocol) -> UIViewController {
+	static func build(id: UUID?, storage: StorageProtocol, persistentContainer: NSPersistentContainer) -> UIViewController {
 
-		let interactor = ContentInteractor(id: id, storage: storage)
+		let predicate: NSPredicate? = if let uuid = id {
+			NSPredicate(format: "list.uuid == %@", argumentArray: [uuid])
+		} else {
+			nil
+		}
+
+		let coreDataProvider = CoreDataProvider<ItemEntity>(
+			persistentContainer: persistentContainer,
+			sortDescriptors: [NSSortDescriptor(keyPath: \ItemEntity.creationDate, ascending: true)],
+			predicate: predicate
+		)
+		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ItemsConverter())
+
+		let interactor = ContentInteractor(id: id, storage: storage, dataProvider: provider)
 		let presenter = ContentPresenter(interactor: interactor)
 		interactor.presenter = presenter
 

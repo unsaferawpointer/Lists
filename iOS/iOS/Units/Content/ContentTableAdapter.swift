@@ -156,8 +156,6 @@ extension ContentTableAdapter: UICollectionViewDelegate {
 			)
 		}
 
-		print("___TEST ids.count = \(ids.count)")
-
 		return UIContextMenuConfiguration(
 			actionProvider: { [weak self] _ in
 				UIMenu(

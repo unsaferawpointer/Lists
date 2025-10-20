@@ -37,7 +37,7 @@ class ContentViewController: UIViewController {
 			var layoutConfig = UICollectionLayoutListConfiguration(appearance: .plain)
 			layoutConfig.showsSeparators = true
 			 return NSCollectionLayoutSection.list(using: layoutConfig, layoutEnvironment: layoutEnvironment)
-		 }
+		}
 
 		let view = UICollectionView(frame: .zero, collectionViewLayout: layout)
 		view.dragInteractionEnabled = true
@@ -144,6 +144,6 @@ private extension ContentViewController {
 	}
 }
 
-#Preview {
-	ContentAssembly.build(id: nil, storage: PreviewStorage())
-}
+//#Preview {
+//	ContentAssembly.build(id: nil, storage: PreviewStorage(), persistentContainer: <#NSPersistentContainer#>)
+//}

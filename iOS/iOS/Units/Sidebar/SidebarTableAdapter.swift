@@ -14,6 +14,10 @@ final class SidebarTableAdapter: NSObject {
 
 	weak var delegate: SidebarViewDelegate?
 
+	// MARK: - Handlers
+
+	var onSelect: ((NavigationItem) -> Void)?
+
 	// MARK: - Data
 
 		var main: [NavigationItem] = [.init(id: .all, iconName: "square.grid.2x2", title: "All")]
@@ -175,6 +179,19 @@ extension SidebarTableAdapter: UICollectionViewDataSource {
 		return header
 	}
 }
+
+// MARK: - Selection Support
+extension SidebarTableAdapter {
+
+	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+		let model: NavigationItem = switch indexPath.section {
+			case 0: 	main[indexPath.row]
+			default: 	collection[indexPath.row]
+		}
+		onSelect?(model)
+	}
+}
+
 
 extension SidebarTableAdapter {
 

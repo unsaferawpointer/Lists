@@ -7,7 +7,9 @@
 
 import Foundation
 
-protocol ContentPresenterProtocol: AnyObject { }
+protocol ContentPresenterProtocol: AnyObject {
+	func present(items: [Item])
+}
 
 final class ContentPresenter {
 
@@ -23,10 +25,6 @@ final class ContentPresenter {
 
 	init(interactor: ContentInteractorProtocol) {
 		self.interactor = interactor
-	}
-
-	deinit {
-		
 	}
 }
 
@@ -101,4 +99,10 @@ extension ContentPresenter: ContentViewDelegate {
 // MARK: - ContentPresenterProtocol
 extension ContentPresenter: ContentPresenterProtocol {
 
+	func present(items: [Item]) {
+		let models = items.map {
+			ContentItem(uuid: $0.id, title: $0.title)
+		}
+		view?.display(newItems: models)
+	}
 }

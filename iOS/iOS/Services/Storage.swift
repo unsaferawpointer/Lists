@@ -11,23 +11,19 @@ import CoreData
 protocol StorageProtocol {
 	func fetchItems(in list: UUID?) async throws -> [Item]
 	func fetchItem(with id: UUID) async throws -> Item?
-	func addItem(_ item: Item) async throws
+	func addItem(_ item: Item, to list: UUID?) async throws
 	func setText(_ text: String, for item: UUID) async throws
 	func deleteItems(with ids: [UUID]) async throws
 
 	func addList(with name: String) async throws
 	func setListName(_ name: String, for id: UUID) async throws
 	func deleteList(with id: UUID) async throws
-
-	func fecthLists() async throws -> [List]
 }
 
 
 final class Storage {
 
 	// MARK: - Data
-
-	private var lists: [List] = [.init(uuid: .init(), name: UUID().uuidString)]
 
 	private var items: [Item] = Array(repeating: .init(uuid: UUID(), title: "Defailt Item"), count: 240)
 
@@ -61,8 +57,23 @@ extension Storage: StorageProtocol {
 		return items.first(where: { $0.id == id })
 	}
 
-	func addItem(_ item: Item) async throws {
-		items.append(item)
+	func addItem(_ item: Item, to list: UUID?) async throws {
+		let newItem = ItemEntity(context: context)
+		newItem.uuid = item.id
+		newItem.text = item.title
+		do {
+
+			let list: ListEntity? = if let id = list {
+				fetchList(with: id)
+			} else {
+				nil
+			}
+			newItem.list = list
+
+			try context.save()
+		} catch {
+
+		}
 	}
 
 	func setText(_ text: String, for item: UUID) async throws {
@@ -73,13 +84,12 @@ extension Storage: StorageProtocol {
 	}
 
 	func deleteItems(with ids: [UUID]) async throws {
-		items.removeAll {
-			ids.contains($0.id)
-		}
-	}
+		let items = fetchItems(with: ids)
 
-	func fecthLists() async throws -> [List] {
-		return lists
+		do {
+			items.forEach { context.delete($0) }
+			try context.save()
+		}
 	}
 
 	func addList(with name: String) async throws {
@@ -125,5 +135,14 @@ private extension Storage {
 
 		let lists = try? context.fetch(request)
 		return lists?.first
+	}
+
+	func fetchItems(with ids: [UUID]) -> [ItemEntity] {
+
+		let request = ItemEntity.fetchRequest()
+		request.predicate = NSPredicate(format: "uuid IN %@", ids)
+
+		let entities = try? context.fetch(request)
+		return entities ?? []
 	}
 }

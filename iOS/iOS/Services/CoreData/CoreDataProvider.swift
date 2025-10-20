@@ -16,10 +16,13 @@ final class CoreDataProvider<T: NSManagedObject>: NSObject, NSFetchedResultsCont
 
 	private let sortDescriptors: [NSSortDescriptor]
 
+	private let predicate: NSPredicate?
+
 	lazy private var fetchedResultController: NSFetchedResultsController<T> = {
 
 		let request = NSFetchRequest<T>(entityName: String(describing: T.self))
 		request.sortDescriptors = sortDescriptors
+		request.predicate = predicate
 
 		let controller = NSFetchedResultsController(
 			fetchRequest: request,
@@ -47,9 +50,10 @@ final class CoreDataProvider<T: NSManagedObject>: NSObject, NSFetchedResultsCont
 
 	// MARK: - Initialization
 
-	init(persistentContainer: NSPersistentContainer, sortDescriptors: [NSSortDescriptor]) {
+	init(persistentContainer: NSPersistentContainer, sortDescriptors: [NSSortDescriptor], predicate: NSPredicate?) {
 		self.persistentContainer = persistentContainer
 		self.sortDescriptors = sortDescriptors
+		self.predicate = predicate
 	}
 
 	// MARK: - NSFetchedResultsControllerDelegate
