@@ -17,7 +17,7 @@ struct ListEditor: View {
 
 	let validator = ListValidator()
 
-	var isValid: Bool {
+	var validationResult: ListValidator.ValidationResult {
 		validator.validate(name: name)
 	}
 
@@ -30,16 +30,19 @@ struct ListEditor: View {
 		NavigationStack {
 			Form {
 				Section {
-					TextField("Enter Name", text: $name)
+					TextField("Enter a name", text: $name)
 						.focused($inFocus)
 						.onAppear {
 							inFocus = true
 						}
 				} header: {
-					Text("Name")
+					EmptyView()
 				} footer: {
-					if !isValid {
-						Text("Invalid Name")
+					switch validationResult {
+					case .success:
+						EmptyView()
+					case .failure(let error):
+						Text(error.errorDescription ?? "")
 					}
 				}
 
@@ -52,7 +55,7 @@ struct ListEditor: View {
 					Button(role: .confirm) {
 						completion?(true, .init(name: name))
 					}
-					.disabled(!isValid)
+					.disabled(!validationResult.isSuccess)
 				}
 				ToolbarItem(placement: .cancellationAction) {
 					Button(role: .close) {
