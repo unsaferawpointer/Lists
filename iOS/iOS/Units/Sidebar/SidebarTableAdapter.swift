@@ -146,16 +146,9 @@ extension SidebarTableAdapter: UICollectionViewDataSource {
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! UICollectionViewListCell
 		cell.contentConfiguration = configuration
 
-		let accessories: [UICellAccessory] = switch indexPath.section {
-		case 0:
-			[UICellAccessory.disclosureIndicator(displayed: .whenNotEditing, options: .init())]
-		default:
-			[
-				UICellAccessory.disclosureIndicator(displayed: .whenNotEditing, options: .init()),
-				UICellAccessory.reorder(displayed: .whenEditing, options: .init(tintColor: .systemGray))
-			]
-		}
-		cell.accessories = accessories
+		// MARK: - Configure Accessories
+
+		cell.accessories = [UICellAccessory.reorder(displayed: .whenEditing, options: .init(tintColor: .systemGray))]
 
 		return cell
 	}
