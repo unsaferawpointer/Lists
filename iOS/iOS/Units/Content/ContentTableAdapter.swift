@@ -108,9 +108,21 @@ private extension ContentTableAdapter {
 			let cell = collectionView.cellForItem(at: indexPath)
 
 			let configuration = UIHostingConfiguration {
-				Text(newModel.title)
-					.foregroundStyle(newModel.isStrikethrough ? .secondary : .primary)
-					.font(.body).strikethrough(newModel.isStrikethrough)
+				HStack(spacing: 16) {
+					Circle()
+						.foregroundStyle(.tertiary)
+						.frame(width: 6, height: 6)
+					VStack(alignment: .leading) {
+						Text(newModel.title)
+							.foregroundStyle(newModel.isStrikethrough ? .secondary : .primary)
+							.font(.body)
+							.strikethrough(
+								newModel.isStrikethrough,
+								pattern: .solid,
+								color: .secondary
+							)
+					}
+				}
 			}
 
 			cell?.contentConfiguration = configuration
@@ -132,9 +144,21 @@ extension ContentTableAdapter: UICollectionViewDataSource {
 		let model = items[indexPath.row]
 
 		let configuration = UIHostingConfiguration {
-			Text(model.title)
-				.foregroundStyle(model.isStrikethrough ? .secondary : .primary)
-				.font(.body).strikethrough(model.isStrikethrough)
+			HStack(spacing: 16) {
+				Circle()
+					.foregroundStyle(.tertiary)
+					.frame(width: 6, height: 6)
+				VStack(alignment: .leading) {
+					Text(model.title)
+						.foregroundStyle(model.isStrikethrough ? .secondary : .primary)
+						.font(.body)
+						.strikethrough(
+							model.isStrikethrough,
+							pattern: .solid,
+							color: .secondary
+						)
+				}
+			}
 		}
 
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! UICollectionViewListCell
