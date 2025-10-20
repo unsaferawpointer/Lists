@@ -33,6 +33,11 @@ extension ContentTableAdapter {
 
 	func reload(newItems: [ContentItem]) {
 
+		guard !(newItems.isEmpty && items.isEmpty) else {
+			collectionView.reloadData()
+			return
+		}
+
 		let (removing, inserting) = calculate(newItems: newItems)
 
 		collectionView.performBatchUpdates {
