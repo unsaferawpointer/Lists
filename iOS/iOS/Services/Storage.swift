@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 protocol StorageProtocol {
 	func fetchItems(in list: UUID?) async throws -> [Item]
@@ -14,13 +15,15 @@ protocol StorageProtocol {
 	func setText(_ text: String, for item: UUID) async throws
 	func deleteItems(with ids: [UUID]) async throws
 
+	func addList(with name: String) async throws
+	func setListName(_ name: String, for id: UUID) async throws
+	func deleteList(with id: UUID) async throws
+
 	func fecthLists() async throws -> [List]
 }
 
 
 final class Storage {
-
-	static let shared = Storage()
 
 	// MARK: - Data
 
@@ -28,9 +31,23 @@ final class Storage {
 
 	private var items: [Item] = Array(repeating: .init(uuid: UUID(), title: "Defailt Item"), count: 240)
 
+	// MARK: - Stored Properties
+
+	private let persistentContainer: NSPersistentContainer
+
 	// MARK: - Initialization
 
-	private init() { }
+	init(persistentContainer: NSPersistentContainer) {
+		self.persistentContainer = persistentContainer
+	}
+}
+
+// MARK: - Computed Properties
+private extension Storage {
+
+	var context: NSManagedObjectContext {
+		return persistentContainer.viewContext
+	}
 }
 
 // MARK: - StorageProtocol
@@ -63,5 +80,50 @@ extension Storage: StorageProtocol {
 
 	func fecthLists() async throws -> [List] {
 		return lists
+	}
+
+	func addList(with name: String) async throws {
+		let newList = ListEntity(context: context)
+		newList.name = name
+		do {
+			try context.save()
+		} catch {
+			
+		}
+	}
+
+	func setListName(_ name: String, for id: UUID) async throws {
+		guard let list = fetchList(with: id) else {
+			return
+		}
+		do {
+			list.name = name
+			try context.save()
+		}
+	}
+
+	func deleteList(with id: UUID) async throws {
+		guard let list = fetchList(with: id) else {
+			return
+		}
+
+		do {
+			context.delete(list)
+			try context.save()
+		}
+	}
+}
+
+// MARK: - Helpers
+private extension Storage {
+
+	func fetchList(with id: UUID) -> ListEntity? {
+
+		let request = ListEntity.fetchRequest()
+		request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
+		request.fetchLimit = 1
+
+		let lists = try? context.fetch(request)
+		return lists?.first
 	}
 }

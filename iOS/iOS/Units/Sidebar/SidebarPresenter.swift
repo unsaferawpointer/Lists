@@ -17,6 +17,8 @@ final class SidebarPresenter {
 
 	weak var view: SidebarView?
 
+	var router: Routable?
+
 	// MARK: - Initialization
 
 	init(interactor: SidebarInteractorProtocol) {
@@ -38,7 +40,18 @@ extension SidebarPresenter: SidebarViewDelegate {
 	func contextMenu(didSelect menuItem: String, for item: UUID) {
 		switch menuItem {
 		case "edit":
-			break
+			Task { @MainActor in
+				guard let list = try? await interactor?.list(for: item) else {
+					return
+				}
+				let model = ListEditorModel(name: list.name)
+				router?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
+					guard isSuccess else {
+						return
+					}
+					self?.interactor?.setListName(newModel.name, for: item)
+				}
+			}
 		case "delete":
 			interactor?.deleteList(with: item)
 		default:
@@ -47,7 +60,13 @@ extension SidebarPresenter: SidebarViewDelegate {
 	}
 
 	func newList() {
-		interactor?.addList(with: "New List Default")
+		let model = ListEditorModel(name: "")
+		router?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
+			guard isSuccess else {
+				return
+			}
+			self?.interactor?.addList(with: newModel.name)
+		}
 	}
 
 }

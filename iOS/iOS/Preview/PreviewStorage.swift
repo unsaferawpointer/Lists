@@ -12,6 +12,12 @@ final class PreviewStorage { }
 // MARK: - StorageProtocol
 extension PreviewStorage: StorageProtocol {
 
+	func setListName(_ name: String, for id: UUID) async throws { }
+
+	func deleteList(with id: UUID) async throws { }
+
+	func addList(with name: String) async throws { }
+
 	func addItem(_ item: Item) async throws { }
 
 	func setText(_ text: String, for item: UUID) async throws { }

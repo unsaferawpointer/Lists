@@ -27,6 +27,9 @@ struct ListCell: View {
 
 	var body: some View {
 		Label(list.name, systemImage: (list.appearence?.icon ?? .noIcon).iconName)
+			.symbolColorRenderingMode(.gradient)
+			.badge(list.items.count)
+			.badgeProminence(.standard)
 	}
 }
 #endif

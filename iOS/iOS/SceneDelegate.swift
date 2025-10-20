@@ -6,12 +6,15 @@
 //
 
 import UIKit
+import CoreData
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 	var window: UIWindow?
 
-	private var storage: StorageProtocol = Storage.shared
+	private var persistentContainer: NSPersistentContainer {
+		(UIApplication.shared.delegate as! AppDelegate).persistentContainer
+	}
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else {
@@ -22,7 +25,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 		let splitViewController = UISplitViewController(style: .doubleColumn)
 
-		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: (UIApplication.shared.delegate as! AppDelegate).persistentContainer)
+		let storage = Storage(persistentContainer: persistentContainer)
+
+		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: persistentContainer)
 		let content = ContentAssembly.build(id: nil, storage: storage)
 
 		splitViewController.setViewController(sidebar, for: .primary)

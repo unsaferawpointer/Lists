@@ -58,6 +58,8 @@ private extension SidebarTableAdapter {
 
 		let collectionIndex = 1
 
+		updateCells(newItems: newItems, in: collectionIndex)
+
 		let diff = newItems.difference(from: collection) { old, new in
 			return old.id == new.id
 		}
@@ -81,6 +83,36 @@ private extension SidebarTableAdapter {
 		}
 
 		return (removing, inserting)
+	}
+
+	func updateCells(newItems: [NavigationItem], in section: Int) {
+
+		var newCache: [NavigationItem.ID: Int] = [:]
+		var oldCache: [NavigationItem.ID: Int] = [:]
+
+		for (index, item) in collection.enumerated() {
+			oldCache[item.id] = index
+		}
+
+		for (index, item) in newItems.enumerated() {
+			newCache[item.id] = index
+		}
+
+		let intersection = Set(newItems.map(\.id)).intersection(collection.map(\.id))
+		for id in intersection {
+			guard let oldIndex = oldCache[id], let newIndex = newCache[id] else {
+				continue
+			}
+			let newModel = newItems[newIndex]
+			let indexPath = IndexPath(row: oldIndex, section: section)
+			let cell = collectionView.cellForItem(at: indexPath)
+
+			var configuration = UIListContentConfiguration.cell()
+			configuration.text = newModel.title
+			configuration.image = UIImage(systemName: newModel.iconName)
+
+			cell?.contentConfiguration = configuration
+		}
 	}
 }
 

@@ -13,6 +13,12 @@ final class DataProvider<Model, Entity: NSManagedObject>: Sendable {
 
 	private var contentChangeContinuation: AsyncStream<[Model]>.Continuation?
 
+	var models: [Model] = [] {
+		didSet {
+			contentChangeContinuation?.yield(models)
+		}
+	}
+
 	// MARK: - Public Properties
 
 	lazy var contentChanges: AsyncStream<[Model]> = {
@@ -35,9 +41,12 @@ final class DataProvider<Model, Entity: NSManagedObject>: Sendable {
 		self.converter = converter
 
 		coreDataProvider.handler = { [weak self] entities in
-			let models = converter.convert(input: entities)
-			self?.contentChangeContinuation?.yield(models)
+			self?.models = converter.convert(input: entities)
 		}
+	}
+
+	func firstItem(where condition: (Model) -> Bool) -> Model? {
+		return models.first(where: condition)
 	}
 
 	func fetch() {

@@ -8,6 +8,8 @@
 import SwiftUI
 import SwiftData
 
+import UniformTypeIdentifiers
+
 struct SidebarView: View {
 
 	@Environment(\.modelContext) private var modelContext
@@ -35,8 +37,10 @@ struct SidebarView: View {
 				ContentView(list: nil)
 			} label: {
 				Label("All", systemImage: "square.grid.2x2")
+					.symbolColorRenderingMode(.gradient)
 			}
 			.listRowSeparator(.hidden)
+			.navigationLinkIndicatorVisibility(.hidden)
 			.tag(Selection.all)
 
 			Section("Library") {
@@ -54,6 +58,7 @@ struct SidebarView: View {
 							ListCell(list: list)
 						}
 						.listRowSeparator(.hidden)
+						.navigationLinkIndicatorVisibility(.hidden)
 						.contextMenu {
 							buildContextMenu(for: list)
 						}
