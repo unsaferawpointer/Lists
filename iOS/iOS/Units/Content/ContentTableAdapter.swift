@@ -84,6 +84,8 @@ private extension ContentTableAdapter {
 	}
 }
 
+import SwiftUI
+
 // MARK: - UICollectionViewDataSource
 extension ContentTableAdapter: UICollectionViewDataSource {
 
@@ -95,8 +97,11 @@ extension ContentTableAdapter: UICollectionViewDataSource {
 
 		let model = items[indexPath.row]
 
-		var configuration = UIListContentConfiguration.cell()
-		configuration.text = model.title
+		let configuration = UIHostingConfiguration {
+			Text(model.title)
+				.foregroundStyle(model.isStrikethrough ? .secondary : .primary)
+				.font(.body).strikethrough(model.isStrikethrough)
+		}
 
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! UICollectionViewListCell
 		cell.contentConfiguration = configuration
@@ -141,8 +146,17 @@ extension ContentTableAdapter: UICollectionViewDelegate {
 									options: .displayInline,
 									children:
 										[
-											UIAction(title: "Edit...", image: UIImage(systemName: "trash")) { [weak self] _ in
+											UIAction(title: "Edit...", image: UIImage(systemName: "pencil")) { [weak self] _ in
 												self?.delegate?.contextMenuSelected(menuItem: "edit", with: ids)
+											}
+										]
+								),
+								UIMenu(
+									options: .displayInline,
+									children:
+										[
+											UIAction(title: "Strikethrough", image: UIImage(systemName: "strikethrough")) { [weak self] _ in
+												self?.delegate?.contextMenuSelected(menuItem: "strikethrough", with: ids)
 											}
 										]
 								),
@@ -166,6 +180,15 @@ extension ContentTableAdapter: UICollectionViewDelegate {
 				UIMenu(
 					children:
 						[
+							UIMenu(
+								options: .displayInline,
+								children:
+									[
+										UIAction(title: "Strikethrough", image: UIImage(systemName: "strikethrough")) { [weak self] _ in
+											self?.delegate?.contextMenuSelected(menuItem: "strikethrough", with: ids)
+										}
+									]
+							),
 							UIMenu(
 								options: .displayInline,
 								children:

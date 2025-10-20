@@ -18,6 +18,7 @@ public class ItemEntity: NSManagedObject {
 	@NSManaged public var uuid: UUID?
 	@NSManaged public var text: String?
 	@NSManaged public var creationDate: Date?
+	@NSManaged public var rawOptions: Int64
 	@NSManaged public var list: ListEntity?
 
 	public override func awakeFromInsert() {
@@ -27,6 +28,34 @@ public class ItemEntity: NSManagedObject {
 		self.text = ""
 		self.creationDate = .now
 		self.list = nil
+		self.rawOptions = 0
+	}
+}
+
+// MARK: - Calculated Properties
+extension ItemEntity {
+
+	var options: ItemOptions {
+		get {
+			return .init(rawValue: rawOptions)
+		}
+		set {
+			self.rawOptions = newValue.rawValue
+		}
+	}
+
+	var isStrikethrough: Bool {
+		get {
+			return options.contains(.strikethrough)
+		}
+		set {
+			guard newValue else {
+				options.remove(.strikethrough)
+				return
+			}
+			options.insert(.strikethrough)
+		}
+
 	}
 }
 

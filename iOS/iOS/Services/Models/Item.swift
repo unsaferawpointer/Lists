@@ -11,12 +11,14 @@ struct Item: Sendable {
 
 	var uuid: UUID
 	var title: String
+	var isStrikethrough: Bool
 
 	// MARK: - Initialization
 
-	init(uuid: UUID, title: String) {
+	init(uuid: UUID, title: String, isStrikethrough: Bool) {
 		self.uuid = uuid
 		self.title = title
+		self.isStrikethrough = isStrikethrough
 	}
 }
 

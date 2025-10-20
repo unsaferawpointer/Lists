@@ -12,6 +12,7 @@ protocol ContentInteractorProtocol {
 	func fetchItem(with id: UUID) async throws -> Item?
 	func addItem(_ item: Item) async throws
 	func setText(_ text: String, for item: UUID) async throws
+	func strikeThroughItems(with ids: [UUID]) async throws
 	func deleteItems(with ids: [UUID]) async throws
 }
 
@@ -62,6 +63,12 @@ extension ContentInteractor: ContentInteractorProtocol {
 
 	func setText(_ text: String, for item: UUID) async throws {
 		try await storage.setText(text, for: item)
+	}
+
+	func strikeThroughItems(with ids: [UUID]) async throws {
+		try await storage.modificate(type: ItemEntity.self, with: ids) { entity in
+			entity.isStrikethrough = true
+		}
 	}
 
 	func deleteItems(with ids: [UUID]) async throws {

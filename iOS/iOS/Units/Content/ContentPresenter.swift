@@ -35,7 +35,7 @@ extension ContentPresenter: ContentViewDelegate {
 		Task { @MainActor in
 			let items = try? await interactor.fetchItems()
 			let models = items?.map {
-				ContentItem(uuid: $0.id, title: $0.title)
+				ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
 			}
 			view?.display(newItems: models ?? [])
 		}
@@ -43,12 +43,12 @@ extension ContentPresenter: ContentViewDelegate {
 
 	func editorDidCommit(text: String) {
 		guard let id = editedItem else {
-			let item = Item(uuid: UUID(), title: text)
+			let item = Item(uuid: UUID(), title: text, isStrikethrough: false)
 			Task { @MainActor in
 				try? await interactor.addItem(item)
 				let items = try? await interactor.fetchItems()
 				let models = items?.map {
-					ContentItem(uuid: $0.id, title: $0.title)
+					ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
 				}
 				view?.display(newItems: models ?? [])
 				view?.scroll(to: item.id)
@@ -62,7 +62,7 @@ extension ContentPresenter: ContentViewDelegate {
 			view?.displayEditor(.init(text: "", iconName: "arrow.up", inFocus: false))
 			let items = try? await interactor.fetchItems()
 			let models = items?.map {
-				ContentItem(uuid: $0.id, title: $0.title)
+				ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
 			}
 			view?.display(newItems: models ?? [])
 		}
@@ -86,9 +86,13 @@ extension ContentPresenter: ContentViewDelegate {
 				try? await interactor.deleteItems(with: selection)
 				let items = try? await interactor.fetchItems()
 				let models = items?.map {
-					ContentItem(uuid: $0.id, title: $0.title)
+					ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
 				}
 				view?.display(newItems: models ?? [])
+			}
+		case "strikethrough":
+			Task { @MainActor in
+				try? await interactor.strikeThroughItems(with: selection)
 			}
 		default:
 			break
@@ -101,7 +105,7 @@ extension ContentPresenter: ContentPresenterProtocol {
 
 	func present(items: [Item]) {
 		let models = items.map {
-			ContentItem(uuid: $0.id, title: $0.title)
+			ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
 		}
 		view?.display(newItems: models)
 	}

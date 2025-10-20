@@ -13,6 +13,7 @@ protocol StorageProtocol {
 	func fetchItem(with id: UUID) async throws -> Item?
 	func addItem(_ item: Item, to list: UUID?) async throws
 	func setText(_ text: String, for item: UUID) async throws
+	func modificate<E: NSManagedObject>(type: E.Type, with ids: [UUID], modification: (E) -> Void) async throws
 	func deleteItems(with ids: [UUID]) async throws
 
 	func addList(with name: String) async throws
@@ -25,7 +26,7 @@ final class Storage {
 
 	// MARK: - Data
 
-	private var items: [Item] = Array(repeating: .init(uuid: UUID(), title: "Defailt Item"), count: 240)
+	private var items: [Item] = Array(repeating: .init(uuid: UUID(), title: "Defailt Item", isStrikethrough: false), count: 240)
 
 	// MARK: - Stored Properties
 
@@ -122,10 +123,26 @@ extension Storage: StorageProtocol {
 			try context.save()
 		}
 	}
+
+	func modificate<E>(type: E.Type, with ids: [UUID], modification: (E) -> Void) async throws where E: NSManagedObject {
+		for entity in fetchEntities(type: E.self, with: ids) {
+			modification(entity)
+		}
+		do { try context.save() }
+	}
 }
 
 // MARK: - Helpers
 private extension Storage {
+
+	func fetchEntities<T: NSManagedObject>(type: T.Type, with ids: [UUID]) -> [T] {
+
+		let request: NSFetchRequest<T> = NSFetchRequest(entityName: String(describing: T.self))
+		request.predicate = NSPredicate(format: "uuid IN %@", ids)
+
+		let entities = try? context.fetch(request)
+		return entities ?? []
+	}
 
 	func fetchList(with id: UUID) -> ListEntity? {
 

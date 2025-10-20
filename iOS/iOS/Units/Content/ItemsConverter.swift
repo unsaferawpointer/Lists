@@ -21,7 +21,7 @@ extension ItemsConverter: Converter {
 			guard let uuid = entity.uuid else {
 				return nil
 			}
-			return Item(uuid: uuid, title: entity.text ?? "Unknown title")
+			return Item(uuid: uuid, title: entity.text ?? "Unknown title", isStrikethrough: entity.isStrikethrough)
 		}
 	}
 
