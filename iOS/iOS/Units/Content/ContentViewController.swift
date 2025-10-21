@@ -59,6 +59,8 @@ class ContentViewController: UIViewController {
 		return view
 	}()
 
+	// MARK: - UIViewController life-cycle
+
 	override func loadView() {
 		self.view = UIView()
 		configureConstraints()
@@ -73,6 +75,7 @@ class ContentViewController: UIViewController {
 			forCellWithReuseIdentifier: "cell"
 		)
 		adapter.delegate = delegate
+		self.contentUnavailableConfiguration = nil
 		delegate?.viewDidLoad()
 	}
 
@@ -97,6 +100,16 @@ extension ContentViewController: ContentView {
 
 	func display(newItems: [ContentItem]) {
 		adapter.reload(newItems: newItems)
+		if adapter.isEmpty && isViewLoaded {
+			var configuration = UIContentUnavailableConfiguration.empty()
+			configuration.image = UIImage(systemName: "app.dashed")
+			configuration.text = String(localized: "No items yet", table: "UnitLocalizable")
+			configuration.secondaryText = String("To add a new item, tap the '+' button in the navigation bar.")
+			self.contentUnavailableConfiguration = configuration
+		} else {
+			self.contentUnavailableConfiguration = nil
+		}
+		setNeedsUpdateContentUnavailableConfiguration()
 	}
 
 	func displayEditor(_ model: ItemEditorModel) {

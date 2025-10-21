@@ -33,11 +33,7 @@ extension ContentPresenter: ContentViewDelegate {
 
 	func viewDidLoad() {
 		Task { @MainActor in
-			let items = try? await interactor.fetchItems()
-			let models = items?.map {
-				ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
-			}
-			view?.display(newItems: models ?? [])
+			try? await interactor.fetchItems()
 		}
 	}
 
