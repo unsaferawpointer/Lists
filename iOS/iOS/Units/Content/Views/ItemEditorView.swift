@@ -45,6 +45,7 @@ class ItemEditorView: UIView {
 				return
 			}
 			self.action?(self.textfield.text ?? "")
+			textfield.resignFirstResponder()
 		}
 		view.addAction(action, for: .touchUpInside)
 		return view
