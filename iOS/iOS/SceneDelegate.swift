@@ -30,8 +30,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: persistentContainer, selectionDelegate: self)
 		let content = ContentAssembly.build(id: nil, storage: storage, persistentContainer: persistentContainer)
 
-		splitViewController.setViewController(sidebar, for: .primary)
-		splitViewController.setViewController(content, for: .secondary)
+		splitViewController.setViewController(
+			UINavigationController(rootViewController: sidebar),
+			for: .primary
+		)
+		splitViewController.setViewController(
+			UINavigationController(rootViewController: content),
+			for: .secondary
+		)
+
 		splitViewController.preferredDisplayMode = .oneBesideSecondary
 		splitViewController.displayModeButtonVisibility = .automatic
 		splitViewController.primaryBackgroundStyle = .sidebar
@@ -90,6 +97,9 @@ extension SceneDelegate: SelectionDelegate {
 
 		let content = ContentAssembly.build(id: id, storage: storage, persistentContainer: persistentContainer)
 
-		splitViewController.showDetailViewController(content, sender: self)
+		splitViewController.showDetailViewController(
+			UINavigationController(rootViewController: content),
+			sender: self
+		)
 	}
 }
