@@ -8,13 +8,13 @@
 import UIKit
 import CoreData
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+class SceneDelegate: UIResponder {
 
 	var window: UIWindow?
+}
 
-	private var persistentContainer: NSPersistentContainer {
-		(UIApplication.shared.delegate as! AppDelegate).persistentContainer
-	}
+// MARK: - UIWindowSceneDelegate
+extension SceneDelegate: UIWindowSceneDelegate {
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else {
@@ -28,7 +28,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		let storage = Storage(persistentContainer: persistentContainer)
 
 		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: persistentContainer, selectionDelegate: self)
-		let content = ContentAssembly.build(id: nil, storage: storage, persistentContainer: persistentContainer)
+		let content = ContentAssembly.build(payload: .all, storage: storage, persistentContainer: persistentContainer)
 
 		splitViewController.setViewController(
 			UINavigationController(rootViewController: sidebar),
@@ -78,28 +78,42 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	}
 }
 
+// MARK: - Calculated Properties
+extension SceneDelegate {
+
+	var splitViewController: UISplitViewController? {
+		return window?.rootViewController as? UISplitViewController
+	}
+
+	private var persistentContainer: NSPersistentContainer {
+		(UIApplication.shared.delegate as! AppDelegate).persistentContainer
+	}
+}
+
 // MARK: - SelectionDelegate
 extension SceneDelegate: SelectionDelegate {
 
 	func didSelect(item: NavigationItem) {
-		guard let splitViewController = window?.rootViewController as? UISplitViewController else {
+		guard let splitViewController else {
 			return
 		}
 
 		let storage = Storage(persistentContainer: persistentContainer)
-
-		let id: UUID? = switch item.id {
-		case .all:
-			nil
-		case let .list(id):
-			id
-		}
-
-		let content = ContentAssembly.build(id: id, storage: storage, persistentContainer: persistentContainer)
+		let content = ContentAssembly.build(payload: item.contentPayload, storage: storage, persistentContainer: persistentContainer)
 
 		splitViewController.showDetailViewController(
 			UINavigationController(rootViewController: content),
 			sender: self
 		)
+	}
+}
+
+extension NavigationItem {
+
+	var contentPayload: ContentPayload {
+		switch self.id {
+		case .all:				.all
+		case let .list(id):		.list(id: id)
+		}
 	}
 }

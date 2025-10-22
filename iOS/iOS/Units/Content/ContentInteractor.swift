@@ -24,7 +24,7 @@ final class ContentInteractor {
 
 	// MARK: - DI by initialization
 
-	private let id: UUID?
+	private let payload: ContentPayload
 
 	private let storage: StorageProtocol
 
@@ -32,8 +32,8 @@ final class ContentInteractor {
 
 	// MARK: - Initialization
 
-	init(id: UUID?, storage: StorageProtocol, dataProvider: DataProvider<Item, ItemEntity>) {
-		self.id = id
+	init(payload: ContentPayload, storage: StorageProtocol, dataProvider: DataProvider<Item, ItemEntity>) {
+		self.payload = payload
 		self.storage = storage
 		self.dataProvider = dataProvider
 
@@ -58,7 +58,7 @@ extension ContentInteractor: ContentInteractorProtocol {
 	}
 
 	func addItem(_ item: Item) async throws {
-		try await storage.addItem(item, to: id)
+		try await storage.addItem(item, to: payload.listID)
 	}
 
 	func setText(_ text: String, for item: UUID) async throws {

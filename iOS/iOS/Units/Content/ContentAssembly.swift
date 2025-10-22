@@ -10,22 +10,16 @@ import CoreData
 
 final class ContentAssembly {
 
-	static func build(id: UUID?, storage: StorageProtocol, persistentContainer: NSPersistentContainer) -> UIViewController {
-
-		let predicate: NSPredicate? = if let uuid = id {
-			NSPredicate(format: "list.uuid == %@", argumentArray: [uuid])
-		} else {
-			nil
-		}
+	static func build(payload: ContentPayload, storage: StorageProtocol, persistentContainer: NSPersistentContainer) -> UIViewController {
 
 		let coreDataProvider = CoreDataProvider<ItemEntity>(
 			persistentContainer: persistentContainer,
 			sortDescriptors: [NSSortDescriptor(keyPath: \ItemEntity.creationDate, ascending: true)],
-			predicate: predicate
+			predicate: payload.value
 		)
 		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ItemsConverter())
 
-		let interactor = ContentInteractor(id: id, storage: storage, dataProvider: provider)
+		let interactor = ContentInteractor(payload: payload, storage: storage, dataProvider: provider)
 		let presenter = ContentPresenter(interactor: interactor)
 		interactor.presenter = presenter
 
