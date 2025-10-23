@@ -17,9 +17,7 @@ final class ContentPresenter {
 
 	weak var view: ContentView?
 
-	// MARK: - Local State
-
-	private var editedItem: UUID?
+	var router: Routable?
 
 	// MARK: - Initialization
 
@@ -37,46 +35,10 @@ extension ContentPresenter: ContentViewDelegate {
 		}
 	}
 
-	func editorDidCommit(text: String) {
-		guard let id = editedItem else {
-			let item = Item(uuid: UUID(), title: text, isStrikethrough: false)
-			Task { @MainActor in
-				try? await interactor.addItem(item)
-				let items = try? await interactor.fetchItems()
-				let models = items?.map {
-					ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
-				}
-				view?.display(newItems: models ?? [])
-				view?.scroll(to: item.id)
-				view?.displayEditor(.init(text: "", iconName: "arrow.up", inFocus: false))
-			}
-			return
-		}
-		Task { @MainActor in
-			try? await interactor.setText(text, for: id)
-			editedItem = nil
-			view?.displayEditor(.init(text: "", iconName: "arrow.up", inFocus: false))
-			let items = try? await interactor.fetchItems()
-			let models = items?.map {
-				ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
-			}
-			view?.display(newItems: models ?? [])
-		}
-	}
-
 	func contextMenuSelected(menuItem: String, with selection: [UUID]) {
 		switch menuItem {
 		case "edit":
-			Task { @MainActor in
-				guard let first = selection.first else {
-					return
-				}
-				editedItem = selection.first
-				guard let item = try? await interactor.fetchItem(with: first) else {
-					return
-				}
-				view?.displayEditor(.init(text: item.title, iconName: "checkmark", inFocus: true))
-			}
+			fatalError()
 		case "delete":
 			Task { @MainActor in
 				try? await interactor.deleteItems(with: selection)
@@ -92,6 +54,18 @@ extension ContentPresenter: ContentViewDelegate {
 			}
 		default:
 			break
+		}
+	}
+
+	func didTapAddButton() {
+		let model = ItemEditorModel(title: "")
+		router?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
+			guard isSuccess else {
+				return
+			}
+			Task { @MainActor in
+				try? await self?.interactor.addItem(.init(uuid: .init(), title: newModel.title, isStrikethrough: false))
+			}
 		}
 	}
 }

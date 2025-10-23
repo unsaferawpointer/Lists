@@ -27,6 +27,11 @@ final class ContentAssembly {
 		viewController.delegate = presenter
 		presenter.view = viewController
 
+		let router = Router()
+		router.viewController = viewController
+
+		presenter.router = router
+
 		return viewController
 	}
 }

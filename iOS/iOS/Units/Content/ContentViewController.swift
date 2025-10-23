@@ -9,13 +9,12 @@ import UIKit
 
 protocol ContentViewDelegate: AnyObject {
 	func viewDidLoad()
-	func editorDidCommit(text: String)
+	func didTapAddButton()
 	func contextMenuSelected(menuItem: String, with selection: [UUID])
 }
 
 protocol ContentView: AnyObject {
 	func display(newItems: [ContentItem])
-	func displayEditor(_ model: ItemEditorModel)
 	func scroll(to id: UUID)
 }
 
@@ -45,20 +44,6 @@ class ContentViewController: UIViewController {
 		return view
 	}()
 
-	lazy var editorView: ItemEditorView = {
-		let view = ItemEditorView(frame: .zero)
-		view.action = { [weak self] newText in
-			self?.delegate?.editorDidCommit(text: newText)
-		}
-
-		let interaction = UIScrollEdgeElementContainerInteraction()
-		interaction.scrollView = collectionView
-		interaction.edge = .bottom
-
-		view.addInteraction(interaction)
-		return view
-	}()
-
 	// MARK: - UIViewController life-cycle
 
 	override func loadView() {
@@ -84,11 +69,6 @@ class ContentViewController: UIViewController {
 		navigationController?.setToolbarHidden(false, animated: true)
 	}
 
-	override func viewDidLayoutSubviews() {
-		super.viewDidLayoutSubviews()
-		collectionView.contentInset.bottom = editorView.frame.height
-	}
-
 	override func setEditing(_ editing: Bool, animated: Bool) {
 		super.setEditing(editing, animated: animated)
 		collectionView.isEditing = isEditing
@@ -110,10 +90,6 @@ extension ContentViewController: ContentView {
 			self.contentUnavailableConfiguration = nil
 		}
 		setNeedsUpdateContentUnavailableConfiguration()
-	}
-
-	func displayEditor(_ model: ItemEditorModel) {
-		editorView.model = model
 	}
 
 	func scroll(to id: UUID) {
@@ -143,17 +119,13 @@ private extension ContentViewController {
 	}
 
 	func configureBottomBar() {
-		view.addSubview(editorView)
-		editorView.translatesAutoresizingMaskIntoConstraints = false
-
-		NSLayoutConstraint.activate(
-			[
-				editorView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
-				editorView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
-				editorView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: 0)
-			]
-		)
-
+		toolbarItems =
+		[
+			.flexibleSpace(),
+			UIBarButtonItem(primaryAction: UIAction(title: "Add Item", image: UIImage(systemName: "plus"), handler: { [weak self] _ in
+				self?.delegate?.didTapAddButton()
+			}))
+		]
 	}
 }
 
