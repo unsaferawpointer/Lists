@@ -17,11 +17,12 @@ extension ItemsConverter: Converter {
 	typealias U = Item
 
 	func convert(input: [ItemEntity]) -> [Item] {
-		return input.compactMap { entity in
+		return input.compactMap { entity -> Item? in
 			guard let uuid = entity.uuid else {
 				return nil
 			}
-			return Item(uuid: uuid, title: entity.text ?? "Unknown title", isStrikethrough: entity.isStrikethrough)
+			let properties = Item.Properties(title: entity.text ?? "Unknown title", isStrikethrough: entity.isStrikethrough)
+			return Item(uuid: uuid, properties: properties)
 		}
 	}
 

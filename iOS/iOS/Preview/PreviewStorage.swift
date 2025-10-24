@@ -13,6 +13,13 @@ final class PreviewStorage { }
 // MARK: - StorageProtocol
 extension PreviewStorage: StorageProtocol {
 
+	func updateList(with id: UUID, change: ListChange) async throws { }
+
+	func updateItems(with ids: [UUID], change: ItemChange) async throws { }
+
+	func addList(_ list: List) async throws { }
+	
+
 	func modificate<E>(type: E.Type, with ids: [UUID], modification: (E) -> Void) async throws where E : NSManagedObject { }
 	func addItem(_ item: Item, to list: UUID?) async throws { }
 
@@ -29,11 +36,11 @@ extension PreviewStorage: StorageProtocol {
 	func deleteItems(with ids: [UUID]) async throws { }
 
 	func fetchItems(in list: UUID?) async throws -> [Item] {
-		Array(repeating: Item(uuid: .init(), title: "Default Item", isStrikethrough: false), count: 240)
+		[]
 	}
 
 	func fetchItem(with id: UUID) async throws -> Item? {
-		return .init(uuid: .init(), title: "First Item", isStrikethrough: false)
+		return nil
 	}
 
 	func fecthLists() async throws -> [List] {

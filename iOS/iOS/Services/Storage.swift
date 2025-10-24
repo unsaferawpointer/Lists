@@ -8,134 +8,148 @@
 import Foundation
 import CoreData
 
+enum ItemChange {
+	case text(value: String)
+	case strikethrough(value: Bool)
+}
+
+enum ListChange {
+	case name(value: String)
+}
+
 protocol StorageProtocol {
+
+	// MARK: - Add
+
+	func addItem(_ item: Item, to listId: UUID?) async throws
+	func addList(_ list: List) async throws
+
+	// MARK: - Delete
+
+	func deleteItems(with ids: [UUID]) async throws
+	func deleteList(with id: UUID) async throws
+
+	// MARK: - Modificate
+
+	func updateItems(with ids: [UUID], change: ItemChange) async throws
+	func updateList(with id: UUID, change: ListChange) async throws
+
 	func fetchItems(in list: UUID?) async throws -> [Item]
 	func fetchItem(with id: UUID) async throws -> Item?
-	func addItem(_ item: Item, to list: UUID?) async throws
-	func setText(_ text: String, for item: UUID) async throws
-	func modificate<E: NSManagedObject>(type: E.Type, with ids: [UUID], modification: (E) -> Void) async throws
-	func deleteItems(with ids: [UUID]) async throws
-
-	func addList(with name: String) async throws
-	func setListName(_ name: String, for id: UUID) async throws
-	func deleteList(with id: UUID) async throws
 }
 
 
 final class Storage {
 
-	// MARK: - Data
+	// MARK: - Converters
 
-	private var items: [Item] = Array(repeating: .init(uuid: UUID(), title: "Defailt Item", isStrikethrough: false), count: 240)
+	private let itemConverter: any Converter<ItemEntity, Item> = ItemsConverter()
+
+	private let listConverter: any Converter<ListEntity, List> = ListsConverter()
 
 	// MARK: - Stored Properties
 
-	private let persistentContainer: NSPersistentContainer
+	private let container: NSPersistentContainer
 
 	// MARK: - Initialization
 
-	init(persistentContainer: NSPersistentContainer) {
-		self.persistentContainer = persistentContainer
+	init(container: NSPersistentContainer) {
+		self.container = container
 	}
 }
 
 // MARK: - Computed Properties
-private extension Storage {
-
-	var context: NSManagedObjectContext {
-		return persistentContainer.viewContext
-	}
-}
+private extension Storage { }
 
 // MARK: - StorageProtocol
 extension Storage: StorageProtocol {
 
 	func fetchItems(in list: UUID?) async throws -> [Item] {
-		return items
+		[]
 	}
-
+	
 	func fetchItem(with id: UUID) async throws -> Item? {
-		return items.first(where: { $0.id == id })
+		nil
 	}
 
-	func addItem(_ item: Item, to list: UUID?) async throws {
-		let newItem = ItemEntity(context: context)
-		newItem.uuid = item.id
-		newItem.text = item.title
-		do {
-
-			let list: ListEntity? = if let id = list {
-				fetchList(with: id)
-			} else {
-				nil
+	func addItem(_ item: Item, to listId: UUID?) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			let newEntity = itemConverter.newEntity(for: item, in: context)
+			guard let listId, let list = fetchEntity(type: ListEntity.self, with: listId, in: context) else {
+				try context.save()
+				return
 			}
-			newItem.list = list
-
+			newEntity.list = list
 			try context.save()
-		} catch {
-
 		}
 	}
 
-	func setText(_ text: String, for item: UUID) async throws {
-		guard let index = items.firstIndex(where: { $0.id == item }) else {
-			return
+	// MARK: - Add
+
+	func addList(_ list: List) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			let _ = listConverter.newEntity(for: list, in: context)
+			try context.save()
 		}
-		items[index].title = text
 	}
+
+	// MARK: - Delete
 
 	func deleteItems(with ids: [UUID]) async throws {
-		let items = fetchItems(with: ids)
-
-		do {
-			items.forEach { context.delete($0) }
-			try context.save()
-		}
-	}
-
-	func addList(with name: String) async throws {
-		let newList = ListEntity(context: context)
-		newList.name = name
-		do {
-			try context.save()
-		} catch {
-			
-		}
-	}
-
-	func setListName(_ name: String, for id: UUID) async throws {
-		guard let list = fetchList(with: id) else {
-			return
-		}
-		do {
-			list.name = name
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			try deleteEntities(type: ItemEntity.self, with: ids, in: context)
 			try context.save()
 		}
 	}
 
 	func deleteList(with id: UUID) async throws {
-		guard let list = fetchList(with: id) else {
-			return
-		}
-
-		do {
-			context.delete(list)
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			try deleteEntities(type: ListEntity.self, with: [id], in: context)
 			try context.save()
 		}
 	}
 
-	func modificate<E>(type: E.Type, with ids: [UUID], modification: (E) -> Void) async throws where E: NSManagedObject {
-		for entity in fetchEntities(type: E.self, with: ids) {
-			modification(entity)
+	// MARK: - Update
+
+	func updateItems(with ids: [UUID], change: ItemChange) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			let entities = fetchEntities(type: ItemEntity.self, with: ids, in: context)
+			for entity in entities {
+				switch change {
+				case let .text(value):
+					entity.text = value
+				case let .strikethrough(value):
+					entity.isStrikethrough = value
+				}
+			}
+			try context.save()
 		}
-		do { try context.save() }
+	}
+
+	func updateList(with id: UUID, change: ListChange) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			guard let entity = fetchEntity(type: ListEntity.self, with: id, in: context) else {
+				return
+			}
+			switch change {
+			case let .name(value):
+				entity.name = value
+			}
+			try context.save()
+		}
 	}
 }
 
 // MARK: - Helpers
 private extension Storage {
 
-	func fetchEntities<T: NSManagedObject>(type: T.Type, with ids: [UUID]) -> [T] {
+	func fetchEntities<T: NSManagedObject>(type: T.Type, with ids: [UUID], in context: NSManagedObjectContext) -> [T] {
 
 		let request: NSFetchRequest<T> = NSFetchRequest(entityName: String(describing: T.self))
 		request.predicate = NSPredicate(format: "uuid IN %@", ids)
@@ -144,22 +158,19 @@ private extension Storage {
 		return entities ?? []
 	}
 
-	func fetchList(with id: UUID) -> ListEntity? {
-
-		let request = ListEntity.fetchRequest()
+	func fetchEntity<T: NSManagedObject>(type: T.Type, with id: UUID, in context: NSManagedObjectContext) -> T? {
+		let request = T.fetchRequest()
 		request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
 		request.fetchLimit = 1
 
-		let lists = try? context.fetch(request)
-		return lists?.first
+		let entities = try? context.fetch(request) as? [T]
+		return entities?.first
 	}
 
-	func fetchItems(with ids: [UUID]) -> [ItemEntity] {
-
-		let request = ItemEntity.fetchRequest()
-		request.predicate = NSPredicate(format: "uuid IN %@", ids)
-
-		let entities = try? context.fetch(request)
-		return entities ?? []
+	func deleteEntities<T: NSManagedObject>(type: T.Type, with ids: [UUID], in context: NSManagedObjectContext) throws {
+		let entities = fetchEntities(type: type, with: ids, in: context)
+		for entity in entities {
+			context.delete(entity)
+		}
 	}
 }

@@ -25,7 +25,7 @@ extension SceneDelegate: UIWindowSceneDelegate {
 
 		let splitViewController = UISplitViewController(style: .doubleColumn)
 
-		let storage = Storage(persistentContainer: persistentContainer)
+		let storage = Storage(container: persistentContainer)
 
 		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: persistentContainer, selectionDelegate: self)
 		let content = ContentAssembly.build(payload: .all, storage: storage, persistentContainer: persistentContainer)
@@ -98,7 +98,7 @@ extension SceneDelegate: SelectionDelegate {
 			return
 		}
 
-		let storage = Storage(persistentContainer: persistentContainer)
+		let storage = Storage(container: persistentContainer)
 		let content = ContentAssembly.build(payload: item.contentPayload, storage: storage, persistentContainer: persistentContainer)
 
 		splitViewController.showDetailViewController(

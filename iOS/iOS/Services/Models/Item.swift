@@ -9,16 +9,15 @@ import Foundation
 
 struct Item: Sendable {
 
-	var uuid: UUID
-	var title: String
-	var isStrikethrough: Bool
+	let uuid: UUID
+
+	let properties: Properties
 
 	// MARK: - Initialization
 
-	init(uuid: UUID, title: String, isStrikethrough: Bool) {
+	init(uuid: UUID, properties: Properties) {
 		self.uuid = uuid
-		self.title = title
-		self.isStrikethrough = isStrikethrough
+		self.properties = properties
 	}
 }
 
@@ -27,5 +26,22 @@ extension Item: Identifiable {
 
 	var id: UUID {
 		uuid
+	}
+}
+
+// MARK: - Computed Properties
+extension Item {
+
+	var title: String { properties.title }
+
+	var isStrikethrough: Bool { properties.isStrikethrough }
+}
+
+// MARK: - Nested Data Structs
+extension Item {
+
+	struct Properties {
+		var title: String
+		var isStrikethrough: Bool
 	}
 }

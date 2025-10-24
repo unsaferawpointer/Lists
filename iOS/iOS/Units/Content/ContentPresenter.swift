@@ -64,7 +64,8 @@ extension ContentPresenter: ContentViewDelegate {
 				return
 			}
 			Task { @MainActor in
-				try? await self?.interactor.addItem(.init(uuid: .init(), title: newModel.title, isStrikethrough: false))
+				let properties = Item.Properties(title: newModel.title, isStrikethrough: false)
+				try? await self?.interactor.addItem(with: properties)
 			}
 		}
 	}

@@ -49,7 +49,9 @@ extension SidebarPresenter: SidebarViewDelegate {
 					guard isSuccess else {
 						return
 					}
-					self?.interactor?.setListName(newModel.name, for: item)
+					Task { @MainActor [weak self] in
+						try? await self?.interactor?.setListName(newModel.name, for: item)
+					}
 				}
 			}
 		case "delete":
@@ -65,7 +67,9 @@ extension SidebarPresenter: SidebarViewDelegate {
 			guard isSuccess else {
 				return
 			}
-			self?.interactor?.addList(with: newModel.name)
+			Task { @MainActor [weak self] in
+				try? await self?.interactor?.addList(with: newModel.name)
+			}
 		}
 	}
 
