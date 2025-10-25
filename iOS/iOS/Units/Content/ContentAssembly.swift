@@ -14,7 +14,11 @@ final class ContentAssembly {
 
 		let coreDataProvider = CoreDataProvider<ItemEntity>(
 			persistentContainer: persistentContainer,
-			sortDescriptors: [NSSortDescriptor(keyPath: \ItemEntity.creationDate, ascending: true)],
+			sortDescriptors:
+				[
+					NSSortDescriptor(keyPath: \ItemEntity.offset, ascending: true),
+					NSSortDescriptor(keyPath: \ItemEntity.creationDate, ascending: true)
+				],
 			predicate: payload.value
 		)
 		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ItemsConverter())

@@ -34,6 +34,10 @@ protocol StorageProtocol {
 	func updateItems(with ids: [UUID], change: ItemChange) async throws
 	func updateList(with id: UUID, change: ListChange) async throws
 
+	// MARK: - Move
+
+	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws
+
 	func fetchItems(in list: UUID?) async throws -> [Item]
 	func fetchItem(with id: UUID) async throws -> Item?
 }
@@ -144,15 +148,48 @@ extension Storage: StorageProtocol {
 			try context.save()
 		}
 	}
+
+	// MARK: - Move
+
+	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+
+			var entities = fetchEntities(type: ItemEntity.self, with: nil, in: context)
+				.sorted { lhs, rhs in
+					lhs.offset < rhs.offset
+				}
+
+			guard let targetOffset = entities.firstIndex(where: { $0.uuid == destination.id }),
+				  let sourceOffset = entities.firstIndex(where: { $0.uuid == id }) else {
+				return
+			}
+
+			switch destination {
+			case .after:
+				entities.move(from: sourceOffset, to: targetOffset + 1)
+			case .before:
+				entities.move(from: sourceOffset, to: targetOffset)
+			}
+			for (index, entity) in entities.enumerated() {
+				entity.offset = Int64(index)
+			}
+			try context.save()
+		}
+	}
 }
 
 // MARK: - Helpers
 private extension Storage {
 
-	func fetchEntities<T: NSManagedObject>(type: T.Type, with ids: [UUID], in context: NSManagedObjectContext) -> [T] {
+	func fetchEntities<T: NSManagedObject>(type: T.Type, with ids: [UUID]?, in context: NSManagedObjectContext) -> [T] {
 
 		let request: NSFetchRequest<T> = NSFetchRequest(entityName: String(describing: T.self))
-		request.predicate = NSPredicate(format: "uuid IN %@", ids)
+		request.predicate = if let ids {
+			NSPredicate(format: "uuid IN %@", ids)
+		} else {
+			nil
+		}
 
 		let entities = try? context.fetch(request)
 		return entities ?? []

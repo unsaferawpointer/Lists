@@ -21,6 +21,8 @@ public class ItemEntity: NSManagedObject {
 	@NSManaged public var rawOptions: Int64
 	@NSManaged public var list: ListEntity?
 
+	@NSManaged public var offset: Int64
+
 	public override func awakeFromInsert() {
 		super.awakeFromInsert()
 
@@ -29,6 +31,8 @@ public class ItemEntity: NSManagedObject {
 		self.creationDate = .now
 		self.list = nil
 		self.rawOptions = 0
+
+		self.offset = 0
 	}
 }
 

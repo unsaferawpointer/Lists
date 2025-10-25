@@ -174,6 +174,7 @@ extension ContentTableAdapter: UICollectionViewDataSource {
 	}
 }
 
+// MARK: - Moving Support
 extension ContentTableAdapter {
 
 	func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
@@ -181,7 +182,27 @@ extension ContentTableAdapter {
 	}
 
 	func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+		let id = items[sourceIndexPath.row].id
 
+		let destination: RelativeDestination<UUID> = if sourceIndexPath.row < destinationIndexPath.row {
+			destinationIndexPath.row < items.count - 1 ? .before(id: items[destinationIndexPath.row + 1].id) : .after(id: items[destinationIndexPath.row].id)
+		} else {
+			.before(id: items[destinationIndexPath.row].id)
+		}
+
+		let item = items.remove(at: sourceIndexPath.row)
+		items.insert(item, at: destinationIndexPath.row)
+
+		delegate?.moveItem(with: id, to: destination)
+	}
+
+	func collectionView(
+		_ collectionView: UICollectionView,
+		targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath,
+		atCurrentIndexPath currentIndexPath: IndexPath,
+		toProposedIndexPath proposedIndexPath: IndexPath
+	) -> IndexPath {
+		proposedIndexPath
 	}
 }
 
@@ -189,6 +210,10 @@ extension ContentTableAdapter {
 extension ContentTableAdapter: UICollectionViewDelegate {
 
 	func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
+
+		guard !collectionView.isEditing else {
+			return nil
+		}
 
 		let ids = indexPaths.map(\.row).map {
 			items[$0].id

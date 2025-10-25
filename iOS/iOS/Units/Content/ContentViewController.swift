@@ -11,6 +11,7 @@ protocol ContentViewDelegate: AnyObject {
 	func viewDidLoad()
 	func didTapAddButton()
 	func contextMenuSelected(menuItem: String, with selection: [UUID])
+	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>)
 }
 
 protocol ContentView: AnyObject {
@@ -41,6 +42,7 @@ class ContentViewController: UIViewController {
 		let view = UICollectionView(frame: .zero, collectionViewLayout: layout)
 		view.dragInteractionEnabled = true
 		view.allowsMultipleSelectionDuringEditing = true
+		view.reorderingCadence = .immediate
 		return view
 	}()
 

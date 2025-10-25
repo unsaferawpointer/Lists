@@ -63,10 +63,16 @@ extension ContentPresenter: ContentViewDelegate {
 			guard isSuccess else {
 				return
 			}
-			Task { @MainActor in
+			Task { @MainActor [weak self] in
 				let properties = Item.Properties(title: newModel.title, isStrikethrough: false)
 				try? await self?.interactor.addItem(with: properties)
 			}
+		}
+	}
+
+	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) {
+		Task { @MainActor [weak self] in
+			try? await self?.interactor.moveItem(with: id, to: destination)
 		}
 	}
 }
