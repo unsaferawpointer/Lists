@@ -135,6 +135,10 @@ private extension ContentViewController {
 
 	func invalidateToolbar() {
 		toolbarItems = toolbarManager.build(isEditing: isEditing)
+		guard let model = delegate?.getToolbarModel() else {
+			return
+		}
+		toolbarManager.updateStatus(toolbar: model)
 	}
 
 	func configureNavigationBar() {

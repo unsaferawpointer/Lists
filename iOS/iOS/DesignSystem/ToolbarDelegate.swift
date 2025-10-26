@@ -9,4 +9,5 @@ import UIKit
 
 protocol ToolbarDelegate: AnyObject {
 	func didSelectToolbarItem(with identifier: String, state: UIMenuElement.State)
+	func getToolbarModel() -> ContentToolbarModel
 }

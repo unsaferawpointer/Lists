@@ -36,7 +36,6 @@ final class ContentToolbarManager {
 	lazy var statusItem: UIBarButtonItem = {
 
 		let label = UILabel()
-		label.text = "Loading..."
 		label.font = UIFont.preferredFont(forTextStyle: .headline)
 
 		let item = UIBarButtonItem(customView: label)

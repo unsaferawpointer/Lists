@@ -104,6 +104,19 @@ extension ContentPresenter: ToolbarDelegate {
 			break
 		}
 	}
+
+	func getToolbarModel() -> ContentToolbarModel {
+		let selection = view?.selection ?? []
+		let state = state(for: selection)
+
+		return ContentToolbarModel(
+			secondary: .init(
+				isEnadled: !selection.isEmpty,
+				state: ["strikethrough": state]
+			),
+			status: .init(title: selection.isEmpty ? "Select Items" : "\(selection.count) Item Selected")
+		)
+	}
 }
 
 // MARK: - TableDelegate
@@ -111,15 +124,9 @@ extension ContentPresenter: TableDelegate {
 
 	func table(didUpdateSelection selection: [UUID]) {
 
-		let state = state(for: selection)
+		// MARK: - Toolbar
 
-		let model = ContentToolbarModel(
-			secondary: .init(
-				isEnadled: !selection.isEmpty,
-				state: ["strikethrough": state]
-			),
-			status: .init(title: selection.isEmpty ? "Select Items" : "\(selection.count) Item Selected")
-		)
+		let model = getToolbarModel()
 		view?.display(toolbar: model)
 	}
 }
@@ -165,16 +172,7 @@ extension ContentPresenter: ContentPresenterProtocol {
 
 		// MARK: - Toolbar
 
-		let selection = view?.selection ?? []
-		let state = state(for: selection)
-
-		let model = ContentToolbarModel(
-			secondary: .init(
-				isEnadled: !selection.isEmpty,
-				state: ["strikethrough": state]
-			),
-			status: .init(title: selection.isEmpty ? "Select Items" : "\(selection.count) Item Selected")
-		)
+		let model = getToolbarModel()
 		view?.display(toolbar: model)
 	}
 }
