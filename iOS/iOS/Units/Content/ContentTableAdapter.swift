@@ -51,6 +51,12 @@ extension ContentTableAdapter {
 	var isEmpty: Bool {
 		return items.isEmpty
 	}
+
+	var selection: [UUID] {
+		return collectionView.indexPathsForSelectedItems?.map {
+			items[$0.row].id
+		} ?? []
+	}
 }
 
 // MARK: - Helpers
@@ -171,6 +177,18 @@ extension ContentTableAdapter: UICollectionViewDataSource {
 		]
 
 		return cell
+	}
+}
+
+// MARK: - Selection Support
+extension ContentTableAdapter {
+
+	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+		delegate?.table(didUpdateSelection: selection)
+	}
+
+	func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+		delegate?.table(didUpdateSelection: selection)
 	}
 }
 

@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol ContentViewDelegate: AnyObject {
+protocol ContentViewDelegate: AnyObject, TableDelegate, ToolbarDelegate {
 	func viewDidLoad()
 	func didTapAddButton()
 	func contextMenuSelected(menuItem: String, with selection: [UUID])
@@ -16,12 +16,20 @@ protocol ContentViewDelegate: AnyObject {
 
 protocol ContentView: AnyObject {
 	func display(newItems: [ContentItem])
+	func display(toolbar: ContentToolbarModel)
 	func scroll(to id: UUID)
+	var selection: [UUID] { get }
 }
 
 class ContentViewController: UIViewController {
 
 	var delegate: ContentViewDelegate?
+
+	lazy var toolbarManager: ContentToolbarManager = {
+		let manager = ContentToolbarManager()
+		manager.delegate = delegate
+		return manager
+	}()
 
 	// MARK: - Data
 
@@ -52,7 +60,6 @@ class ContentViewController: UIViewController {
 		self.view = UIView()
 		configureConstraints()
 		configureNavigationBar()
-		configureBottomBar()
 	}
 
 	override func viewDidLoad() {
@@ -69,16 +76,22 @@ class ContentViewController: UIViewController {
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		navigationController?.setToolbarHidden(false, animated: true)
+		invalidateToolbar()
 	}
 
 	override func setEditing(_ editing: Bool, animated: Bool) {
 		super.setEditing(editing, animated: animated)
 		collectionView.isEditing = isEditing
+		invalidateToolbar()
 	}
 }
 
 // MARK: - ContentView
 extension ContentViewController: ContentView {
+
+	var selection: [UUID] {
+		adapter.selection
+	}
 
 	func display(newItems: [ContentItem]) {
 		adapter.reload(newItems: newItems)
@@ -92,6 +105,10 @@ extension ContentViewController: ContentView {
 			self.contentUnavailableConfiguration = nil
 		}
 		setNeedsUpdateContentUnavailableConfiguration()
+	}
+
+	func display(toolbar: ContentToolbarModel) {
+		toolbarManager.updateStatus(toolbar: toolbar)
 	}
 
 	func scroll(to id: UUID) {
@@ -116,18 +133,12 @@ private extension ContentViewController {
 		)
 	}
 
-	func configureNavigationBar() {
-		navigationItem.rightBarButtonItem = editButtonItem
+	func invalidateToolbar() {
+		toolbarItems = toolbarManager.build(isEditing: isEditing)
 	}
 
-	func configureBottomBar() {
-		toolbarItems =
-		[
-			.flexibleSpace(),
-			UIBarButtonItem(primaryAction: UIAction(title: "Add Item", image: UIImage(systemName: "plus"), handler: { [weak self] _ in
-				self?.delegate?.didTapAddButton()
-			}))
-		]
+	func configureNavigationBar() {
+		navigationItem.rightBarButtonItem = editButtonItem
 	}
 }
 
