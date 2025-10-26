@@ -63,6 +63,7 @@ extension ContentToolbarManager {
 	func updateStatus(toolbar: ContentToolbarModel) {
 		if let label = statusItem.customView as? UILabel {
 			label.text = toolbar.status.title
+			label.sizeToFit()
 		}
 		secondaryItem.isEnabled = toolbar.secondary.isEnadled
 		secondaryItem.menu = UIMenu(children: buildMenu(state: toolbar.secondary.state))
