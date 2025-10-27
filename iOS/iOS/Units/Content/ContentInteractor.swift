@@ -8,8 +8,9 @@
 import Foundation
 
 protocol ContentInteractorProtocol {
-	func fetchItems() async throws -> [Item]
+	func fetchItems() async throws
 	func addItem(with properties: Item.Properties) async throws
+	func item(for id: UUID) async throws -> Item?
 	func setText(_ text: String, for item: UUID) async throws
 	func strikeThroughItems(with ids: [UUID], flag: Bool) async throws
 	func deleteItems(with ids: [UUID]) async throws
@@ -48,9 +49,12 @@ final class ContentInteractor {
 // MARK: - ContentInteractorProtocol
 extension ContentInteractor: ContentInteractorProtocol {
 
-	func fetchItems() async throws -> [Item] {
+	func item(for id: UUID) async throws -> Item? {
+		dataProvider.firstItem { $0.id == id }
+	}
+
+	func fetchItems() async throws {
 		dataProvider.fetch()
-		return []
 	}
 
 	func addItem(with properties: Item.Properties) async throws {

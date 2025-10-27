@@ -42,15 +42,19 @@ extension ContentPresenter: ContentViewDelegate {
 	func contextMenuSelected(menuItem: String, with selection: [UUID]) {
 		switch menuItem {
 		case "edit":
-			fatalError()
+			guard let first = selection.first else {
+				return
+			}
+			Task { @MainActor [weak self] in
+				guard let item = try? await self?.interactor.item(for: first) else {
+					return
+				}
+				let model = ItemEditorModel(title: item.title)
+				self?.editItem(with: first, model: model)
+			}
 		case "delete":
 			Task { @MainActor in
 				try? await interactor.deleteItems(with: selection)
-				let items = try? await interactor.fetchItems()
-				let models = items?.map {
-					ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
-				}
-				view?.display(newItems: models ?? [])
 			}
 		case "strikethrough":
 			Task { @MainActor in
@@ -58,19 +62,6 @@ extension ContentPresenter: ContentViewDelegate {
 			}
 		default:
 			break
-		}
-	}
-
-	func didTapAddButton() {
-		let model = ItemEditorModel(title: "")
-		router?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
-			guard isSuccess else {
-				return
-			}
-			Task { @MainActor [weak self] in
-				let properties = Item.Properties(title: newModel.title, isStrikethrough: false)
-				try? await self?.interactor.addItem(with: properties)
-			}
 		}
 	}
 
@@ -91,7 +82,7 @@ extension ContentPresenter: ToolbarDelegate {
 
 		switch identifier {
 		case "new":
-			didTapAddButton()
+			createItem(with: .init(title: ""))
 		case "delete":
 			Task {
 				try? await interactor.deleteItems(with: selection)
@@ -133,7 +124,32 @@ extension ContentPresenter: TableDelegate {
 
 import UIKit
 
+// MARK: - Helpers
 extension ContentPresenter {
+
+	func createItem(with model: ItemEditorModel) {
+		router?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
+			guard isSuccess else {
+				return
+			}
+			Task { @MainActor [weak self] in
+				let properties = Item.Properties(title: newModel.title, isStrikethrough: false)
+				try? await self?.interactor.addItem(with: properties)
+			}
+		}
+	}
+
+	func editItem(with id: UUID, model: ItemEditorModel) {
+		router?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
+			guard isSuccess else {
+				return
+			}
+			Task { @MainActor [weak self] in
+				let properties = Item.Properties(title: newModel.title, isStrikethrough: false)
+				try? await self?.interactor.setText(properties.title, for: id)
+			}
+		}
+	}
 
 	func state(for selection: [UUID]) -> UIMenuElement.State {
 		let intersection = cache.strikethroughItems.intersection(selection)
