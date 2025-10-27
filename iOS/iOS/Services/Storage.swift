@@ -37,9 +37,6 @@ protocol StorageProtocol {
 	// MARK: - Move
 
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws
-
-	func fetchItems(in list: UUID?) async throws -> [Item]
-	func fetchItem(with id: UUID) async throws -> Item?
 }
 
 
@@ -68,18 +65,16 @@ private extension Storage { }
 // MARK: - StorageProtocol
 extension Storage: StorageProtocol {
 
-	func fetchItems(in list: UUID?) async throws -> [Item] {
-		[]
-	}
-	
-	func fetchItem(with id: UUID) async throws -> Item? {
-		nil
-	}
-
 	func addItem(_ item: Item, to listId: UUID?) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
 			let newEntity = itemConverter.newEntity(for: item, in: context)
+
+			let sortDescriptor = NSSortDescriptor(keyPath: \ItemEntity.offset, ascending: false)
+			if let lastItem = fetchEntity(type: ItemEntity.self, in: context, sort: [sortDescriptor]) {
+				newEntity.offset = lastItem.offset + 1
+			}
+
 			guard let listId, let list = fetchEntity(type: ListEntity.self, with: listId, in: context) else {
 				try context.save()
 				return
@@ -181,6 +176,15 @@ extension Storage: StorageProtocol {
 
 // MARK: - Helpers
 private extension Storage {
+
+	func fetchEntity<T: NSManagedObject>(type: T.Type, in context: NSManagedObjectContext, sort sortDescriptors: [NSSortDescriptor]) -> T? {
+		let request = T.fetchRequest()
+		request.sortDescriptors = sortDescriptors
+		request.fetchLimit = 1
+
+		let entities = try? context.fetch(request) as? [T]
+		return entities?.first
+	}
 
 	func fetchEntities<T: NSManagedObject>(type: T.Type, with ids: [UUID]?, in context: NSManagedObjectContext) -> [T] {
 
