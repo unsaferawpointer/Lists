@@ -127,7 +127,7 @@ private extension ContentViewController {
 				collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
 				collectionView.topAnchor.constraint(equalTo: view.topAnchor),
 				collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-				collectionView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor)
+				collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
 			]
 		)
 	}
