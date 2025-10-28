@@ -18,11 +18,16 @@ final class CoreDataProvider<T: NSManagedObject>: NSObject, NSFetchedResultsCont
 
 	private let predicate: NSPredicate?
 
+	private let fetchLimit: Int?
+
 	lazy private var fetchedResultController: NSFetchedResultsController<T> = {
 
 		let request = NSFetchRequest<T>(entityName: String(describing: T.self))
 		request.sortDescriptors = sortDescriptors
 		request.predicate = predicate
+		if let fetchLimit {
+			request.fetchLimit = fetchLimit
+		}
 
 		let controller = NSFetchedResultsController(
 			fetchRequest: request,
@@ -50,10 +55,16 @@ final class CoreDataProvider<T: NSManagedObject>: NSObject, NSFetchedResultsCont
 
 	// MARK: - Initialization
 
-	init(persistentContainer: NSPersistentContainer, sortDescriptors: [NSSortDescriptor], predicate: NSPredicate?) {
+	init(
+		persistentContainer: NSPersistentContainer,
+		sortDescriptors: [NSSortDescriptor],
+		predicate: NSPredicate?,
+		fetchLimit: Int? = nil
+	) {
 		self.persistentContainer = persistentContainer
 		self.sortDescriptors = sortDescriptors
 		self.predicate = predicate
+		self.fetchLimit = fetchLimit
 	}
 
 	// MARK: - NSFetchedResultsControllerDelegate

@@ -16,6 +16,7 @@ protocol ContentViewDelegate: AnyObject, TableDelegate, ToolbarDelegate {
 protocol ContentView: AnyObject {
 	func display(newItems: [ContentItem])
 	func display(toolbar: ContentToolbarModel)
+	func displayTitle(title: String)
 	func scroll(to id: UUID)
 	var selection: [UUID] { get }
 }
@@ -76,6 +77,7 @@ class ContentViewController: UIViewController {
 		super.viewWillAppear(animated)
 		navigationController?.setToolbarHidden(false, animated: true)
 		invalidateToolbar()
+		configureTitle()
 	}
 
 	override func setEditing(_ editing: Bool, animated: Bool) {
@@ -110,6 +112,10 @@ extension ContentViewController: ContentView {
 		toolbarManager.updateStatus(toolbar: toolbar)
 	}
 
+	func displayTitle(title: String) {
+		self.title = title
+	}
+
 	func scroll(to id: UUID) {
 //		adapter.scroll(to: id)
 	}
@@ -130,6 +136,10 @@ private extension ContentViewController {
 				collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
 			]
 		)
+	}
+
+	func configureTitle() {
+		navigationItem.largeTitleDisplayMode = .never
 	}
 
 	func invalidateToolbar() {

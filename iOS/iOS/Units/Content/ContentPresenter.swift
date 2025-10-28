@@ -9,6 +9,7 @@ import Foundation
 
 protocol ContentPresenterProtocol: AnyObject {
 	func present(items: [Item])
+	func present(list: List)
 }
 
 final class ContentPresenter {
@@ -190,5 +191,9 @@ extension ContentPresenter: ContentPresenterProtocol {
 
 		let model = getToolbarModel()
 		view?.display(toolbar: model)
+	}
+
+	func present(list: List) {
+		view?.displayTitle(title: list.name)
 	}
 }

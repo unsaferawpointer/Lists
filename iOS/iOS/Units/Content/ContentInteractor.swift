@@ -29,18 +29,45 @@ final class ContentInteractor {
 
 	private let storage: StorageProtocol
 
-	private let dataProvider: DataProvider<Item, ItemEntity>
+	private let itemsProvider: DataProvider<Item, ItemEntity>
+
+	private let listsProvider: DataProvider<List, ListEntity>?
 
 	// MARK: - Initialization
 
-	init(payload: ContentPayload, storage: StorageProtocol, dataProvider: DataProvider<Item, ItemEntity>) {
+	init(
+		payload: ContentPayload,
+		storage: StorageProtocol,
+		itemsProvider: DataProvider<Item, ItemEntity>,
+		listsProvider: DataProvider<List, ListEntity>?
+	) {
 		self.payload = payload
 		self.storage = storage
-		self.dataProvider = dataProvider
+		self.itemsProvider = itemsProvider
+		self.listsProvider = listsProvider
 
-		Task { @MainActor in
-			for await change in dataProvider.contentChanges {
+		Task { @MainActor [weak self] in
+			guard let self else {
+				return
+			}
+			for await change in itemsProvider.contentChanges {
 				presenter?.present(items: change)
+			}
+		}
+
+		guard let listsProvider else {
+			return
+		}
+
+		Task { @MainActor [weak self] in
+			guard let self else {
+				return
+			}
+			for await change in listsProvider.contentChanges {
+				guard let list = change.first else {
+					continue
+				}
+				presenter?.present(list: list)
 			}
 		}
 	}
@@ -50,11 +77,12 @@ final class ContentInteractor {
 extension ContentInteractor: ContentInteractorProtocol {
 
 	func item(for id: UUID) async throws -> Item? {
-		dataProvider.firstItem { $0.id == id }
+		itemsProvider.firstItem { $0.id == id }
 	}
 
 	func fetchItems() async throws {
-		dataProvider.fetch()
+		itemsProvider.fetch()
+		listsProvider?.fetch()
 	}
 
 	func addItem(with properties: Item.Properties) async throws {
