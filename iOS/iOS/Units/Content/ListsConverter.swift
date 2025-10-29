@@ -21,7 +21,8 @@ extension ListsConverter: Converter {
 			guard let uuid = entity.uuid else {
 				return nil
 			}
-			return List(uuid: uuid, name: entity.name ?? "Undefeniend Name")
+			let properties = List.Properties(name: entity.name ?? "Undefeniend Name", icon: entity.icon)
+			return List(uuid: uuid, properties: properties)
 		}
 	}
 
@@ -30,6 +31,7 @@ extension ListsConverter: Converter {
 		entity.uuid = item.id
 		entity.name = item.name
 		entity.creationDate = .now
+		entity.icon = item.properties.icon
 		return entity
 	}
 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ListEditor: View {
 
-	@State var name: String = ""
+	@State var model: ListEditorModel
 
 	var completion: ((Bool, ListEditorModel) -> Void)?
 
@@ -18,11 +18,13 @@ struct ListEditor: View {
 	let validator = ListValidator()
 
 	var validationResult: ListValidator.ValidationResult {
-		validator.validate(name: name)
+		validator.validate(name: model.name)
 	}
 
+	// MARK: - Initialization
+
 	init(model: ListEditorModel, completion: ((Bool, ListEditorModel) -> Void)? = nil) {
-		self._name = State(initialValue: model.name)
+		self._model = State(initialValue: model)
 		self.completion = completion
 	}
 
@@ -30,7 +32,7 @@ struct ListEditor: View {
 		NavigationStack {
 			Form {
 				Section {
-					TextField("Enter a name", text: $name)
+					TextField("Enter a name", text: $model.name)
 						.focused($inFocus)
 						.onAppear {
 							inFocus = true
@@ -45,7 +47,7 @@ struct ListEditor: View {
 						Text(error.errorDescription ?? "")
 					}
 				}
-
+				IconPicker(selectedIcon: $model.icon)
 			}
 			.formStyle(.grouped)
 			.navigationTitle("Edit List")
@@ -53,7 +55,7 @@ struct ListEditor: View {
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
 					Button(role: .confirm) {
-						completion?(true, .init(name: name))
+						completion?(true, model)
 					}
 					.disabled(!validationResult.isSuccess)
 				}

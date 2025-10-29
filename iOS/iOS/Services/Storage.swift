@@ -13,10 +13,6 @@ enum ItemChange {
 	case strikethrough(value: Bool)
 }
 
-enum ListChange {
-	case name(value: String)
-}
-
 protocol StorageProtocol {
 
 	// MARK: - Add
@@ -32,7 +28,7 @@ protocol StorageProtocol {
 	// MARK: - Modificate
 
 	func updateItems(with ids: [UUID], change: ItemChange) async throws
-	func updateList(with id: UUID, change: ListChange) async throws
+	func updateList(with id: UUID, properties: List.Properties) async throws
 
 	// MARK: - Move
 
@@ -130,16 +126,14 @@ extension Storage: StorageProtocol {
 		}
 	}
 
-	func updateList(with id: UUID, change: ListChange) async throws {
+	func updateList(with id: UUID, properties: List.Properties) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
 			guard let entity = fetchEntity(type: ListEntity.self, with: id, in: context) else {
 				return
 			}
-			switch change {
-			case let .name(value):
-				entity.name = value
-			}
+			entity.name = properties.name
+			entity.icon = properties.icon
 			try context.save()
 		}
 	}

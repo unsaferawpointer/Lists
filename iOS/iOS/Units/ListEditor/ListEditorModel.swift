@@ -9,4 +9,5 @@ import Foundation
 
 struct ListEditorModel {
 	var name: String
+	var icon: Icon?
 }

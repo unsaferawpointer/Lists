@@ -10,13 +10,13 @@ import Foundation
 struct List: Sendable {
 
 	let uuid: UUID
-	var name: String
+	var properties: Properties
 
 	// MARK: - Initialization
 
-	init(uuid: UUID, name: String) {
+	init(uuid: UUID, properties: Properties) {
 		self.uuid = uuid
-		self.name = name
+		self.properties = properties
 	}
 }
 
@@ -25,5 +25,22 @@ extension List: Identifiable {
 
 	var id: UUID {
 		uuid
+	}
+}
+
+// MARK: - Computed Properties
+extension List {
+
+	var name: String {
+		properties.name
+	}
+}
+
+// MARK: - Nested Data Structs
+extension List {
+
+	struct Properties {
+		var name: String
+		var icon: Icon?
 	}
 }

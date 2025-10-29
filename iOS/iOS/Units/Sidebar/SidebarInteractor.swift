@@ -9,9 +9,9 @@ import Foundation
 
 protocol SidebarInteractorProtocol: AnyObject {
 	func fetchLists() async throws -> [List]
-	func addList(with name: String) async throws
+	func addList(with properties: List.Properties) async throws
 	func deleteList(with id: UUID)
-	func setListName(_ name: String, for id: UUID) async throws
+	func updateList(with id: UUID, properties: List.Properties) async throws
 	func list(for id: UUID) async throws -> List?
 }
 
@@ -49,13 +49,12 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 		}
 	}
 
-	func setListName(_ name: String, for id: UUID) async throws {
-		let change: ListChange = .name(value: name)
-		try? await storage.updateList(with: id, change: change)
+	func updateList(with id: UUID, properties: List.Properties) async throws {
+		try? await storage.updateList(with: id, properties: properties)
 	}
 
-	func addList(with name: String) async throws {
-		let newList = List(uuid: UUID(), name: name)
+	func addList(with properties: List.Properties) async throws {
+		let newList = List(uuid: UUID(), properties: properties)
 		try? await storage.addList(newList)
 	}
 

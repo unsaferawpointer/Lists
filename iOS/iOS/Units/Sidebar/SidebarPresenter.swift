@@ -50,7 +50,8 @@ extension SidebarPresenter: SidebarViewDelegate {
 						return
 					}
 					Task { @MainActor [weak self] in
-						try? await self?.interactor?.setListName(newModel.name, for: item)
+						let properties = List.Properties(name: newModel.name, icon: newModel.icon)
+						try? await self?.interactor?.updateList(with: item, properties: properties)
 					}
 				}
 			}
@@ -68,7 +69,8 @@ extension SidebarPresenter: SidebarViewDelegate {
 				return
 			}
 			Task { @MainActor [weak self] in
-				try? await self?.interactor?.addList(with: newModel.name)
+				let properties = List.Properties(name: newModel.name, icon: newModel.icon)
+				try? await self?.interactor?.addList(with: properties)
 			}
 		}
 	}
@@ -91,7 +93,7 @@ private extension SidebarPresenter {
 
 	func convert(lists: [List]) -> [NavigationItem] {
 		lists.map { list in
-			NavigationItem(id: .list(id: list.id), iconName: "star", title: list.name)
+			NavigationItem(id: .list(id: list.id), iconName: list.properties.icon?.iconName ?? "list", title: list.name)
 		}
 	}
 }

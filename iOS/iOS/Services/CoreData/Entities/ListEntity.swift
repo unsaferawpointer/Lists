@@ -54,3 +54,16 @@ extension ListEntity {
 	@NSManaged public func removeFromItems(_ values: NSSet)
 
 }
+
+// MARK: - Computed Properties
+extension ListEntity {
+
+	var icon: Icon? {
+		get {
+			return Icon(rawValue: rawIcon)
+		}
+		set {
+			self.rawIcon = newValue?.rawValue ?? 0
+		}
+	}
+}
