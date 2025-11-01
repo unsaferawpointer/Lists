@@ -92,6 +92,8 @@ extension ContentPresenter: ToolbarDelegate {
 			Task {
 				try? await interactor.strikeThroughItems(with: selection, flag: state == .on ? false : true)
 			}
+		case "move":
+			moveItemsToList()
 		default:
 			break
 		}
@@ -136,6 +138,18 @@ extension ContentPresenter {
 			Task { @MainActor [weak self] in
 				let properties = Item.Properties(title: newModel.title, isStrikethrough: false)
 				try? await self?.interactor.addItem(with: properties)
+			}
+		}
+	}
+
+	func moveItemsToList() {
+		let selection = view?.selection ?? []
+		router?.presentListPicker { [weak self] isSuccess, list in
+			guard isSuccess else {
+				return
+			}
+			Task {
+				try? await self?.interactor.moveItems(with: selection, to: list)
 			}
 		}
 	}

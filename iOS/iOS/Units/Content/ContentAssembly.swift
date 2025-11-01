@@ -54,6 +54,7 @@ final class ContentAssembly {
 
 		let router = Router()
 		router.viewController = viewController
+		router.persistentContainer = persistentContainer
 
 		presenter.router = router
 

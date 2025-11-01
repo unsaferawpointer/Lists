@@ -13,4 +13,5 @@ extension UIImage {
 	static let trash = UIImage(systemName: "trash")
 	static let strikethrough = UIImage(systemName: "strikethrough")
 	static let ellipsis = UIImage(systemName: "ellipsis")
+	static let arrowLeftRight = UIImage(systemName: "arrow.left.arrow.right")
 }

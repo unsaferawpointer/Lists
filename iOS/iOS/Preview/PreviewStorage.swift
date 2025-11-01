@@ -13,6 +13,8 @@ final class PreviewStorage { }
 // MARK: - StorageProtocol
 extension PreviewStorage: StorageProtocol {
 
+	func moveItems(with ids: [UUID], to list: UUID?) async throws { }
+
 	func updateList(with id: UUID, properties: List.Properties) async throws { }
 
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws { }

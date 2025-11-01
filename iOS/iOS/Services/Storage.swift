@@ -33,6 +33,7 @@ protocol StorageProtocol {
 	// MARK: - Move
 
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws
+	func moveItems(with ids: [UUID], to list: UUID?) async throws
 }
 
 
@@ -163,6 +164,33 @@ extension Storage: StorageProtocol {
 			for (index, entity) in entities.enumerated() {
 				entity.offset = Int64(index)
 			}
+			try context.save()
+		}
+	}
+
+	func moveItems(with ids: [UUID], to list: UUID?) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+
+			let entities = fetchEntities(type: ItemEntity.self, with: nil, in: context)
+				.sorted { lhs, rhs in
+					lhs.offset < rhs.offset
+				}
+
+			let listEntity: ListEntity? = if let list {
+				fetchEntity(type: ListEntity.self, with: list, in: context)
+			} else {
+				nil
+			}
+
+			let moving = entities.compactMap { entity -> ItemEntity? in
+				guard let uuid = entity.uuid else {
+					return nil
+				}
+				return ids.contains(uuid) ? entity : nil
+			}
+
+			moving.forEach { $0.list = listEntity }
 			try context.save()
 		}
 	}

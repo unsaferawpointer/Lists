@@ -74,6 +74,9 @@ private extension ContentToolbarManager {
 
 	func buildMenu(state: [String: UIMenuElement.State]) -> [UIMenuElement] {
 		[
+			UIAction(title: "Move To...", image: .arrowLeftRight, identifier: .init(.move), state: state["move"] ?? .off) { [weak self] _ in
+				self?.delegate?.didSelectToolbarItem(with: "move", state: state["move"] ?? .off)
+			},
 			UIAction(title: "Strikethrough", image: .strikethrough, identifier: .init(.strikeThrough), state: state["strikethrough"] ?? .off) { [weak self] _ in
 				self?.delegate?.didSelectToolbarItem(with: "strikethrough", state: state["strikethrough"] ?? .off)
 			},

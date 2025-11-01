@@ -12,6 +12,7 @@ enum ElementIdentifier: String {
 	case newItem
 	case delete
 	case strikeThrough
+	case move
 }
 
 extension UIAction.Identifier {
