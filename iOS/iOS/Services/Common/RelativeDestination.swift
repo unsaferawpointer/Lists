@@ -21,4 +21,19 @@ extension RelativeDestination {
 		case let .before(id):	id
 		}
 	}
+
+	func map<C>(block: (T) -> C?) -> RelativeDestination<C>? {
+		switch self {
+		case let .after(id):
+			guard let newValue = block(id) else {
+				return nil
+			}
+			return .after(id: newValue)
+		case let .before(id):
+			guard let newValue = block(id) else {
+				return nil
+			}
+			return .before(id: newValue)
+		}
+	}
 }

@@ -21,6 +21,8 @@ public class ListEntity: NSManagedObject {
 	@NSManaged public var creationDate: Date?
 	@NSManaged public var items: NSSet?
 
+	@NSManaged public var offset: Int64
+
 	public override func awakeFromInsert() {
 		super.awakeFromInsert()
 
@@ -28,6 +30,7 @@ public class ListEntity: NSManagedObject {
 		self.uuid = UUID()
 		self.rawIcon = 0
 		self.creationDate = .now
+		self.offset = 0
 	}
 }
 

@@ -75,6 +75,12 @@ extension SidebarPresenter: SidebarViewDelegate {
 		}
 	}
 
+	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) {
+		Task {
+			try? await interactor?.moveList(with: id, to: destination)
+		}
+	}
+
 }
 
 // MARK: - SidebarPresenterProtocol

@@ -200,7 +200,31 @@ extension SidebarTableAdapter {
 	}
 
 	func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+		guard case let .list(id) = collection[sourceIndexPath.row].id else {
+			return
+		}
 
+		let destination: RelativeDestination<NavigationItem.ID> = if sourceIndexPath.row < destinationIndexPath.row {
+			destinationIndexPath.row < collection.count - 1 ? .before(id: collection[destinationIndexPath.row + 1].id) : .after(id: collection[destinationIndexPath.row].id)
+		} else {
+			.before(id: collection[destinationIndexPath.row].id)
+		}
+
+		let item = collection.remove(at: sourceIndexPath.row)
+		collection.insert(item, at: destinationIndexPath.row)
+
+		let newDestination = destination.map { item -> UUID? in
+			guard case .list(let id) = item else {
+				return nil
+			}
+			return id
+		}
+
+		guard let newDestination else {
+			return
+		}
+
+		delegate?.moveList(with: id, to: newDestination)
 	}
 
 	func collectionView(
@@ -208,15 +232,7 @@ extension SidebarTableAdapter {
 		targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath,
 		atCurrentIndexPath currentIndexPath: IndexPath, toProposedIndexPath proposedIndexPath: IndexPath
 	) -> IndexPath {
-		// Запрещаем перенос в секцию 0
-			let forbiddenSection = 0
-
-			if proposedIndexPath.section == forbiddenSection {
-				// Возвращаем исходный indexPath или другой допустимый
-				return originalIndexPath
-			}
-
-			return proposedIndexPath
+		return proposedIndexPath.section == 1 ? proposedIndexPath : originalIndexPath
 	}
 }
 

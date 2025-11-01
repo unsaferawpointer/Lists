@@ -14,7 +14,11 @@ final class SidebarAssembly {
 
 		let coreDataProvider = CoreDataProvider<ListEntity>(
 			persistentContainer: persistentContainer,
-			sortDescriptors: [NSSortDescriptor(keyPath: \ListEntity.creationDate, ascending: true)],
+			sortDescriptors:
+				[
+					NSSortDescriptor(keyPath: \ListEntity.offset, ascending: true),
+					NSSortDescriptor(keyPath: \ListEntity.creationDate, ascending: true)
+				],
 			predicate: nil
 		)
 		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ListsConverter())
