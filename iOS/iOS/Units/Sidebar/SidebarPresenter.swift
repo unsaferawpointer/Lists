@@ -44,7 +44,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 				guard let list = try? await interactor?.list(for: item) else {
 					return
 				}
-				let model = ListEditorModel(name: list.name)
+				let model = ListEditorModel(name: list.name, icon: list.properties.icon)
 				router?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
 					guard isSuccess else {
 						return
