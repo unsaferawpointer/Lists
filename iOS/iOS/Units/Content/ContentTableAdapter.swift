@@ -115,9 +115,6 @@ private extension ContentTableAdapter {
 
 			let configuration = UIHostingConfiguration {
 				HStack(spacing: 16) {
-					Circle()
-						.foregroundStyle(.tertiary)
-						.frame(width: 6, height: 6)
 					VStack(alignment: .leading) {
 						Text(newModel.title)
 							.foregroundStyle(newModel.isStrikethrough ? .secondary : .primary)
@@ -151,9 +148,6 @@ extension ContentTableAdapter: UICollectionViewDataSource {
 
 		let configuration = UIHostingConfiguration {
 			HStack(spacing: 16) {
-				Circle()
-					.foregroundStyle(.tertiary)
-					.frame(width: 6, height: 6)
 				VStack(alignment: .leading) {
 					Text(model.title)
 						.foregroundStyle(model.isStrikethrough ? .secondary : .primary)
@@ -173,7 +167,14 @@ extension ContentTableAdapter: UICollectionViewDataSource {
 		cell.accessories =
 		[
 			UICellAccessory.multiselect(displayed: .whenEditing, options: .init(tintColor: .accent)),
-			UICellAccessory.reorder(displayed: .whenEditing, options: .init(tintColor: .systemGray))
+			UICellAccessory.reorder(displayed: .whenEditing, options: .init(tintColor: .systemGray)),
+			UICellAccessory.customView(
+				configuration: .init(
+					customView: UIImageView(image: UIImage(resource: .point)),
+					placement: .leading(displayed: .whenNotEditing),
+					tintColor: .tertiaryLabel
+				)
+			)
 		]
 
 		return cell
