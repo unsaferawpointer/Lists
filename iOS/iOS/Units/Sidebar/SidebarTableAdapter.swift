@@ -260,7 +260,7 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 								options: .displayInline,
 								children:
 									[
-										UIAction(title: "Edit...", image: UIImage(systemName: "trash")) { [weak self] _ in
+										UIAction(title: "Edit...", image: UIImage(systemName: "pencil")) { [weak self] _ in
 											self?.delegate?.contextMenu(didSelect: "edit", for: id)
 										}
 									]
