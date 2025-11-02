@@ -22,6 +22,7 @@ public class ListEntity: NSManagedObject {
 	@NSManaged public var items: NSSet?
 
 	@NSManaged public var offset: Int64
+	@NSManaged public var rawOptions: Int64
 
 	public override func awakeFromInsert() {
 		super.awakeFromInsert()
@@ -31,6 +32,7 @@ public class ListEntity: NSManagedObject {
 		self.rawIcon = 0
 		self.creationDate = .now
 		self.offset = 0
+		self.rawOptions = 0
 	}
 }
 
@@ -75,6 +77,28 @@ extension ListEntity {
 		}
 		set {
 			self.rawIcon = newValue?.rawValue ?? 0
+		}
+	}
+
+	var options: ListOptions {
+		get {
+			return .init(rawValue: rawOptions)
+		}
+		set {
+			self.rawOptions = newValue.rawValue
+		}
+	}
+
+	var isArchived: Bool {
+		get {
+			return options.contains(.isArchived)
+		}
+		set {
+			guard newValue else {
+				options.remove(.isArchived)
+				return
+			}
+			options.insert(.isArchived)
 		}
 	}
 }

@@ -67,7 +67,19 @@ extension ItemEntity {
 			}
 			options.insert(.strikethrough)
 		}
+	}
 
+	var isArchived: Bool {
+		get {
+			return options.contains(.isArchived)
+		}
+		set {
+			guard newValue else {
+				options.remove(.isArchived)
+				return
+			}
+			options.insert(.isArchived)
+		}
 	}
 }
 

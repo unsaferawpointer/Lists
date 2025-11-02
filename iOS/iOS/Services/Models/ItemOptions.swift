@@ -16,4 +16,6 @@ struct ItemOptions: OptionSet {
 extension ItemOptions {
 
 	static let strikethrough: ItemOptions = .init(rawValue: 1 << 0)
+
+	static let isArchived: ItemOptions = .init(rawValue: 1 << 10)
 }
