@@ -36,6 +36,14 @@ public class ItemEntity: NSManagedObject {
 	}
 }
 
+// MARK: - Identifiable
+extension ItemEntity: Identifiable {
+
+	public var id: UUID {
+		uuid!
+	}
+}
+
 // MARK: - Calculated Properties
 extension ItemEntity {
 

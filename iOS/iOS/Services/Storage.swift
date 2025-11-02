@@ -144,30 +144,7 @@ extension Storage: StorageProtocol {
 	// MARK: - Move
 
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
-		try await container.performBackgroundTask { [weak self] context in
-			guard let self else { return }
-
-			var entities = fetchEntities(type: ItemEntity.self, with: nil, in: context)
-				.sorted { lhs, rhs in
-					lhs.offset < rhs.offset
-				}
-
-			guard let targetOffset = entities.firstIndex(where: { $0.uuid == destination.id }),
-				  let sourceOffset = entities.firstIndex(where: { $0.uuid == id }) else {
-				return
-			}
-
-			switch destination {
-			case .after:
-				entities.move(from: sourceOffset, to: targetOffset + 1)
-			case .before:
-				entities.move(from: sourceOffset, to: targetOffset)
-			}
-			for (index, entity) in entities.enumerated() {
-				entity.offset = Int64(index)
-			}
-			try context.save()
-		}
+		try await moveEntity(type: ItemEntity.self, with: id, to: destination)
 	}
 
 	func moveItems(with ids: [UUID], to list: UUID?) async throws {
@@ -185,6 +162,10 @@ extension Storage: StorageProtocol {
 				nil
 			}
 
+			if list != nil && listEntity == nil {
+				throw StorageError.listNotFound
+			}
+
 			let moving = entities.compactMap { entity -> ItemEntity? in
 				guard let uuid = entity.uuid else {
 					return nil
@@ -198,35 +179,32 @@ extension Storage: StorageProtocol {
 	}
 
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
+		try await moveEntity(type: ListEntity.self, with: id, to: destination)
+	}
+}
+
+// MARK: - Helpers
+private extension Storage {
+
+	func moveEntity<E: NSManagedObject>(type: E.Type, with id: UUID, to destination: RelativeDestination<UUID>) async throws where E: Identifiable, E.ID == UUID {
 		try await container.performBackgroundTask { [weak self] context in
-			guard let self else { return }
+			guard let self else {
+				return
+			}
 
 			var entities = fetchEntities(type: ListEntity.self, with: nil, in: context)
 				.sorted { lhs, rhs in
 					lhs.offset < rhs.offset
 				}
 
-			guard let targetOffset = entities.firstIndex(where: { $0.uuid == destination.id }),
-				  let sourceOffset = entities.firstIndex(where: { $0.uuid == id }) else {
-				return
-			}
+			try move(with: id, to: destination, in: &entities)
 
-			switch destination {
-			case .after:
-				entities.move(from: sourceOffset, to: targetOffset + 1)
-			case .before:
-				entities.move(from: sourceOffset, to: targetOffset)
-			}
 			for (index, entity) in entities.enumerated() {
 				entity.offset = Int64(index)
 			}
 			try context.save()
 		}
 	}
-}
-
-// MARK: - Helpers
-private extension Storage {
 
 	func fetchEntity<T: NSManagedObject>(type: T.Type, in context: NSManagedObjectContext, sort sortDescriptors: [NSSortDescriptor]) -> T? {
 		let request = T.fetchRequest()
@@ -263,6 +241,27 @@ private extension Storage {
 		let entities = fetchEntities(type: type, with: ids, in: context)
 		for entity in entities {
 			context.delete(entity)
+		}
+	}
+}
+
+private extension Storage {
+
+	func move<E>(with id: E.ID, to destination: RelativeDestination<E.ID>, in entities: inout [E]) throws(StorageError) where E: Identifiable {
+		var cache: [E.ID: Int] = .init(minimumCapacity: entities.count)
+		for (index, entity) in entities.enumerated() {
+			cache[entity.id] = index
+		}
+
+		guard let targetOffset = cache[destination.id], let sourceOffset = cache[id] else {
+			throw .errorWhileMoving
+		}
+
+		switch destination {
+		case .after:
+			entities.move(from: sourceOffset, to: targetOffset + 1)
+		case .before:
+			entities.move(from: sourceOffset, to: targetOffset)
 		}
 	}
 }

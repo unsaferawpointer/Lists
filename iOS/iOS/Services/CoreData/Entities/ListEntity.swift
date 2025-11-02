@@ -34,6 +34,14 @@ public class ListEntity: NSManagedObject {
 	}
 }
 
+// MARK: - Identifiable
+extension ListEntity: Identifiable {
+
+	public var id: UUID {
+		uuid!
+	}
+}
+
 extension ListEntity {
 
 	@nonobjc public class func fetchRequest() -> NSFetchRequest<ListEntity> {
