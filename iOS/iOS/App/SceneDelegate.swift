@@ -10,7 +10,7 @@ import CoreData
 
 class SceneDelegate: UIResponder {
 
-	var window: UIWindow?
+	private var coordinator: Coordinator?
 }
 
 // MARK: - UIWindowSceneDelegate
@@ -21,99 +21,11 @@ extension SceneDelegate: UIWindowSceneDelegate {
 			return
 		}
 
-		window = UIWindow(windowScene: windowScene)
-
-		let splitViewController = UISplitViewController(style: .doubleColumn)
-
-		let storage = Storage(container: persistentContainer)
-
-		let sidebar = SidebarAssembly.build(storage: storage, persistentContainer: persistentContainer, selectionDelegate: self)
-		let content = ContentAssembly.build(payload: .all, storage: storage, persistentContainer: persistentContainer)
-
-		splitViewController.setViewController(
-			UINavigationController(rootViewController: sidebar),
-			for: .primary
+		let coordinator = Coordinator(
+			router: CoordinatorRouter(window: UIWindow(windowScene: windowScene)),
+			persistentContainer: (UIApplication.shared.delegate as! AppDelegate).persistentContainer
 		)
-		splitViewController.setViewController(
-			UINavigationController(rootViewController: content),
-			for: .secondary
-		)
-
-		splitViewController.preferredDisplayMode = .oneBesideSecondary
-		splitViewController.displayModeButtonVisibility = .automatic
-		splitViewController.primaryBackgroundStyle = .sidebar
-
-		window?.rootViewController = splitViewController
-		window?.makeKeyAndVisible()
-	}
-
-	func sceneDidDisconnect(_ scene: UIScene) {
-		// Called as the scene is being released by the system.
-		// This occurs shortly after the scene enters the background, or when its session is discarded.
-		// Release any resources associated with this scene that can be re-created the next time the scene connects.
-		// The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
-	}
-
-	func sceneDidBecomeActive(_ scene: UIScene) {
-		// Called when the scene has moved from an inactive state to an active state.
-		// Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-	}
-
-	func sceneWillResignActive(_ scene: UIScene) {
-		// Called when the scene will move from an active state to an inactive state.
-		// This may occur due to temporary interruptions (ex. an incoming phone call).
-	}
-
-	func sceneWillEnterForeground(_ scene: UIScene) {
-		// Called as the scene transitions from the background to the foreground.
-		// Use this method to undo the changes made on entering the background.
-	}
-
-	func sceneDidEnterBackground(_ scene: UIScene) {
-		// Called as the scene transitions from the foreground to the background.
-		// Use this method to save data, release shared resources, and store enough scene-specific state information
-		// to restore the scene back to its current state.
-
-		// Save changes in the application's managed object context when the application transitions to the background.
-	}
-}
-
-// MARK: - Calculated Properties
-extension SceneDelegate {
-
-	var splitViewController: UISplitViewController? {
-		return window?.rootViewController as? UISplitViewController
-	}
-
-	private var persistentContainer: NSPersistentContainer {
-		(UIApplication.shared.delegate as! AppDelegate).persistentContainer
-	}
-}
-
-// MARK: - SelectionDelegate
-extension SceneDelegate: SelectionDelegate {
-
-	func didSelect(item: NavigationItem) {
-		guard let splitViewController else {
-			return
-		}
-
-		let storage = Storage(container: persistentContainer)
-		let content = ContentAssembly.build(payload: item.contentPayload, storage: storage, persistentContainer: persistentContainer)
-
-		splitViewController.showDetailViewController(
-			UINavigationController(rootViewController: content),
-			sender: self
-		)
-	}
-}
-
-extension NavigationItem {
-
-	var contentPayload: ContentPayload {
-		switch self.id {
-		case .all:				.all
-		case let .list(id):		.list(id: id)
-		}
+		self.coordinator = coordinator
+		coordinator.start()
 	}
 }

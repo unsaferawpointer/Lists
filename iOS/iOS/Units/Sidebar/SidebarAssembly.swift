@@ -10,7 +10,7 @@ import CoreData
 
 final class SidebarAssembly {
 
-	static func build(storage: StorageProtocol, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
+	static func build(router: MasterRoutable, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
 
 		let coreDataProvider = CoreDataProvider<ListEntity>(
 			persistentContainer: persistentContainer,
@@ -22,6 +22,7 @@ final class SidebarAssembly {
 			predicate: nil
 		)
 		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ListsConverter())
+		let storage = Storage(container: persistentContainer)
 
 		let interactor = SidebarInteractor(storage: storage, provider: provider)
 		let presenter = SidebarPresenter(interactor: interactor)
@@ -31,11 +32,7 @@ final class SidebarAssembly {
 		viewController.delegate = presenter
 		viewController.selectionDelegate = selectionDelegate
 		presenter.view = viewController
-
-		let router = Router()
-		router.viewController = viewController
-
-		presenter.router = router
+		presenter.coordinator = SidebarCoordinator(router: router, persistentContainer: persistentContainer)
 
 		return viewController
 	}

@@ -10,7 +10,7 @@ import CoreData
 
 final class ContentAssembly {
 
-	static func build(payload: ContentPayload, storage: StorageProtocol, persistentContainer: NSPersistentContainer) -> UIViewController {
+	static func build(router: ContentRoutable, payload: ContentPayload, persistentContainer: NSPersistentContainer) -> UIViewController {
 
 		let itemsProvider = DataProvider(
 			coreDataProvider: CoreDataProvider<ItemEntity>(
@@ -39,6 +39,8 @@ final class ContentAssembly {
 			nil
 		}
 
+		let storage = Storage(container: persistentContainer)
+
 		let interactor = ContentInteractor(
 			payload: payload,
 			storage: storage,
@@ -51,12 +53,7 @@ final class ContentAssembly {
 		let viewController = ContentViewController()
 		viewController.delegate = presenter
 		presenter.view = viewController
-
-		let router = Router()
-		router.viewController = viewController
-		router.persistentContainer = persistentContainer
-
-		presenter.router = router
+		presenter.coordinator = ContentCoordinator(router: router, persistentContainer: persistentContainer)
 
 		return viewController
 	}

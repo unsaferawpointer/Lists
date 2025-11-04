@@ -18,7 +18,7 @@ final class ContentPresenter {
 
 	weak var view: ContentView?
 
-	var router: Routable?
+	var coordinator: ContentCoordinatable?
 
 	// MARK: - Cache
 
@@ -131,7 +131,7 @@ import UIKit
 extension ContentPresenter {
 
 	func createItem(with model: ItemEditorModel) {
-		router?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
+		coordinator?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
 			guard isSuccess else {
 				return
 			}
@@ -144,7 +144,7 @@ extension ContentPresenter {
 
 	func moveItemsToList() {
 		let selection = view?.selection ?? []
-		router?.presentListPicker { [weak self] isSuccess, list in
+		coordinator?.presentListPicker { [weak self] isSuccess, list in
 			guard isSuccess else {
 				return
 			}
@@ -155,7 +155,7 @@ extension ContentPresenter {
 	}
 
 	func editItem(with id: UUID, model: ItemEditorModel) {
-		router?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
+		coordinator?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
 			guard isSuccess else {
 				return
 			}

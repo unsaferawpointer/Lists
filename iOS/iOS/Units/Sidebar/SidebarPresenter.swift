@@ -17,7 +17,7 @@ final class SidebarPresenter {
 
 	weak var view: SidebarView?
 
-	var router: Routable?
+	var coordinator: SidebarCoordinatable?
 
 	// MARK: - Initialization
 
@@ -45,7 +45,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 					return
 				}
 				let model = ListEditorModel(name: list.name, icon: list.properties.icon)
-				router?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
+				coordinator?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
 					guard isSuccess else {
 						return
 					}
@@ -64,7 +64,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 
 	func newList() {
 		let model = ListEditorModel(name: "")
-		router?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
+		coordinator?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
 			guard isSuccess else {
 				return
 			}
