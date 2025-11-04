@@ -257,8 +257,17 @@ extension ContentTableAdapter: UICollectionViewDelegate {
 									options: .displayInline,
 									children:
 										[
-											UIAction(title: "Strikethrough", image: UIImage(systemName: "strikethrough")) { [weak self] _ in
+											UIAction(title: "Strikethrough", image: .strikethrough) { [weak self] _ in
 												self?.delegate?.contextMenuSelected(menuItem: "strikethrough", with: ids)
+											}
+										]
+								),
+								UIMenu(
+									options: .displayInline,
+									children:
+										[
+											UIAction(title: "Move to...", image: .arrowLeftRight) { [weak self] _ in
+												self?.delegate?.contextMenuSelected(menuItem: "move", with: ids)
 											}
 										]
 								),

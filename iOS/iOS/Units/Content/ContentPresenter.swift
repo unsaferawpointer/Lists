@@ -61,6 +61,8 @@ extension ContentPresenter: ContentViewDelegate {
 			Task { @MainActor in
 				try? await interactor.strikeThroughItems(with: selection, flag: true)
 			}
+		case "move":
+			moveItemsToList(selected: selection)
 		default:
 			break
 		}
@@ -93,7 +95,7 @@ extension ContentPresenter: ToolbarDelegate {
 				try? await interactor.strikeThroughItems(with: selection, flag: state == .on ? false : true)
 			}
 		case "move":
-			moveItemsToList()
+			moveItemsToList(selected: nil)
 		default:
 			break
 		}
@@ -142,8 +144,10 @@ extension ContentPresenter {
 		}
 	}
 
-	func moveItemsToList() {
-		let selection = view?.selection ?? []
+	func moveItemsToList(selected: [UUID]?) {
+		guard let selection = selected ?? view?.selection else {
+			return
+		}
 		coordinator?.presentListPicker { [weak self] isSuccess, list in
 			guard isSuccess else {
 				return
