@@ -53,10 +53,10 @@ struct ListPicker: View {
 			}
 		}
 		.task {
-			model.provider.fetch()
+			model.provider.fetchData()
 		}
 		.onAppear {
-			model.provider.fetch()
+			model.provider.fetchData()
 		}
 	}
 }

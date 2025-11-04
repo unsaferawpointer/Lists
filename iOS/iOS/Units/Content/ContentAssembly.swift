@@ -18,7 +18,7 @@ final class ContentAssembly {
 		let interactor = ContentInteractor(
 			payload: payload,
 			storage: storage,
-			contentProvider: ContentProvider(payload: payload, container: persistentContainer)
+			contentProvider: ContentProvider(payload: payload, container: DefaultContainer(base: persistentContainer))
 		)
 		let presenter = ContentPresenter(interactor: interactor)
 		interactor.presenter = presenter

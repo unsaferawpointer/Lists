@@ -19,51 +19,24 @@ final class ContentProvider {
 
 	// MARK: - DI by Initialization
 
-	private let itemsProvider: DataProvider<Item>
+	private let itemsProvider: ItemsObserver
 
-	private let listsProvider: DataProvider<List>?
+	private let listsProvider: ListsObserver?
 
 	let payload: ContentPayload
 
 	// MARK: - Initialization
 
-	init(payload: ContentPayload, container: NSPersistentContainer) {
+	init(payload: ContentPayload, container: any PersistentContainer) {
 		self.payload = payload
 
 		switch payload {
 		case .all:
-			self.itemsProvider = DataProvider(
-				coreDataProvider: CoreDataProvider<ItemEntity>(
-					persistentContainer: container,
-					sortDescriptors:
-						[
-							NSSortDescriptor(keyPath: \ItemEntity.offset, ascending: true),
-							NSSortDescriptor(keyPath: \ItemEntity.creationDate, ascending: true)
-						],
-					predicate: nil
-				)
-			)
+			self.itemsProvider = ItemsObserver(container: container, request: .init(fetchLimit: nil, list: nil))
 			self.listsProvider = nil
 		case let .list(id):
-			self.itemsProvider = DataProvider(
-				coreDataProvider: CoreDataProvider<ItemEntity>(
-					persistentContainer: container,
-					sortDescriptors:
-						[
-							NSSortDescriptor(keyPath: \ItemEntity.offset, ascending: true),
-							NSSortDescriptor(keyPath: \ItemEntity.creationDate, ascending: true)
-						],
-					predicate: NSPredicate(format: "list.uuid == %@", argumentArray: [id])
-				)
-			)
-			self.listsProvider = DataProvider(
-				coreDataProvider: CoreDataProvider<ListEntity>(
-					persistentContainer: container,
-					sortDescriptors: [NSSortDescriptor(keyPath: \ListEntity.offset, ascending: true)],
-					predicate: NSPredicate(format: "uuid == %@", argumentArray: [id]),
-					fetchLimit: 1
-				)
-			)
+			self.itemsProvider = ItemsObserver(container: container, request: .init(fetchLimit: nil, list: id))
+			self.listsProvider = ListsObserver(container: container, request: .init(fetchLimit: 1, uuid: id))
 		}
 
 		configure()
@@ -74,16 +47,16 @@ final class ContentProvider {
 extension ContentProvider {
 
 	func fetchContent() {
-		itemsProvider.fetch()
+		itemsProvider.fetchData()
 		guard case .list = payload else {
 			delegate?.providerDidChangeContent(content: .all)
 			return
 		}
-		listsProvider?.fetch()
+		listsProvider?.fetchData()
 	}
 
 	func item(for id: UUID) async throws -> Item? {
-		itemsProvider.firstItem { $0.id == id }
+		itemsProvider.item(for: id)
 	}
 }
 
@@ -95,7 +68,7 @@ private extension ContentProvider {
 			guard let self else {
 				return
 			}
-			for await change in itemsProvider.contentChanges {
+			for await change in itemsProvider.stream() {
 				self.delegate?.providerDidChangeItems(items: change)
 			}
 		}
@@ -108,7 +81,7 @@ private extension ContentProvider {
 			guard let self else {
 				return
 			}
-			for await change in listsProvider.contentChanges {
+			for await change in listsProvider.stream() {
 				guard let list = change.first else {
 					continue
 				}

@@ -35,12 +35,7 @@ final class ContentCoordinator {
 extension ContentCoordinator: ContentCoordinatable {
 
 	func presentListPicker(completion: @escaping (Bool, UUID?) -> Void) {
-		let coreDataProvider = CoreDataProvider<ListEntity>(
-			persistentContainer: persistentContainer,
-			sortDescriptors: [NSSortDescriptor(keyPath: \ListEntity.creationDate, ascending: true)],
-			predicate: nil
-		)
-		let provider = DataProvider<List>(coreDataProvider: coreDataProvider)
+		let provider = ListsObserver(container: DefaultContainer(base: persistentContainer), request: .init(fetchLimit: nil, uuid: nil))
 
 		let model = ListPickerModel(provider: provider)
 		let view = ListPicker(model: model) { [weak self] isSuccess, selected in

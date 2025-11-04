@@ -26,15 +26,15 @@ final class SidebarInteractor {
 
 	private let storage: StorageProtocol
 
-	private let provider: DataProvider<List>
+	private let provider: ListsObserver
 
 	// MARK: - Initialization
 
-	init(storage: StorageProtocol, provider: DataProvider<List>) {
+	init(storage: StorageProtocol, provider: ListsObserver) {
 		self.storage = storage
 		self.provider = provider
 		Task { @MainActor in
-			for await change in provider.contentChanges {
+			for await change in provider.stream() {
 				presenter?.present(lists: change)
 			}
 		}
@@ -64,11 +64,11 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 	}
 
 	func list(for id: UUID) async throws -> List? {
-		provider.firstItem(where: { $0.id == id} )
+		provider.item(for: id)
 	}
 
 	func fetchLists() async throws -> [List] {
-		provider.fetch()
+		provider.fetchData()
 		return []
 	}
 }

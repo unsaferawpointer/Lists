@@ -12,16 +12,7 @@ final class SidebarAssembly {
 
 	static func build(router: MasterRoutable, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
 
-		let coreDataProvider = CoreDataProvider<ListEntity>(
-			persistentContainer: persistentContainer,
-			sortDescriptors:
-				[
-					NSSortDescriptor(keyPath: \ListEntity.offset, ascending: true),
-					NSSortDescriptor(keyPath: \ListEntity.creationDate, ascending: true)
-				],
-			predicate: nil
-		)
-		let provider = DataProvider<List>(coreDataProvider: coreDataProvider)
+		let provider = ListsObserver(container: DefaultContainer(base: persistentContainer), request: .init(fetchLimit: nil, uuid: nil))
 		let storage = Storage(container: persistentContainer)
 
 		let interactor = SidebarInteractor(storage: storage, provider: provider)
