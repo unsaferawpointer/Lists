@@ -9,7 +9,7 @@ import Foundation
 
 protocol ContentPresenterProtocol: AnyObject {
 	func present(items: [Item])
-	func present(list: List)
+	func present(content: Content)
 }
 
 final class ContentPresenter {
@@ -207,7 +207,12 @@ extension ContentPresenter: ContentPresenterProtocol {
 		view?.display(toolbar: model)
 	}
 
-	func present(list: List) {
-		view?.displayTitle(title: list.name)
+	func present(content: Content) {
+		switch content {
+		case .all:
+			view?.displayTitle(title: "All")
+		case let .list(list):
+			view?.displayTitle(title: list.name)
+		}
 	}
 }

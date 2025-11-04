@@ -61,7 +61,7 @@ extension CoordinatorRouter: ApplicationRoutable {
 		guard let splitViewController = window.rootViewController as? UISplitViewController else {
 			return
 		}
-		splitViewController.showDetailViewController(viewController, sender: nil)
+		splitViewController.showDetailViewController(UINavigationController(rootViewController: viewController), sender: nil)
 	}
 }
 
