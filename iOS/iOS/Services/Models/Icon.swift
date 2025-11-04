@@ -23,6 +23,7 @@ enum Icon: Int64 {
 	case heart
 	case star
 	case lightbulb
+	case bolt
 }
 
 extension Icon {
@@ -55,6 +56,8 @@ extension Icon {
 			"lightbulb.max"
 		case .squareStack:
 			"square.stack"
+		case .bolt:
+			"bolt"
 		}
 	}
 }
