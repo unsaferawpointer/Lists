@@ -7,15 +7,30 @@
 
 import CoreData
 
-final class DataProvider<Model, Entity: NSManagedObject>: Sendable {
+protocol EntityConvertable: NSManagedObject {
+
+	associatedtype Model: ModelConvertable
+
+	var model: Model { get }
+
+	static func create(from model: Model, in context: NSManagedObjectContext) -> Self
+}
+
+protocol ModelConvertable {
+	associatedtype Entity: EntityConvertable where Entity.Model == Self
+}
+
+final class DataProvider<Model: ModelConvertable>: Sendable {
+
+	typealias Entity = Model.Entity
 
 	// MARK: - Internal State
 
-	private var contentChangeContinuation: AsyncStream<[Model]>.Continuation?
+	private var continuation: AsyncStream<[Model]>.Continuation?
 
 	var models: [Model] = [] {
 		didSet {
-			contentChangeContinuation?.yield(models)
+			continuation?.yield(models)
 		}
 	}
 
@@ -23,25 +38,21 @@ final class DataProvider<Model, Entity: NSManagedObject>: Sendable {
 
 	lazy var contentChanges: AsyncStream<[Model]> = {
 		AsyncStream { continuation in
-			self.contentChangeContinuation = continuation
+			self.continuation = continuation
 			continuation.onTermination = { [weak self] _ in
-				self?.contentChangeContinuation = nil
+				self?.continuation = nil
 			}
 		}
 	}()
-
-	let converter: any Converter<Entity, Model>
 
 	let coreDataProvider: CoreDataProvider<Entity>
 
 	// MARK: - Initialization
 
-	init(coreDataProvider: CoreDataProvider<Entity>, converter: any Converter<Entity, Model>) {
+	init(coreDataProvider: CoreDataProvider<Entity>) {
 		self.coreDataProvider = coreDataProvider
-		self.converter = converter
-
 		coreDataProvider.handler = { [weak self] entities in
-			self?.models = converter.convert(input: entities)
+			self?.models = entities.map(\.model)
 		}
 	}
 

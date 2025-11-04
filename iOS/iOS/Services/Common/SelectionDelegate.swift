@@ -6,5 +6,5 @@
 //
 
 protocol SelectionDelegate: AnyObject {
-	func didSelect(item: NavigationItem)
+	func didSelect(item: NavigationItem.Identifier)
 }

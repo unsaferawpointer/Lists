@@ -41,12 +41,6 @@ protocol StorageProtocol {
 
 final class Storage {
 
-	// MARK: - Converters
-
-	private let itemConverter: any Converter<ItemEntity, Item> = ItemsConverter()
-
-	private let listConverter: any Converter<ListEntity, List> = ListsConverter()
-
 	// MARK: - Stored Properties
 
 	private let container: NSPersistentContainer
@@ -67,7 +61,7 @@ extension Storage: StorageProtocol {
 	func addItem(_ item: Item, to listId: UUID?) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
-			let newEntity = itemConverter.newEntity(for: item, in: context)
+			let newEntity = ItemEntity.create(from: item, in: context)
 
 			let sortDescriptor = NSSortDescriptor(keyPath: \ItemEntity.offset, ascending: false)
 			if let lastItem = fetchEntity(type: ItemEntity.self, in: context, sort: [sortDescriptor]) {
@@ -88,7 +82,7 @@ extension Storage: StorageProtocol {
 	func addList(_ list: List) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
-			let newEntity = listConverter.newEntity(for: list, in: context)
+			let newEntity = ListEntity.create(from: list, in: context)
 
 			let sortDescriptor = NSSortDescriptor(keyPath: \ListEntity.offset, ascending: false)
 			if let lastItem = fetchEntity(type: ListEntity.self, in: context, sort: [sortDescriptor]) {

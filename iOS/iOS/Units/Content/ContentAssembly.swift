@@ -10,6 +10,7 @@ import CoreData
 
 final class ContentAssembly {
 
+	@MainActor
 	static func build(router: ContentRoutable, payload: ContentPayload, persistentContainer: NSPersistentContainer) -> UIViewController {
 
 		let storage = Storage(container: persistentContainer)

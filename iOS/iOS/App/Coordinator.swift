@@ -36,8 +36,8 @@ extension Coordinator {
 // MARK: - SelectionDelegate
 extension Coordinator: SelectionDelegate {
 
-	func didSelect(item: NavigationItem) {
-		let payload: ContentPayload = switch item.id {
+	func didSelect(item: NavigationItem.ID) {
+		let payload: ContentPayload = switch item {
 		case .all:
 			.all
 		case let .list(id):

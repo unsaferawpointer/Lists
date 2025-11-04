@@ -21,7 +21,7 @@ final class SidebarAssembly {
 				],
 			predicate: nil
 		)
-		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ListsConverter())
+		let provider = DataProvider<List>(coreDataProvider: coreDataProvider)
 		let storage = Storage(container: persistentContainer)
 
 		let interactor = SidebarInteractor(storage: storage, provider: provider)

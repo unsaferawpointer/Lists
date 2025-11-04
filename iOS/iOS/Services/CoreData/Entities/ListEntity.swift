@@ -68,6 +68,30 @@ extension ListEntity {
 
 }
 
+// MARK: - EntityConvertable
+extension ListEntity: EntityConvertable {
+
+	typealias Model = List
+
+	var model: List {
+		List(
+			uuid: id,
+			properties: .init(name: name ?? "Unknown Name", icon: icon)
+		)
+	}
+
+	static func create(from model: List, in context: NSManagedObjectContext) -> Self {
+		let entity = Self(context: context)
+
+		entity.uuid = model.uuid
+		entity.name = model.properties.name
+		entity.icon = model.properties.icon
+		entity.creationDate = .now
+
+		return entity
+	}
+}
+
 // MARK: - Computed Properties
 extension ListEntity {
 

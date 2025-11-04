@@ -40,7 +40,7 @@ extension ContentCoordinator: ContentCoordinatable {
 			sortDescriptors: [NSSortDescriptor(keyPath: \ListEntity.creationDate, ascending: true)],
 			predicate: nil
 		)
-		let provider = DataProvider(coreDataProvider: coreDataProvider, converter: ListsConverter())
+		let provider = DataProvider<List>(coreDataProvider: coreDataProvider)
 
 		let model = ListPickerModel(provider: provider)
 		let view = ListPicker(model: model) { [weak self] isSuccess, selected in

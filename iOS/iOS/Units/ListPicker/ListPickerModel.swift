@@ -13,9 +13,9 @@ final class ListPickerModel {
 	var lists: [List] = []
 
 	@ObservationIgnored
-	let provider: DataProvider<List, ListEntity>
+	let provider: DataProvider<List>
 
-	init(provider: DataProvider<List, ListEntity>) {
+	init(provider: DataProvider<List>) {
 		self.provider = provider
 		Task { @MainActor in
 			for await change in provider.contentChanges {

@@ -21,7 +21,7 @@ class SidebarViewController: UIViewController {
 	lazy var adapter: SidebarTableAdapter = {
 		let adapter = SidebarTableAdapter(collectionView: collectionView)
 		adapter.onSelect = { [weak self] model in
-			self?.selectionDelegate?.didSelect(item: model)
+			self?.selectionDelegate?.didSelect(item: model.id)
 		}
 		return adapter
 	}()

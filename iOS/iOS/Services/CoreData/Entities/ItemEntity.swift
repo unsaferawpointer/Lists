@@ -44,6 +44,30 @@ extension ItemEntity: Identifiable {
 	}
 }
 
+// MARK: - EntityConvertable
+extension ItemEntity: EntityConvertable {
+
+	var model: Item {
+		Item(
+			uuid: id,
+			properties: .init(
+				title: text ?? "Unknown title",
+				isStrikethrough: isStrikethrough
+			)
+		)
+	}
+
+	static func create(from model: Item, in context: NSManagedObjectContext) -> Self {
+		let entity = Self(context: context)
+
+		entity.uuid = model.uuid
+		entity.text = model.properties.title
+		entity.isStrikethrough = model.properties.isStrikethrough
+
+		return entity
+	}
+}
+
 // MARK: - Calculated Properties
 extension ItemEntity {
 

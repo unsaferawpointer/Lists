@@ -1,5 +1,5 @@
 //
-//  Item.swift
+//  List.swift
 //  iOS
 //
 //  Created by Anton Cherkasov on 19.10.2025.
@@ -7,11 +7,10 @@
 
 import Foundation
 
-struct Item: Sendable {
+struct List: Sendable {
 
 	let uuid: UUID
-
-	let properties: Properties
+	var properties: Properties
 
 	// MARK: - Initialization
 
@@ -22,26 +21,32 @@ struct Item: Sendable {
 }
 
 // MARK: - Identifiable
-extension Item: Identifiable {
+extension List: Identifiable {
 
 	var id: UUID {
 		uuid
 	}
 }
 
+// MARK: - ModelConvertable
+extension List: ModelConvertable {
+
+	typealias Entity = ListEntity
+}
+
 // MARK: - Computed Properties
-extension Item {
+extension List {
 
-	var title: String { properties.title }
-
-	var isStrikethrough: Bool { properties.isStrikethrough }
+	var name: String {
+		properties.name
+	}
 }
 
 // MARK: - Nested Data Structs
-extension Item {
+extension List {
 
 	struct Properties {
-		var title: String
-		var isStrikethrough: Bool
+		var name: String
+		var icon: Icon?
 	}
 }

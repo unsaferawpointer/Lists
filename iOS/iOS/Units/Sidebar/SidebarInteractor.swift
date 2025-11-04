@@ -26,11 +26,11 @@ final class SidebarInteractor {
 
 	private let storage: StorageProtocol
 
-	private let provider: DataProvider<List, ListEntity>
+	private let provider: DataProvider<List>
 
 	// MARK: - Initialization
 
-	init(storage: StorageProtocol, provider: DataProvider<List, ListEntity>) {
+	init(storage: StorageProtocol, provider: DataProvider<List>) {
 		self.storage = storage
 		self.provider = provider
 		Task { @MainActor in

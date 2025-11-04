@@ -19,9 +19,9 @@ final class ContentProvider {
 
 	// MARK: - DI by Initialization
 
-	private let itemsProvider: DataProvider<Item, ItemEntity>
+	private let itemsProvider: DataProvider<Item>
 
-	private let listsProvider: DataProvider<List, ListEntity>?
+	private let listsProvider: DataProvider<List>?
 
 	let payload: ContentPayload
 
@@ -41,8 +41,7 @@ final class ContentProvider {
 							NSSortDescriptor(keyPath: \ItemEntity.creationDate, ascending: true)
 						],
 					predicate: nil
-				),
-				converter: ItemsConverter()
+				)
 			)
 			self.listsProvider = nil
 		case let .list(id):
@@ -55,8 +54,7 @@ final class ContentProvider {
 							NSSortDescriptor(keyPath: \ItemEntity.creationDate, ascending: true)
 						],
 					predicate: NSPredicate(format: "list.uuid == %@", argumentArray: [id])
-				),
-				converter: ItemsConverter()
+				)
 			)
 			self.listsProvider = DataProvider(
 				coreDataProvider: CoreDataProvider<ListEntity>(
@@ -64,8 +62,7 @@ final class ContentProvider {
 					sortDescriptors: [NSSortDescriptor(keyPath: \ListEntity.offset, ascending: true)],
 					predicate: NSPredicate(format: "uuid == %@", argumentArray: [id]),
 					fetchLimit: 1
-				),
-				converter: ListsConverter()
+				)
 			)
 		}
 
