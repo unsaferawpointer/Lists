@@ -5,7 +5,7 @@
 //  Created by Anton Cherkasov on 04.11.2025.
 //
 
-final class DataObserver<T> {
+actor DataObserver<T> {
 
 	// MARK: - Internal State
 
@@ -17,7 +17,9 @@ final class DataObserver<T> {
 
 	lazy var stream: AsyncStream<T> = {
 		AsyncStream { [weak self] continuation in
-			self?.set(continuation: continuation)
+			Task {
+				await self?.set(continuation: continuation)
+			}
 		}
 	}()
 

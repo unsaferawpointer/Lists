@@ -56,7 +56,7 @@ extension ContentProvider {
 	}
 
 	func item(for id: UUID) async throws -> Item? {
-		itemsProvider.item(for: id)
+		await itemsProvider.item(for: id)
 	}
 }
 
@@ -68,7 +68,7 @@ private extension ContentProvider {
 			guard let self else {
 				return
 			}
-			for await change in itemsProvider.stream() {
+			for await change in await itemsProvider.stream() {
 				self.delegate?.providerDidChangeItems(items: change)
 			}
 		}
