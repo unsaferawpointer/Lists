@@ -152,7 +152,9 @@ extension SidebarTableAdapter: UICollectionViewDataSource {
 
 		// MARK: - Configure Accessories
 
-		cell.accessories = [UICellAccessory.reorder(displayed: .whenEditing, options: .init(tintColor: .systemGray))]
+		let reorderAccessory = UICellAccessory.reorder(displayed: .whenEditing, options: .init(tintColor: .systemGray))
+
+		cell.accessories = indexPath.section == 1 ? [reorderAccessory] : []
 
 		return cell
 	}
