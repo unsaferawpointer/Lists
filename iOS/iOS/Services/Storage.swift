@@ -185,13 +185,13 @@ extension Storage: StorageProtocol {
 // MARK: - Helpers
 private extension Storage {
 
-	func moveEntity<E: NSManagedObject>(type: E.Type, with id: UUID, to destination: RelativeDestination<UUID>) async throws where E: Identifiable, E.ID == UUID {
+	func moveEntity<E: NSManagedObject>(type: E.Type, with id: UUID, to destination: RelativeDestination<UUID>) async throws where E: Identifiable, E.ID == UUID, E: Reorderable {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else {
 				return
 			}
 
-			var entities = fetchEntities(type: ListEntity.self, with: nil, in: context)
+			var entities = fetchEntities(type: E.self, with: nil, in: context)
 				.sorted { lhs, rhs in
 					lhs.offset < rhs.offset
 				}

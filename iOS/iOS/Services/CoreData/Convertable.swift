@@ -7,7 +7,7 @@
 
 import CoreData
 
-protocol EntityConvertable: NSManagedObject {
+protocol EntityConvertable: NSManagedObject, Identifiable {
 
 	associatedtype Model: ModelConvertable
 

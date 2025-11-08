@@ -22,16 +22,3 @@ extension ContentPayload {
 		}
 	}
 }
-
-// MARK: - Predicate
-extension ContentPayload: Predicate {
-
-	var value: NSPredicate? {
-		switch self {
-		case .all:
-			nil
-		case let .list(id):
-			NSPredicate(format: "list.uuid == %@", argumentArray: [id])
-		}
-	}
-}

@@ -44,6 +44,9 @@ extension ItemEntity: Identifiable {
 	}
 }
 
+// MARK: - Reorderable
+extension ItemEntity: Reorderable { }
+
 // MARK: - EntityConvertable
 extension ItemEntity: EntityConvertable {
 

@@ -44,6 +44,9 @@ extension ListEntity: Identifiable {
 	}
 }
 
+// MARK: - Reorderable
+extension ListEntity: Reorderable { }
+
 extension ListEntity {
 
 	@nonobjc public class func fetchRequest() -> NSFetchRequest<ListEntity> {
