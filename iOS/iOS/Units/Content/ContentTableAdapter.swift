@@ -15,7 +15,7 @@ final class ContentTableAdapter: NSObject {
 
 	// MARK: - Data
 
-	var items: [ContentItem] = []
+	private var items: [ContentItem] = []
 
 	// MARK: - Initialization
 
@@ -113,22 +113,28 @@ private extension ContentTableAdapter {
 			let indexPath = IndexPath(row: oldIndex, section: section)
 			let cell = collectionView.cellForItem(at: indexPath)
 
-			let configuration = UIHostingConfiguration {
-				HStack(spacing: 16) {
-					VStack(alignment: .leading) {
-						Text(newModel.title)
-							.foregroundStyle(newModel.isStrikethrough ? .secondary : .primary)
-							.font(.body)
-							.strikethrough(
-								newModel.isStrikethrough,
-								pattern: .solid,
-								color: .secondary
-							)
-					}
+			cell?.contentConfiguration = makeConfiguration(for: newModel)
+		}
+	}
+}
+
+// MARK: - Helpers
+private extension ContentTableAdapter {
+
+	func makeConfiguration(for model: ContentItem) -> UIContentConfiguration {
+		UIHostingConfiguration {
+			HStack(spacing: 16) {
+				VStack(alignment: .leading) {
+					Text(model.title)
+						.foregroundStyle(model.isStrikethrough ? .secondary : .primary)
+						.font(.body)
+						.strikethrough(
+							model.isStrikethrough,
+							pattern: .solid,
+							color: .secondary
+						)
 				}
 			}
-
-			cell?.contentConfiguration = configuration
 		}
 	}
 }
@@ -146,23 +152,8 @@ extension ContentTableAdapter: UICollectionViewDataSource {
 
 		let model = items[indexPath.row]
 
-		let configuration = UIHostingConfiguration {
-			HStack(spacing: 16) {
-				VStack(alignment: .leading) {
-					Text(model.title)
-						.foregroundStyle(model.isStrikethrough ? .secondary : .primary)
-						.font(.body)
-						.strikethrough(
-							model.isStrikethrough,
-							pattern: .solid,
-							color: .secondary
-						)
-				}
-			}
-		}
-
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! UICollectionViewListCell
-		cell.contentConfiguration = configuration
+		cell.contentConfiguration = makeConfiguration(for: model)
 
 		cell.accessories =
 		[
@@ -214,104 +205,25 @@ extension ContentTableAdapter {
 
 		delegate?.moveItem(with: id, to: destination)
 	}
-
-	func collectionView(
-		_ collectionView: UICollectionView,
-		targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath,
-		atCurrentIndexPath currentIndexPath: IndexPath,
-		toProposedIndexPath proposedIndexPath: IndexPath
-	) -> IndexPath {
-		proposedIndexPath
-	}
 }
 
 // MARK: - Menu Support
 extension ContentTableAdapter: UICollectionViewDelegate {
 
 	func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
-
-		guard !collectionView.isEditing else {
+		guard !collectionView.isEditing, indexPaths.count == 1 else {
 			return nil
 		}
 
-		let ids = indexPaths.map(\.row).map {
-			items[$0].id
-		}
+		let ids = indexPaths
+			.map(\.row)
+			.map { items[$0].id }
 
-		if ids.count == 1 {
-			return UIContextMenuConfiguration(
-				actionProvider: { [weak self] _ in
-					UIMenu(
-						children:
-							[
-								UIMenu(
-									options: .displayInline,
-									children:
-										[
-											UIAction(title: "Edit...", image: UIImage(systemName: "pencil")) { [weak self] _ in
-												self?.delegate?.contextMenuSelected(menuItem: "edit", with: ids)
-											}
-										]
-								),
-								UIMenu(
-									options: .displayInline,
-									children:
-										[
-											UIAction(title: "Strikethrough", image: .strikethrough) { [weak self] _ in
-												self?.delegate?.contextMenuSelected(menuItem: "strikethrough", with: ids)
-											}
-										]
-								),
-								UIMenu(
-									options: .displayInline,
-									children:
-										[
-											UIAction(title: "Move to...", image: .arrowLeftRight) { [weak self] _ in
-												self?.delegate?.contextMenuSelected(menuItem: "move", with: ids)
-											}
-										]
-								),
-								UIMenu(
-									options: .displayInline,
-									children:
-										[
-											UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
-												self?.delegate?.contextMenuSelected(menuItem: "delete", with: ids)
-											}
-										]
-								)
-							]
-					)
-				}
-			)
-		}
+		let builder = ContextMenuBuilder()
+		builder.delegate = delegate
 
 		return UIContextMenuConfiguration(
-			actionProvider: { [weak self] _ in
-				UIMenu(
-					children:
-						[
-							UIMenu(
-								options: .displayInline,
-								children:
-									[
-										UIAction(title: "Strikethrough", image: UIImage(systemName: "strikethrough")) { [weak self] _ in
-											self?.delegate?.contextMenuSelected(menuItem: "strikethrough", with: ids)
-										}
-									]
-							),
-							UIMenu(
-								options: .displayInline,
-								children:
-									[
-										UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
-											self?.delegate?.contextMenuSelected(menuItem: "delete", with: ids)
-										}
-									]
-							)
-						]
-				)
-			}
+			actionProvider: { _ in builder.build(selection: ids) }
 		)
 	}
 }

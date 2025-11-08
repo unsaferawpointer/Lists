@@ -7,9 +7,8 @@
 
 import UIKit
 
-protocol ContentViewDelegate: AnyObject, TableDelegate, ToolbarDelegate {
+protocol ContentViewDelegate: AnyObject, TableDelegate, ToolbarDelegate, ContextMenuDelegate {
 	func viewDidLoad()
-	func contextMenuSelected(menuItem: String, with selection: [UUID])
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>)
 }
 
