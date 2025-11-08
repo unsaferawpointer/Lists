@@ -19,7 +19,7 @@ final class ContentProvider {
 
 	// MARK: - DI by Initialization
 
-	private let itemsProvider: ItemsObserver
+	private let itemsProvider: ModelsProvider<Item>
 
 	private let listsProvider: ListsObserver?
 
@@ -32,10 +32,10 @@ final class ContentProvider {
 
 		switch payload {
 		case .all:
-			self.itemsProvider = ItemsObserver(container: container, request: .init(fetchLimit: nil, list: nil))
+			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, list: nil))
 			self.listsProvider = nil
 		case let .list(id):
-			self.itemsProvider = ItemsObserver(container: container, request: .init(fetchLimit: nil, list: id))
+			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, list: id))
 			self.listsProvider = ListsObserver(container: container, request: .init(fetchLimit: 1, uuid: id))
 		}
 
@@ -47,7 +47,9 @@ final class ContentProvider {
 extension ContentProvider {
 
 	func fetchContent() {
-		itemsProvider.fetchData()
+		Task {
+			try? await itemsProvider.fetchData()
+		}
 		guard case .list = payload else {
 			delegate?.providerDidChangeContent(content: .all)
 			return

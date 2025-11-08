@@ -1,30 +1,27 @@
 //
-//  ItemsProvider.swift
+//  ModelsProvider.swift
 //  iOS
 //
-//  Created by Anton Cherkasov on 04.11.2025.
+//  Created by Anton Cherkasov on 08.11.2025.
 //
 
 import Foundation
-import CoreData
 
-final class ItemsObserver: NSObject {
+final class ModelsProvider<Model: ModelConvertable> {
 
 	// MARK: - Internal State
 
-	private let base: DataObserver<[Item]>
+	private let base: DataObserver<[Model]>
 
 	// MARK: - Core Data
 
-	private var entitiesProvder: EntitiesProvider<Item>
+	private var entitiesProvder: EntitiesProvider<Model>
 
 	// MARK: - Initialization
 
 	init(container: any PersistentContainer, request: any RequestRepresentable) {
 		self.base = .init(initialData: [])
 		self.entitiesProvder = EntitiesProvider(container: container, request: request)
-		super.init()
-
 		self.entitiesProvder.delegate = self
 	}
 
@@ -36,11 +33,9 @@ final class ItemsObserver: NSObject {
 }
 
 // MARK: - EntitesProviderDelegate
-extension ItemsObserver: EntitesProviderDelegate {
+extension ModelsProvider: EntitesProviderDelegate {
 
-	typealias Model = Item
-
-	func providerDidChangeContent(models: [Item]) {
+	func providerDidChangeContent(models: [Model]) {
 		Task {
 			await base.sendData(models)
 		}
@@ -48,25 +43,15 @@ extension ItemsObserver: EntitesProviderDelegate {
 }
 
 // MARK: - Computed Properties
-extension ItemsObserver {
+extension ModelsProvider where Model == Item {
 
-	func stream() async -> AsyncStream<[Item]> {
+	func stream() async -> AsyncStream<[Model]> {
 		await base.stream
 	}
 
-	func item(for id: UUID) async -> Item? {
+	func item(for id: UUID) async -> Model? {
 		await base.lastValue().first {
 			$0.id == id
 		}
-	}
-}
-
-extension ItemsRequest {
-
-	var predicate: NSPredicate? {
-		guard let id = list else {
-			return nil
-		}
-		return NSPredicate(format: "list.uuid == %@", argumentArray: [id])
 	}
 }
