@@ -12,7 +12,7 @@ final class SidebarAssembly {
 
 	static func build(router: MasterRoutable, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
 
-		let provider = ListsObserver(container: DefaultContainer(base: persistentContainer), request: .init(fetchLimit: nil, uuid: nil))
+		let provider = ModelsProvider<List>(container: DefaultContainer(base: persistentContainer), request: ListsRequest(uuid: nil))
 		let storage = Storage(container: persistentContainer)
 
 		let interactor = SidebarInteractor(storage: storage, provider: provider)

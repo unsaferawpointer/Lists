@@ -13,12 +13,12 @@ final class ListPickerModel {
 	var lists: [List] = []
 
 	@ObservationIgnored
-	let provider: ListsObserver
+	let provider: ModelsProvider<List>
 
-	init(provider: ListsObserver) {
+	init(provider: ModelsProvider<List>) {
 		self.provider = provider
 		Task { @MainActor in
-			for await change in provider.stream() {
+			for await change in await provider.stream() {
 				self.lists = change
 			}
 		}

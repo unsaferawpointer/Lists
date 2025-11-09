@@ -8,7 +8,7 @@
 import Foundation
 
 protocol SidebarInteractorProtocol: AnyObject {
-	func fetchLists() async throws -> [List]
+	func fetchLists() async throws
 	func addList(with properties: List.Properties) async throws
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws
 	func deleteList(with id: UUID)
@@ -26,15 +26,15 @@ final class SidebarInteractor {
 
 	private let storage: StorageProtocol
 
-	private let provider: ListsObserver
+	private let provider: ModelsProvider<List>
 
 	// MARK: - Initialization
 
-	init(storage: StorageProtocol, provider: ListsObserver) {
+	init(storage: StorageProtocol, provider: ModelsProvider<List>) {
 		self.storage = storage
 		self.provider = provider
 		Task { @MainActor in
-			for await change in provider.stream() {
+			for await change in await provider.stream() {
 				presenter?.present(lists: change)
 			}
 		}
@@ -64,11 +64,10 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 	}
 
 	func list(for id: UUID) async throws -> List? {
-		provider.item(for: id)
+		await provider.item(for: id)
 	}
 
-	func fetchLists() async throws -> [List] {
-		provider.fetchData()
-		return []
+	func fetchLists() async throws {
+		try await provider.fetchData()
 	}
 }

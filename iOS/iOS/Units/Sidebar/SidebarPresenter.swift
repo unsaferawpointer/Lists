@@ -31,9 +31,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 
 	func viewDidLoad() {
 		Task { @MainActor in
-			let lists = try? await interactor?.fetchLists() ?? []
-			let items = convert(lists: lists ?? [])
-			view?.display(newItems: items)
+			try? await interactor?.fetchLists()
 		}
 	}
 

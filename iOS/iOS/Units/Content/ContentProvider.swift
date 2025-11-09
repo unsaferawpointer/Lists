@@ -21,7 +21,7 @@ final class ContentProvider {
 
 	private let itemsProvider: ModelsProvider<Item>
 
-	private let listsProvider: ListsObserver?
+	private let listsProvider: ModelsProvider<List>?
 
 	let payload: ContentPayload
 
@@ -36,7 +36,7 @@ final class ContentProvider {
 			self.listsProvider = nil
 		case let .list(id):
 			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, list: id))
-			self.listsProvider = ListsObserver(container: container, request: .init(fetchLimit: 1, uuid: id))
+			self.listsProvider = ModelsProvider(container: container, request: ListsRequest(uuid: id))
 		}
 
 		configure()
@@ -54,7 +54,9 @@ extension ContentProvider {
 			delegate?.providerDidChangeContent(content: .all)
 			return
 		}
-		listsProvider?.fetchData()
+		Task {
+			try? await listsProvider?.fetchData()
+		}
 	}
 
 	func item(for id: UUID) async throws -> Item? {
@@ -83,7 +85,7 @@ private extension ContentProvider {
 			guard let self else {
 				return
 			}
-			for await change in listsProvider.stream() {
+			for await change in await listsProvider.stream() {
 				guard let list = change.first else {
 					continue
 				}

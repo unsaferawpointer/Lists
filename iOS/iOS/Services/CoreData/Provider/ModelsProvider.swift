@@ -55,3 +55,16 @@ extension ModelsProvider where Model == Item {
 		}
 	}
 }
+
+extension ModelsProvider where Model == List {
+
+	func stream() async -> AsyncStream<[Model]> {
+		await base.stream
+	}
+
+	func item(for id: UUID) async -> Model? {
+		await base.lastValue().first {
+			$0.id == id
+		}
+	}
+}
