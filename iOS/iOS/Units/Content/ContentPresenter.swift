@@ -40,7 +40,17 @@ extension ContentPresenter: ContentViewDelegate {
 		}
 	}
 
-	func contextMenuSelected(menuItem: String, with selection: [UUID]) {
+	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) {
+		Task { @MainActor [weak self] in
+			try? await self?.interactor.moveItem(with: id, to: destination)
+		}
+	}
+}
+
+// MARK: - ContextMenuDelegate
+extension ContentPresenter: ContextMenuDelegate {
+
+	func contextMenuSelected(menuItem: String, with selection: [UUID], state: UIMenuElement.State) {
 		switch menuItem {
 		case "edit":
 			guard let first = selection.first else {
@@ -59,7 +69,7 @@ extension ContentPresenter: ContentViewDelegate {
 			}
 		case "strikethrough":
 			Task { @MainActor in
-				try? await interactor.strikeThroughItems(with: selection, flag: true)
+				try? await interactor.strikeThroughItems(with: selection, flag: state == .on ? false : true)
 			}
 		case "move":
 			moveItemsToList(selected: selection)
@@ -68,10 +78,11 @@ extension ContentPresenter: ContentViewDelegate {
 		}
 	}
 
-	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) {
-		Task { @MainActor [weak self] in
-			try? await self?.interactor.moveItem(with: id, to: destination)
+	func state(for menuItem: String, with id: UUID) -> UIMenuElement.State {
+		guard menuItem == "strikethrough" else {
+			return .off
 		}
+		return cache.strikethroughItems.contains(id) ? .on : .off
 	}
 }
 
