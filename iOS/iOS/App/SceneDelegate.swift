@@ -10,7 +10,7 @@ import CoreData
 
 class SceneDelegate: UIResponder {
 
-	private var coordinator: Coordinator?
+	private var coordinator: (any Coordinatable)?
 }
 
 // MARK: - UIWindowSceneDelegate
@@ -21,11 +21,28 @@ extension SceneDelegate: UIWindowSceneDelegate {
 			return
 		}
 
-		let coordinator = Coordinator(
-			router: CoordinatorRouter(window: UIWindow(windowScene: windowScene)),
-			persistentContainer: (UIApplication.shared.delegate as! AppDelegate).persistentContainer
-		)
-		self.coordinator = coordinator
-		coordinator.start()
+		if
+			let userActivity = connectionOptions.userActivities.first,
+			let info = userActivity.userInfo as? [String: String],
+			let content = info["content"],
+			let payload = ContentPayload(rawValue: content)
+		{
+			let coordinator = ContentCoordinator(
+				payload: payload,
+				router: ContentRouter(window: UIWindow(windowScene: windowScene)),
+				persistentContainer: (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+			)
+			self.coordinator = coordinator
+			coordinator.start()
+		} else if let userActivity = session.stateRestorationActivity {
+			fatalError()
+		} else {
+			let coordinator = MainCoordinator(
+				router: MainRouter(window: UIWindow(windowScene: windowScene)),
+				persistentContainer: (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+			)
+			self.coordinator = coordinator
+			coordinator.start()
+		}
 	}
 }

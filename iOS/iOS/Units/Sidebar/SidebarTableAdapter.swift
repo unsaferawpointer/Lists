@@ -271,6 +271,15 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 								options: .displayInline,
 								children:
 									[
+										UIAction(title: "New Window", image: UIImage(systemName: "macwindow.badge.plus")) { [weak self] _ in
+											self?.delegate?.contextMenu(didSelect: "new-window", for: id)
+										}
+									]
+							),
+							UIMenu(
+								options: .displayInline,
+								children:
+									[
 										UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
 											self?.delegate?.contextMenu(didSelect: "delete", for: id)
 										}

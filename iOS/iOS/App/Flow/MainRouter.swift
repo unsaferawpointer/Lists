@@ -1,5 +1,5 @@
 //
-//  CoordinatorRouter.swift
+//  MainRouter.swift
 //  iOS
 //
 //  Created by Anton Cherkasov on 04.11.2025.
@@ -7,22 +7,25 @@
 
 import UIKit
 
-protocol ApplicationRoutable {
-	func setupWindow(primaryViewController: UIViewController, secondaryViewController: UIViewController)
+protocol MainRoutable {
+	func showWindow()
 	func showDetail(viewController: UIViewController)
+	func openWindow(info: [String: String])
 }
 
 protocol ContentRoutable {
+	func showContent(viewController: UIViewController)
 	func presentInDetails(viewController: UIViewController)
 	func dismissInDetailsViewController()
 }
 
 protocol MasterRoutable {
+	func showMaster(viewController: UIViewController)
 	func presentInMaster(viewController: UIViewController)
 	func dismissInMasterViewController()
 }
 
-final class CoordinatorRouter {
+final class MainRouter {
 
 	var window: UIWindow
 
@@ -30,31 +33,34 @@ final class CoordinatorRouter {
 
 	init(window: UIWindow) {
 		self.window = window
+		self.window.rootViewController = UISplitViewController(style: .doubleColumn)
 	}
 }
 
-// MARK: - ApplicationRoutable
-extension CoordinatorRouter: ApplicationRoutable {
+// MARK: - MainRoutable
+extension MainRouter: MainRoutable {
 
-	func setupWindow(primaryViewController: UIViewController, secondaryViewController: UIViewController) {
-
-		let splitViewController = UISplitViewController(style: .doubleColumn)
-
-		splitViewController.setViewController(
-			UINavigationController(rootViewController: primaryViewController),
-			for: .primary
-		)
-		splitViewController.setViewController(
-			UINavigationController(rootViewController: secondaryViewController),
-			for: .secondary
-		)
-
-		splitViewController.preferredDisplayMode = .oneBesideSecondary
-		splitViewController.displayModeButtonVisibility = .automatic
-		splitViewController.primaryBackgroundStyle = .sidebar
-
-		window.rootViewController = splitViewController
+	func showWindow() {
 		window.makeKeyAndVisible()
+	}
+
+	func openWindow(info: [String: String]) {
+		guard let currentScene = window.windowScene else {
+			return
+		}
+
+		let options = UIScene.ActivationRequestOptions()
+		options.requestingScene = currentScene
+
+		let activity = NSUserActivity(activityType: "content-window")
+		activity.userInfo = info
+
+		let request = UISceneSessionActivationRequest(
+			role: .windowApplication,
+			userActivity: activity,
+			options: options
+		)
+		UIApplication.shared.activateSceneSession(for: request) { _ in }
 	}
 
 	func showDetail(viewController: UIViewController) {
@@ -66,7 +72,17 @@ extension CoordinatorRouter: ApplicationRoutable {
 }
 
 // MARK: - MasterRoutable
-extension CoordinatorRouter: MasterRoutable {
+extension MainRouter: MasterRoutable {
+
+	func showMaster(viewController: UIViewController) {
+		guard let splitViewController = window.rootViewController as? UISplitViewController else {
+			return
+		}
+		splitViewController.setViewController(
+			UINavigationController(rootViewController: viewController),
+			for: .primary
+		)
+	}
 
 	func dismissInMasterViewController() {
 		let container = self.viewController(for: .primary)
@@ -80,7 +96,17 @@ extension CoordinatorRouter: MasterRoutable {
 }
 
 // MARK: - ContentRoutable
-extension CoordinatorRouter: ContentRoutable {
+extension MainRouter: ContentRoutable {
+
+	func showContent(viewController: UIViewController) {
+		guard let splitViewController = window.rootViewController as? UISplitViewController else {
+			return
+		}
+		splitViewController.setViewController(
+			UINavigationController(rootViewController: viewController),
+			for: .secondary
+		)
+	}
 
 	func dismissInDetailsViewController() {
 		let container = self.viewController(for: .secondary)
@@ -94,7 +120,7 @@ extension CoordinatorRouter: ContentRoutable {
 }
 
 // MARK: - Computed Properties
-extension CoordinatorRouter {
+extension MainRouter {
 
 	func viewController(for column: UISplitViewController.Column) -> UIViewController? {
 		guard let splitViewController = window.rootViewController as? UISplitViewController else {

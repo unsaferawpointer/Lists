@@ -10,7 +10,7 @@ import CoreData
 
 final class SidebarAssembly {
 
-	static func build(router: MasterRoutable, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
+	static func build(router: MasterRoutable & MainRoutable, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
 
 		let provider = ModelsProvider<List>(container: DefaultContainer(base: persistentContainer), request: ListsRequest(uuid: nil))
 		let storage = Storage(container: persistentContainer)

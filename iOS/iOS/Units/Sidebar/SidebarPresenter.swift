@@ -53,6 +53,8 @@ extension SidebarPresenter: SidebarViewDelegate {
 					}
 				}
 			}
+		case "new-window":
+			coordinator?.openWindow(for: .list(id: item))
 		case "delete":
 			interactor?.deleteList(with: item)
 		default:

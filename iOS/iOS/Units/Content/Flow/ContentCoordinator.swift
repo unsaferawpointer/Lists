@@ -19,15 +19,31 @@ protocol ContentCoordinatable {
 @MainActor
 final class ContentCoordinator {
 
-	let router: ContentRoutable
+	private let router: ContentRoutable
 
-	let persistentContainer: NSPersistentContainer
+	private let persistentContainer: NSPersistentContainer
+
+	private let payload: ContentPayload
 
 	// MARK: - Initialization
 
-	init(router: ContentRoutable, persistentContainer: NSPersistentContainer) {
+	init(
+		payload: ContentPayload,
+		router: ContentRoutable,
+		persistentContainer: NSPersistentContainer
+	) {
+		self.payload = payload
 		self.router = router
 		self.persistentContainer = persistentContainer
+	}
+}
+
+// MARK: - Coordinatable
+extension ContentCoordinator: Coordinatable {
+
+	func start() {
+		let content = ContentAssembly.build(router: router, payload: payload, persistentContainer: persistentContainer)
+		router.showContent(viewController: content)
 	}
 }
 

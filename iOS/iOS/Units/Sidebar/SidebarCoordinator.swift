@@ -13,18 +13,19 @@ import SwiftUI
 @MainActor
 protocol SidebarCoordinatable {
 	func presentListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void)
+	func openWindow(for payload: ContentPayload)
 }
 
 @MainActor
 final class SidebarCoordinator {
 
-	let router: MasterRoutable
+	let router: MasterRoutable & MainRoutable
 
 	let persistentContainer: NSPersistentContainer
 
 	// MARK: - Initialization
 
-	init(router: MasterRoutable, persistentContainer: NSPersistentContainer) {
+	init(router: MasterRoutable & MainRoutable, persistentContainer: NSPersistentContainer) {
 		self.router = router
 		self.persistentContainer = persistentContainer
 	}
@@ -39,5 +40,9 @@ extension SidebarCoordinator: SidebarCoordinatable {
 			completion(isSuccess, newModel)
 		}
 		router.presentInMaster(viewController: UIHostingController(rootView: view))
+	}
+
+	func openWindow(for payload: ContentPayload) {
+		router.openWindow(info: ["content": payload.rawValue])
 	}
 }

@@ -1,40 +1,43 @@
 //
-//  Coordinator.swift
+//  MainCoordinator.swift
 //  iOS
 //
 //  Created by Anton Cherkasov on 03.11.2025.
 //
 
-import Foundation
+import UIKit
 import CoreData
 
 @MainActor
-final class Coordinator {
+final class MainCoordinator {
 
-	let router: CoordinatorRouter
+	let router: MainRouter
 
 	let persistentContainer: NSPersistentContainer
 
 	// MARK: - Initialization
 
-	init(router: CoordinatorRouter, persistentContainer: NSPersistentContainer) {
+	init(router: MainRouter, persistentContainer: NSPersistentContainer) {
 		self.router = router
 		self.persistentContainer = persistentContainer
 	}
 }
 
-extension Coordinator {
+// MARK: - Coordinatable
+extension MainCoordinator: Coordinatable {
 
 	func start() {
 		let sidebar = SidebarAssembly.build(router: router, persistentContainer: persistentContainer, selectionDelegate: self)
 		let content = ContentAssembly.build(router: router, payload: .all, persistentContainer: persistentContainer)
 
-		router.setupWindow(primaryViewController: sidebar, secondaryViewController: content)
+		router.showMaster(viewController: sidebar)
+		router.showContent(viewController: content)
+		router.showWindow()
 	}
 }
 
 // MARK: - SelectionDelegate
-extension Coordinator: SelectionDelegate {
+extension MainCoordinator: SelectionDelegate {
 
 	func didSelect(item: NavigationItem.ID) {
 		let payload: ContentPayload = switch item {

@@ -11,7 +11,7 @@ import CoreData
 final class ContentAssembly {
 
 	@MainActor
-	static func build(router: ContentRoutable, payload: ContentPayload, persistentContainer: NSPersistentContainer) -> UIViewController {
+	static func build(router: any ContentRoutable, payload: ContentPayload, persistentContainer: NSPersistentContainer) -> UIViewController {
 
 		let storage = Storage(container: persistentContainer)
 
@@ -26,7 +26,12 @@ final class ContentAssembly {
 		let viewController = ContentViewController()
 		viewController.delegate = presenter
 		presenter.view = viewController
-		presenter.coordinator = ContentCoordinator(router: router, persistentContainer: persistentContainer)
+
+		presenter.coordinator = ContentCoordinator(
+			payload: payload,
+			router: router,
+			persistentContainer: persistentContainer
+		)
 
 		return viewController
 	}
