@@ -219,7 +219,7 @@ extension ContentTableAdapter: UICollectionViewDelegate {
 			.map(\.row)
 			.map { items[$0].id }
 
-		let builder = ContextMenuBuilder()
+		let builder = ContentMenuBuilder()
 		builder.delegate = delegate
 
 		return UIContextMenuConfiguration(

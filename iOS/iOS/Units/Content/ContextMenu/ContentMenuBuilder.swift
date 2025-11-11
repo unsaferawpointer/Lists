@@ -1,5 +1,5 @@
 //
-//  ContextMenuBuilder.swift
+//  ContentMenuBuilder.swift
 //  iOS
 //
 //  Created by Anton Cherkasov on 08.11.2025.
@@ -7,12 +7,12 @@
 
 import UIKit
 
-final class ContextMenuBuilder {
+final class ContentMenuBuilder {
 
 	weak var delegate: ContextMenuDelegate?
 }
 
-extension ContextMenuBuilder {
+extension ContentMenuBuilder {
 
 	func build(selection: [UUID]) -> UIMenu {
 
@@ -41,7 +41,7 @@ extension ContextMenuBuilder {
 }
 
 // MARK: - Helpers
-private extension ContextMenuBuilder {
+private extension ContentMenuBuilder {
 
 	func state(for item: String, with id: UUID?) -> UIMenuElement.State {
 		guard let id, let delegate else {
