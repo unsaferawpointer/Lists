@@ -20,9 +20,10 @@ final class SidebarTableAdapter: NSObject {
 
 	// MARK: - Data
 
-		var main: [NavigationItem] = [.init(id: .all, iconName: "square.grid.2x2", title: "All")]
-
-		var collection: [NavigationItem] = []
+	var sections: [Section] = [
+		.init(title: "", tinted: true, items: [.init(id: .all, iconName: "square.grid.2x2", title: "All")]),
+		.init(title: "Collection", tinted: false, items: [])
+	]
 
 	// MARK: - Initialization
 
@@ -40,10 +41,10 @@ extension SidebarTableAdapter {
 
 	func reload(newItems: [NavigationItem]) {
 
-		let (removing, inserting) = calculate(newItems: newItems)
+		let (removing, inserting) = calculate(newItems: newItems, in: 1)
 
 		collectionView.performBatchUpdates {
-			self.collection = newItems
+			self.sections[1].items = newItems
 
 			collectionView.deleteItems(at: removing)
 			collectionView.insertItems(at: inserting)
@@ -51,20 +52,41 @@ extension SidebarTableAdapter {
 	}
 
 	var isEmpty: Bool {
-		return collection.isEmpty
+		return sections[1].items.isEmpty
+	}
+}
+
+// MARK: - Nested Data Structs
+extension SidebarTableAdapter {
+
+	struct Section {
+		let title: String
+		let tinted: Bool
+		var items: [NavigationItem]
+	}
+}
+
+extension SidebarTableAdapter.Section {
+
+	subscript(index: Int) -> NavigationItem {
+		get {
+			items[index]
+		}
+		set {
+			items[index] = newValue
+		}
 	}
 }
 
 // MARK: - Helpers
 private extension SidebarTableAdapter {
 
-	func calculate(newItems: [NavigationItem]) -> ([IndexPath], [IndexPath]) {
+	func calculate(newItems: [NavigationItem], in section: Int) -> ([IndexPath], [IndexPath]) {
 
-		let collectionIndex = 1
+		updateCells(newItems: newItems, in: section)
 
-		updateCells(newItems: newItems, in: collectionIndex)
-
-		let diff = newItems.difference(from: collection) { old, new in
+		let oldItems = sections[section].items
+		let diff = newItems.difference(from: oldItems) { old, new in
 			return old.id == new.id
 		}
 
@@ -74,7 +96,7 @@ private extension SidebarTableAdapter {
 			}
 			return offset
 		}.map {
-			IndexPath(row: $0, section: collectionIndex)
+			IndexPath(row: $0, section: section)
 		}
 
 		let inserting = diff.compactMap { change -> Int? in
@@ -83,7 +105,7 @@ private extension SidebarTableAdapter {
 			}
 			return offset
 		}.map {
-			IndexPath(row: $0, section: collectionIndex)
+			IndexPath(row: $0, section: section)
 		}
 
 		return (removing, inserting)
@@ -94,7 +116,9 @@ private extension SidebarTableAdapter {
 		var newCache: [NavigationItem.ID: Int] = [:]
 		var oldCache: [NavigationItem.ID: Int] = [:]
 
-		for (index, item) in collection.enumerated() {
+		let oldItems = sections[section].items
+
+		for (index, item) in oldItems.enumerated() {
 			oldCache[item.id] = index
 		}
 
@@ -102,7 +126,7 @@ private extension SidebarTableAdapter {
 			newCache[item.id] = index
 		}
 
-		let intersection = Set(newItems.map(\.id)).intersection(collection.map(\.id))
+		let intersection = Set(newItems.map(\.id)).intersection(oldItems.map(\.id))
 		for id in intersection {
 			guard let oldIndex = oldCache[id], let newIndex = newCache[id] else {
 				continue
@@ -124,24 +148,17 @@ private extension SidebarTableAdapter {
 extension SidebarTableAdapter: UICollectionViewDataSource {
 
 	func numberOfSections(in collectionView: UICollectionView) -> Int {
-		return 2
+		return sections.count
 	}
 
 	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-		switch section {
-		case 0:
-			return main.count
-		default:
-			return collection.count
-		}
+		return sections[section].items.count
 	}
 
 	func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-		let model: NavigationItem = switch indexPath.section {
-			case 0: 	main[indexPath.row]
-			default: 	collection[indexPath.row]
-		}
+		let section = sections[indexPath.section]
+		let model = section[indexPath.row]
 
 		var configuration = UIListContentConfiguration.cell()
 		configuration.text = model.title
@@ -169,12 +186,10 @@ extension SidebarTableAdapter: UICollectionViewDataSource {
 			for: indexPath
 		) as! UICollectionViewListCell
 
-		var configuration = UIListContentConfiguration.extraProminentInsetGroupedHeader()
+		let section = sections[indexPath.section]
 
-		switch indexPath.section {
-			case 0: 	configuration.text = "Main"
-			default: 	configuration.text = "Collection"
-		}
+		var configuration = UIListContentConfiguration.extraProminentInsetGroupedHeader()
+		configuration.text = section.title
 
 		header.contentConfiguration = configuration
 
@@ -186,10 +201,7 @@ extension SidebarTableAdapter: UICollectionViewDataSource {
 extension SidebarTableAdapter {
 
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-		let model: NavigationItem = switch indexPath.section {
-			case 0: 	main[indexPath.row]
-			default: 	collection[indexPath.row]
-		}
+		let model = sections[indexPath.section][indexPath.row]
 		onSelect?(model)
 	}
 }
@@ -202,18 +214,21 @@ extension SidebarTableAdapter {
 	}
 
 	func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-		guard case let .list(id) = collection[sourceIndexPath.row].id else {
+
+		let items = sections[sourceIndexPath.section].items
+
+		guard case let .list(id) = items[sourceIndexPath.row].id else {
 			return
 		}
 
 		let destination: RelativeDestination<NavigationItem.ID> = if sourceIndexPath.row < destinationIndexPath.row {
-			destinationIndexPath.row < collection.count - 1 ? .before(id: collection[destinationIndexPath.row + 1].id) : .after(id: collection[destinationIndexPath.row].id)
+			destinationIndexPath.row < items.count - 1 ? .before(id: items[destinationIndexPath.row + 1].id) : .after(id: items[destinationIndexPath.row].id)
 		} else {
-			.before(id: collection[destinationIndexPath.row].id)
+			.before(id: items[destinationIndexPath.row].id)
 		}
 
-		let item = collection.remove(at: sourceIndexPath.row)
-		collection.insert(item, at: destinationIndexPath.row)
+		let item = sections[sourceIndexPath.section].items.remove(at: sourceIndexPath.row)
+		sections[sourceIndexPath.section].items.insert(item, at: destinationIndexPath.row)
 
 		let newDestination = destination.map { item -> UUID? in
 			guard case .list(let id) = item else {
@@ -248,7 +263,7 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 			return nil
 		}
 
-		let item = collection[indexPath.row]
+		let item = sections[indexPath.section][indexPath.row]
 		guard case let .list(id) = item.id else {
 			return nil
 		}
