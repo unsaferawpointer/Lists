@@ -163,6 +163,8 @@ extension SidebarTableAdapter: UICollectionViewDataSource {
 		var configuration = UIListContentConfiguration.cell()
 		configuration.text = model.title
 		configuration.image = UIImage(systemName: model.iconName)
+		configuration.imageProperties.tintColor = section.tinted ? .accent : .label
+		configuration.textProperties.color = .label
 
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! UICollectionViewListCell
 		cell.contentConfiguration = configuration
