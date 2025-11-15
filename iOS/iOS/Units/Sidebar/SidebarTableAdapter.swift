@@ -134,14 +134,17 @@ private extension SidebarTableAdapter {
 			let newModel = newItems[newIndex]
 			let indexPath = IndexPath(row: oldIndex, section: section)
 			let cell = collectionView.cellForItem(at: indexPath)
-
-			var configuration = UIListContentConfiguration.cell()
-			configuration.text = newModel.title
-			configuration.image = UIImage(systemName: newModel.iconName)
-			configuration.imageProperties.tintColor = sections[section].tinted ? .accent : .label
-
-			cell?.contentConfiguration = configuration
+			cell?.contentConfiguration = configuration(for: newModel, tinted: sections[section].tinted)
 		}
+	}
+
+	func configuration(for model: NavigationItem, tinted: Bool) -> any UIContentConfiguration {
+		var configuration = UIListContentConfiguration.cell()
+		configuration.text = model.title
+		configuration.image = UIImage(systemName: model.iconName)
+		configuration.imageProperties.tintColor = tinted ? .accent : .label
+		configuration.textProperties.color = .label
+		return configuration
 	}
 }
 
@@ -157,18 +160,11 @@ extension SidebarTableAdapter: UICollectionViewDataSource {
 	}
 
 	func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
 		let section = sections[indexPath.section]
 		let model = section[indexPath.row]
 
-		var configuration = UIListContentConfiguration.cell()
-		configuration.text = model.title
-		configuration.image = UIImage(systemName: model.iconName)
-		configuration.imageProperties.tintColor = section.tinted ? .accent : .label
-		configuration.textProperties.color = .label
-
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! UICollectionViewListCell
-		cell.contentConfiguration = configuration
+		cell.contentConfiguration = configuration(for: model, tinted: section.tinted)
 
 		// MARK: - Configure Accessories
 
@@ -209,7 +205,7 @@ extension SidebarTableAdapter {
 	}
 }
 
-
+// MARK: - Moving Support
 extension SidebarTableAdapter {
 
 	func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
