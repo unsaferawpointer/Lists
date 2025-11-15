@@ -22,7 +22,7 @@ final class SidebarTableAdapter: NSObject {
 
 	var sections: [Section] = [
 		.init(title: "", tinted: true, items: [.init(id: .all, iconName: "square.grid.2x2", title: "All")]),
-		.init(title: "Collection", tinted: false, items: [])
+		.init(title: "Tags", tinted: false, items: [])
 	]
 
 	// MARK: - Initialization
@@ -138,6 +138,7 @@ private extension SidebarTableAdapter {
 			var configuration = UIListContentConfiguration.cell()
 			configuration.text = newModel.title
 			configuration.image = UIImage(systemName: newModel.iconName)
+			configuration.imageProperties.tintColor = sections[section].tinted ? .accent : .label
 
 			cell?.contentConfiguration = configuration
 		}
@@ -219,7 +220,7 @@ extension SidebarTableAdapter {
 
 		let items = sections[sourceIndexPath.section].items
 
-		guard case let .list(id) = items[sourceIndexPath.row].id else {
+		guard case let .tag(id) = items[sourceIndexPath.row].id else {
 			return
 		}
 
@@ -233,7 +234,7 @@ extension SidebarTableAdapter {
 		sections[sourceIndexPath.section].items.insert(item, at: destinationIndexPath.row)
 
 		let newDestination = destination.map { item -> UUID? in
-			guard case .list(let id) = item else {
+			guard case .tag(let id) = item else {
 				return nil
 			}
 			return id
@@ -243,7 +244,7 @@ extension SidebarTableAdapter {
 			return
 		}
 
-		delegate?.moveList(with: id, to: newDestination)
+		delegate?.moveTag(with: id, to: newDestination)
 	}
 
 	func collectionView(
@@ -266,7 +267,7 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 		}
 
 		let item = sections[indexPath.section][indexPath.row]
-		guard case let .list(id) = item.id else {
+		guard case let .tag(id) = item.id else {
 			return nil
 		}
 

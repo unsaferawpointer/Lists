@@ -10,6 +10,7 @@ import UIKit
 struct ContentItem {
 	let uuid: UUID
 	let title: String
+	let subtitle: String?
 	let isStrikethrough: Bool
 }
 

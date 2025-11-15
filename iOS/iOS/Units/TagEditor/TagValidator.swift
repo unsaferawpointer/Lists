@@ -1,5 +1,5 @@
 //
-//  ListValidator.swift
+//  TagValidator.swift
 //  iOS
 //
 //  Created by Anton Cherkasov on 20.10.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class ListValidator {
+final class TagValidator {
 
 	let minNameLength: Int = 1
 	let maxNameLength: Int = 64
@@ -46,7 +46,7 @@ final class ListValidator {
 }
 
 // MARK: - Nested Data structs
-extension ListValidator {
+extension TagValidator {
 
 	enum ValidationResult {
 
@@ -71,32 +71,32 @@ extension ListValidator {
 		var errorDescription: String? {
 			switch self {
 			case .emptyName:
-				return "List name cannot be empty"
+				return "Tag name cannot be empty"
 
 			case .tooShort(let minimum, let actual):
-				return "List name is too short. Minimum \(minimum) character\(minimum == 1 ? "" : "s") required, but \(actual) \(actual == 1 ? "was" : "were") provided"
+				return "Tag name is too short. Minimum \(minimum) character\(minimum == 1 ? "" : "s") required, but \(actual) \(actual == 1 ? "was" : "were") provided"
 
 			case .tooLong(let maximum, let actual):
-				return "List name is too long. Maximum \(maximum) characters allowed, but \(actual) were provided"
+				return "Tag name is too long. Maximum \(maximum) characters allowed, but \(actual) were provided"
 
 			case .invalidCharacters:
-				return "List name contains invalid characters. Please use only letters, numbers, and common punctuation"
+				return "Tag name contains invalid characters. Please use only letters, numbers, and common punctuation"
 			}
 		}
 
 		var recoverySuggestion: String? {
 			switch self {
 			case .emptyName:
-				return "Please enter a name for your list"
+				return "Please enter a name for your tag"
 
 			case .tooShort:
-				return "Try adding more characters to the list name"
+				return "Try adding more characters to the tag name"
 
 			case .tooLong:
-				return "Try shortening the list name or using abbreviations"
+				return "Try shortening the tag name or using abbreviations"
 
 			case .invalidCharacters:
-				return "Remove any special symbols or emojis from the list name"
+				return "Remove any special symbols or emojis from the tag name"
 			}
 		}
 	}

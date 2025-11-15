@@ -133,6 +133,11 @@ private extension ContentTableAdapter {
 							pattern: .solid,
 							color: .secondary
 						)
+					if let subtitle = model.subtitle, !subtitle.isEmpty {
+						Text(subtitle)
+							.foregroundStyle(.secondary)
+							.font(.caption)
+					}
 				}
 			}
 		}

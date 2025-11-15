@@ -9,22 +9,22 @@ import SwiftUI
 
 struct ItemEditor: View {
 
-	@State var title: String = ""
+	@State var properties: Item.Properties
 
-	var completion: ((Bool, ItemEditorModel) -> Void)?
+	var completion: ((Bool, Item.Properties) -> Void)?
 
 	@FocusState var inFocus: Bool
 
-	let validator = ListValidator()
+	let validator = TagValidator()
 
-	var validationResult: ListValidator.ValidationResult {
-		validator.validate(name: title)
+	var validationResult: TagValidator.ValidationResult {
+		validator.validate(name: properties.title)
 	}
 
 	// MARK: - Initialization
 
-	init(model: ItemEditorModel, completion: ((Bool, ItemEditorModel) -> Void)? = nil) {
-		self._title = State(initialValue: model.title)
+	init(properties: Item.Properties, completion: ((Bool, Item.Properties) -> Void)? = nil) {
+		self._properties = State(initialValue: properties)
 		self.completion = completion
 	}
 
@@ -32,7 +32,7 @@ struct ItemEditor: View {
 		NavigationStack {
 			Form {
 				Section {
-					TextField("Enter a name", text: $title)
+					TextField("Enter a name", text: $properties.title)
 						.focused($inFocus)
 						.onAppear {
 							inFocus = true
@@ -50,18 +50,18 @@ struct ItemEditor: View {
 
 			}
 			.formStyle(.grouped)
-			.navigationTitle("Edit List")
+			.navigationTitle("Edit Tag")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
 					Button(role: .confirm) {
-						completion?(true, .init(title: title))
+						completion?(true, properties)
 					}
 					.disabled(!validationResult.isSuccess)
 				}
 				ToolbarItem(placement: .cancellationAction) {
 					Button(role: .close) {
-						completion?(false, .init(title: ""))
+						completion?(false, properties)
 					}
 				}
 			}
@@ -70,5 +70,5 @@ struct ItemEditor: View {
 }
 
 #Preview {
-	ItemEditor(model: .init(title: "Default Item"))
+	ItemEditor(properties: .init(title: "Default Item", isStrikethrough: false, tags: []))
 }

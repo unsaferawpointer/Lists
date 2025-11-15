@@ -19,7 +19,7 @@ public class ItemEntity: NSManagedObject {
 	@NSManaged public var text: String?
 	@NSManaged public var creationDate: Date?
 	@NSManaged public var rawOptions: Int64
-	@NSManaged public var list: ListEntity?
+	@NSManaged public var tags: NSSet?
 
 	@NSManaged public var offset: Int64
 
@@ -29,7 +29,6 @@ public class ItemEntity: NSManagedObject {
 		self.uuid = UUID()
 		self.text = ""
 		self.creationDate = .now
-		self.list = nil
 		self.rawOptions = 0
 
 		self.offset = 0
@@ -55,7 +54,8 @@ extension ItemEntity: EntityConvertable {
 			uuid: id,
 			properties: .init(
 				title: text ?? "Unknown title",
-				isStrikethrough: isStrikethrough
+				isStrikethrough: isStrikethrough,
+				tags: tagModels
 			)
 		)
 	}
@@ -73,6 +73,15 @@ extension ItemEntity: EntityConvertable {
 
 // MARK: - Calculated Properties
 extension ItemEntity {
+
+	var tagModels: [Tag] {
+		get {
+			return (tags as? Set<TagEntity>)?
+				.sorted { lhs, rhs in
+					lhs.offset < rhs.offset
+				}.map(\.model) ?? []
+		}
+	}
 
 	var options: ItemOptions {
 		get {
@@ -115,4 +124,21 @@ extension ItemEntity {
 	@nonobjc public class func fetchRequest() -> NSFetchRequest<ItemEntity> {
 		return NSFetchRequest<ItemEntity>(entityName: "ItemEntity")
 	}
+}
+
+// MARK: Generated accessors for tags
+extension ItemEntity {
+
+	@objc(addTagsObject:)
+	@NSManaged public func addToTags(_ value: TagEntity)
+
+	@objc(removeTagsObject:)
+	@NSManaged public func removeFromTags(_ value: TagEntity)
+
+	@objc(addTags:)
+	@NSManaged public func addToTags(_ values: NSSet)
+
+	@objc(removeTags:)
+	@NSManaged public func removeFromTags(_ values: NSSet)
+
 }

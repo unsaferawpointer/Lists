@@ -9,7 +9,7 @@ import Foundation
 
 enum ContentPayload {
 	case all
-	case list(id: UUID)
+	case tag(id: UUID)
 }
 
 // MARK: - RawRepresentable
@@ -25,7 +25,7 @@ extension ContentPayload: RawRepresentable {
 			guard let id = UUID(uuidString: rawValue) else {
 				return nil
 			}
-			self = .list(id: id)
+			self = .tag(id: id)
 		}
 	}
 
@@ -33,7 +33,7 @@ extension ContentPayload: RawRepresentable {
 		switch self {
 		case .all:
 			"all"
-		case let .list(id):
+		case let .tag(id):
 			id.uuidString
 		}
 	}
@@ -42,10 +42,10 @@ extension ContentPayload: RawRepresentable {
 // MARK: - Computed Properties
 extension ContentPayload {
 
-	var listID: UUID? {
+	var tagID: UUID? {
 		switch self {
 		case .all:				nil
-		case let .list(id):		id
+		case let .tag(id):		id
 		}
 	}
 }

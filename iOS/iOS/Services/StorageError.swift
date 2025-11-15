@@ -8,6 +8,6 @@
 import Foundation
 
 enum StorageError: Error {
-	case listNotFound
+	case tagNotFound
 	case errorWhileMoving
 }

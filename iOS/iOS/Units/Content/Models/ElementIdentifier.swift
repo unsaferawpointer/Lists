@@ -8,7 +8,7 @@
 import UIKit
 
 enum ElementIdentifier: String {
-	case newList
+	case newTag
 	case newItem
 	case delete
 	case strikeThrough

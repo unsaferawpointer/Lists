@@ -12,8 +12,8 @@ import SwiftUI
 
 @MainActor
 protocol ContentCoordinatable {
-	func presentItemEditor(with model: ItemEditorModel, completion: @escaping (Bool, ItemEditorModel) -> Void)
-	func presentListPicker(completion: @escaping (Bool, UUID?) -> Void)
+	func presentItemEditor(with properties: Item.Properties, completion: @escaping (Bool, Item.Properties) -> Void)
+	func presentTagPicker(completion: @escaping (Bool, Set<UUID>) -> Void)
 }
 
 @MainActor
@@ -50,20 +50,19 @@ extension ContentCoordinator: Coordinatable {
 // MARK: - ContentCoordinatable
 extension ContentCoordinator: ContentCoordinatable {
 
-	func presentListPicker(completion: @escaping (Bool, UUID?) -> Void) {
-		let provider = ModelsProvider<List>(container: DefaultContainer(base: persistentContainer), request: ListsRequest(uuid: nil))
+	func presentTagPicker(completion: @escaping (Bool, Set<UUID>) -> Void) {
+		let provider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
 
-		let model = ListPickerModel(provider: provider)
-		let view = ListPicker(model: model) { [weak self] isSuccess, selected in
+		let model = TagPickerModel(selected: [], provider: provider)
+		let view = TagPicker(model: model) { [weak self] isSuccess, selected in
 			self?.router.dismissInDetailsViewController()
 			completion(isSuccess, selected)
 		}
 		router.presentInDetails(viewController: UIHostingController(rootView: view))
 	}
 
-	func presentItemEditor(with model: ItemEditorModel, completion: @escaping (Bool, ItemEditorModel) -> Void) {
-
-		let view = ItemEditor(model: model) { [weak self] isSuccess, newModel in
+	func presentItemEditor(with properties: Item.Properties, completion: @escaping (Bool, Item.Properties) -> Void) {
+		let view = ItemEditor(properties: properties) { [weak self] isSuccess, newModel in
 			self?.router.dismissInDetailsViewController()
 			completion(isSuccess, newModel)
 		}

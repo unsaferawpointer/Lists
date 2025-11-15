@@ -9,17 +9,17 @@ import Foundation
 
 struct ItemsRequest {
 	let fetchLimit: Int?
-	let list: UUID?
+	let tag: UUID?
 }
 
 // MARK: - RequestRepresentable
 extension ItemsRequest: RequestRepresentable {
 
 	var nsPredicate: NSPredicate? {
-		guard let id = list else {
+		guard let id = tag else {
 			return nil
 		}
-		return NSPredicate(format: "list.uuid == %@", argumentArray: [id])
+		return NSPredicate(format: "ANY tags.uuid == %@", id as CVarArg)
 	}
 	
 	var nsSortDescriptors: [NSSortDescriptor]? {

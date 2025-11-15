@@ -60,8 +60,7 @@ extension ContentPresenter: ContextMenuDelegate {
 				guard let item = try? await self?.interactor.item(for: first) else {
 					return
 				}
-				let model = ItemEditorModel(title: item.title)
-				self?.editItem(with: first, model: model)
+				self?.editItem(with: first, properties: item.properties)
 			}
 		case "delete":
 			Task { @MainActor in
@@ -72,7 +71,7 @@ extension ContentPresenter: ContextMenuDelegate {
 				try? await interactor.strikeThroughItems(with: selection, flag: state == .on ? false : true)
 			}
 		case "move":
-			moveItemsToList(selected: selection)
+			setTags(selected: selection)
 		default:
 			break
 		}
@@ -96,7 +95,7 @@ extension ContentPresenter: ToolbarDelegate {
 
 		switch identifier {
 		case "new":
-			createItem(with: .init(title: ""))
+			createItem(with: .init(title: "", isStrikethrough: false, tags: []))
 		case "delete":
 			Task {
 				try? await interactor.deleteItems(with: selection)
@@ -106,7 +105,7 @@ extension ContentPresenter: ToolbarDelegate {
 				try? await interactor.strikeThroughItems(with: selection, flag: state == .on ? false : true)
 			}
 		case "move":
-			moveItemsToList(selected: nil)
+			setTags(selected: nil)
 		default:
 			break
 		}
@@ -143,39 +142,39 @@ import UIKit
 // MARK: - Helpers
 extension ContentPresenter {
 
-	func createItem(with model: ItemEditorModel) {
-		coordinator?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
+	func createItem(with properties: Item.Properties) {
+		coordinator?.presentItemEditor(with: properties) { [weak self] isSuccess, newModel in
 			guard isSuccess else {
 				return
 			}
 			Task { @MainActor [weak self] in
-				let properties = Item.Properties(title: newModel.title, isStrikethrough: false)
+				let properties = Item.Properties(title: newModel.title, isStrikethrough: false, tags: [])
 				try? await self?.interactor.addItem(with: properties)
 			}
 		}
 	}
 
-	func moveItemsToList(selected: [UUID]?) {
+	func setTags(selected: [UUID]?) {
 		guard let selection = selected ?? view?.selection else {
 			return
 		}
-		coordinator?.presentListPicker { [weak self] isSuccess, list in
+		coordinator?.presentTagPicker { [weak self] isSuccess, tags in
 			guard isSuccess else {
 				return
 			}
 			Task {
-				try? await self?.interactor.moveItems(with: selection, to: list)
+				try? await self?.interactor.setTags(items: selection, tags: tags)
 			}
 		}
 	}
 
-	func editItem(with id: UUID, model: ItemEditorModel) {
-		coordinator?.presentItemEditor(with: model) { [weak self] isSuccess, newModel in
+	func editItem(with id: UUID, properties: Item.Properties) {
+		coordinator?.presentItemEditor(with: properties) { [weak self] isSuccess, newModel in
 			guard isSuccess else {
 				return
 			}
 			Task { @MainActor [weak self] in
-				let properties = Item.Properties(title: newModel.title, isStrikethrough: false)
+				let properties = Item.Properties(title: newModel.title, isStrikethrough: false, tags: [])
 				try? await self?.interactor.setText(properties.title, for: id)
 			}
 		}
@@ -204,7 +203,7 @@ extension ContentPresenter: ContentPresenterProtocol {
 
 	func present(items: [Item]) {
 		let models = items.map {
-			ContentItem(uuid: $0.id, title: $0.title, isStrikethrough: $0.isStrikethrough)
+			ContentItem(uuid: $0.id, title: $0.title, subtitle: $0.properties.tags.map(\.name).joined(separator: " | "), isStrikethrough: $0.isStrikethrough)
 		}
 
 		// MARK: - Cache
@@ -226,8 +225,8 @@ extension ContentPresenter: ContentPresenterProtocol {
 		switch content {
 		case .all:
 			view?.displayTitle(title: "All")
-		case let .list(list):
-			view?.displayTitle(title: list.name)
+		case let .tag(tag):
+			view?.displayTitle(title: tag.name)
 		}
 	}
 }

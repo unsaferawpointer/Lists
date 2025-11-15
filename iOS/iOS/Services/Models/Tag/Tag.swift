@@ -1,13 +1,13 @@
 //
-//  List.swift
+//  Tag.swift
 //  iOS
 //
-//  Created by Anton Cherkasov on 19.10.2025.
+//  Created by Anton Cherkasov on 15.11.2025.
 //
 
 import Foundation
 
-struct List: Sendable {
+struct Tag: Sendable {
 
 	let uuid: UUID
 	var properties: Properties
@@ -21,7 +21,7 @@ struct List: Sendable {
 }
 
 // MARK: - Identifiable
-extension List: Identifiable {
+extension Tag: Identifiable {
 
 	var id: UUID {
 		uuid
@@ -29,13 +29,13 @@ extension List: Identifiable {
 }
 
 // MARK: - ModelConvertable
-extension List: ModelConvertable {
+extension Tag: ModelConvertable {
 
-	typealias Entity = ListEntity
+	typealias Entity = TagEntity
 }
 
 // MARK: - Computed Properties
-extension List {
+extension Tag {
 
 	var name: String {
 		properties.name
@@ -43,7 +43,7 @@ extension List {
 }
 
 // MARK: - Nested Data Structs
-extension List {
+extension Tag {
 
 	struct Properties {
 		var name: String

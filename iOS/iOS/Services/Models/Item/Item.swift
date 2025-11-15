@@ -49,5 +49,6 @@ extension Item {
 	struct Properties {
 		var title: String
 		var isStrikethrough: Bool
+		var tags: [Tag]
 	}
 }

@@ -21,7 +21,7 @@ final class ContentProvider {
 
 	private let itemsProvider: ModelsProvider<Item>
 
-	private let listsProvider: ModelsProvider<List>?
+	private let tagsProvider: ModelsProvider<Tag>?
 
 	let payload: ContentPayload
 
@@ -32,11 +32,11 @@ final class ContentProvider {
 
 		switch payload {
 		case .all:
-			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, list: nil))
-			self.listsProvider = nil
-		case let .list(id):
-			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, list: id))
-			self.listsProvider = ModelsProvider(container: container, request: ListsRequest(uuid: id))
+			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, tag: nil))
+			self.tagsProvider = nil
+		case let .tag(id):
+			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, tag: id))
+			self.tagsProvider = ModelsProvider(container: container, request: TagsRequest(uuid: id))
 		}
 
 		configure()
@@ -50,12 +50,12 @@ extension ContentProvider {
 		Task {
 			try? await itemsProvider.fetchData()
 		}
-		guard case .list = payload else {
+		guard case .tag = payload else {
 			delegate?.providerDidChangeContent(content: .all)
 			return
 		}
 		Task {
-			try? await listsProvider?.fetchData()
+			try? await tagsProvider?.fetchData()
 		}
 	}
 
@@ -77,7 +77,7 @@ private extension ContentProvider {
 			}
 		}
 
-		guard let listsProvider else {
+		guard let tagsProvider else {
 			return
 		}
 
@@ -85,11 +85,11 @@ private extension ContentProvider {
 			guard let self else {
 				return
 			}
-			for await change in await listsProvider.stream() {
-				guard let list = change.first else {
+			for await change in await tagsProvider.stream() {
+				guard let tag = change.first else {
 					continue
 				}
-				self.delegate?.providerDidChangeContent(content: .list(list: list))
+				self.delegate?.providerDidChangeContent(content: .tag(tag: tag))
 			}
 		}
 	}
@@ -97,5 +97,5 @@ private extension ContentProvider {
 
 enum Content {
 	case all
-	case list(list: List)
+	case tag(tag: Tag)
 }
