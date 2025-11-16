@@ -15,6 +15,8 @@ struct ItemsRequest {
 // MARK: - RequestRepresentable
 extension ItemsRequest: RequestRepresentable {
 
+	typealias Entity = ItemEntity
+
 	var nsPredicate: NSPredicate? {
 		guard let id = tag else {
 			return nil

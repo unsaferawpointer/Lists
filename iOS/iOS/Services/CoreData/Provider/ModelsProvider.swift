@@ -19,7 +19,7 @@ final class ModelsProvider<Model: ModelConvertable> {
 
 	// MARK: - Initialization
 
-	init(container: any PersistentContainer, request: any RequestRepresentable) {
+	init<R: RequestRepresentable>(container: any PersistentContainer, request: R) where R.Entity == Model.Entity {
 		self.base = .init(initialData: [])
 		self.entitiesProvder = EntitiesProvider(container: container, request: request)
 		self.entitiesProvder.delegate = self

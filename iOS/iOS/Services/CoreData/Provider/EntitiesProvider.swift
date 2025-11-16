@@ -12,6 +12,7 @@ protocol EntitesProviderDelegate<Model>: AnyObject {
 	func providerDidChangeContent(models: [Model])
 }
 
+@MainActor
 final class EntitiesProvider<Model: ModelConvertable>: NSObject, NSFetchedResultsControllerDelegate {
 
 	typealias Entity = Model.Entity
@@ -24,7 +25,7 @@ final class EntitiesProvider<Model: ModelConvertable>: NSObject, NSFetchedResult
 
 	// MARK: - Initialization
 
-	init(container: any PersistentContainer, request: any RequestRepresentable) {
+	init<R: RequestRepresentable>(container: any PersistentContainer, request: R) where R.Entity == Model.Entity {
 		super.init()
 
 		self.controller = buildController(with: container, request: request)

@@ -14,6 +14,8 @@ struct TagsRequest {
 // MARK: - RequestRepresentable
 extension TagsRequest: RequestRepresentable {
 
+	typealias Entity = TagEntity
+
 	var fetchLimit: Int? {
 		return uuid != nil ? 1 : nil
 	}

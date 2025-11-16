@@ -8,6 +8,9 @@
 import Foundation
 
 protocol RequestRepresentable {
+
+	associatedtype Entity
+
 	var nsPredicate: NSPredicate? { get }
 	var nsSortDescriptors: [NSSortDescriptor]? { get }
 	var fetchLimit: Int? { get }
