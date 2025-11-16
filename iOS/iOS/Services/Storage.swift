@@ -186,6 +186,7 @@ extension Storage: StorageProtocol {
 			}
 
 			moving.forEach {
+				$0.tags = NSSet()
 				for tag in tagEntities {
 					$0.addToTags(tag)
 				}

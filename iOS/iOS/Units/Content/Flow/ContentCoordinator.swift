@@ -13,7 +13,7 @@ import SwiftUI
 @MainActor
 protocol ContentCoordinatable {
 	func presentItemEditor(with properties: Item.Properties, completion: @escaping (Bool, Item.Properties) -> Void)
-	func presentTagPicker(completion: @escaping (Bool, Set<UUID>) -> Void)
+	func presentTagPicker(tags: Set<UUID>, completion: @escaping (Bool, Set<UUID>) -> Void)
 }
 
 @MainActor
@@ -50,10 +50,10 @@ extension ContentCoordinator: Coordinatable {
 // MARK: - ContentCoordinatable
 extension ContentCoordinator: ContentCoordinatable {
 
-	func presentTagPicker(completion: @escaping (Bool, Set<UUID>) -> Void) {
+	func presentTagPicker(tags: Set<UUID>, completion: @escaping (Bool, Set<UUID>) -> Void) {
 		let provider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
 
-		let model = TagPickerModel(selected: [], provider: provider)
+		let model = TagPickerModel(selected: tags, provider: provider)
 		let view = TagPicker(model: model) { [weak self] isSuccess, selected in
 			self?.router.dismissInDetailsViewController()
 			completion(isSuccess, selected)

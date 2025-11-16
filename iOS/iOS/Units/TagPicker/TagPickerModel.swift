@@ -27,3 +27,15 @@ final class TagPickerModel {
 		}
 	}
 }
+
+// MARK: - Public Interface
+extension TagPickerModel {
+
+	func toggle(id: UUID) {
+		if selected.contains(id) {
+			selected.remove(id)
+		} else {
+			selected.insert(id)
+		}
+	}
+}

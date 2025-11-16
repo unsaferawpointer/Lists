@@ -155,15 +155,17 @@ extension ContentPresenter {
 	}
 
 	func setTags(selected: [UUID]?) {
-		guard let selection = selected ?? view?.selection else {
+		guard let selection = selected ?? view?.selection, let first = selection.first else {
 			return
 		}
-		coordinator?.presentTagPicker { [weak self] isSuccess, tags in
+
+		let tags = cache.tags[first] ?? []
+		coordinator?.presentTagPicker(tags: tags) { [weak self] isSuccess, tags in
 			guard isSuccess else {
 				return
 			}
 			Task {
-				try? await self?.interactor.setTags(items: selection, tags: tags)
+				try? await self?.interactor.setTags(items: [first], tags: tags)
 			}
 		}
 	}
@@ -195,6 +197,7 @@ extension ContentPresenter {
 
 	struct Cache {
 		var strikethroughItems: Set<UUID> = []
+		var tags: [UUID: Set<UUID>] = [:]
 	}
 }
 
@@ -207,11 +210,15 @@ extension ContentPresenter: ContentPresenterProtocol {
 		}
 
 		// MARK: - Cache
-
 		cache.strikethroughItems = Set(
 			items.filter { $0.isStrikethrough }
 				.map(\.id)
 		)
+		var tags: [UUID: Set<UUID>] = [:]
+		for item in items {
+			tags[item.id] = Set(item.properties.tags.map(\.id))
+		}
+		cache.tags = tags
 
 		view?.display(newItems: models)
 

@@ -54,6 +54,10 @@ extension ModelsProvider where Model == Item {
 			$0.id == id
 		}
 	}
+
+	func items() async -> [Model] {
+		await base.lastValue()
+	}
 }
 
 extension ModelsProvider where Model == Tag {

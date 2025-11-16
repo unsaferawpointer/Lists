@@ -21,7 +21,7 @@ final class ContentProvider {
 
 	private let itemsProvider: ModelsProvider<Item>
 
-	private let tagsProvider: ModelsProvider<Tag>?
+	private let tagsProvider: ModelsProvider<Tag>
 
 	let payload: ContentPayload
 
@@ -30,14 +30,15 @@ final class ContentProvider {
 	init(payload: ContentPayload, container: any PersistentContainer) {
 		self.payload = payload
 
-		switch payload {
+		let request = switch payload {
 		case .all:
-			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, tag: nil))
-			self.tagsProvider = nil
-		case let .tag(id):
-			self.itemsProvider = ModelsProvider(container: container, request: ItemsRequest(fetchLimit: nil, tag: id))
-			self.tagsProvider = ModelsProvider(container: container, request: TagsRequest(uuid: id))
+			ItemsRequest(fetchLimit: nil, tag: nil)
+		case .tag(let id):
+			ItemsRequest(fetchLimit: nil, tag: id)
 		}
+
+		self.itemsProvider = ModelsProvider(container: container, request: request)
+		self.tagsProvider = ModelsProvider(container: container, request: TagsRequest(uuid: nil))
 
 		configure()
 	}
@@ -48,14 +49,8 @@ extension ContentProvider {
 
 	func fetchContent() {
 		Task {
+			try? await tagsProvider.fetchData()
 			try? await itemsProvider.fetchData()
-		}
-		guard case .tag = payload else {
-			delegate?.providerDidChangeContent(content: .all)
-			return
-		}
-		Task {
-			try? await tagsProvider?.fetchData()
 		}
 	}
 
@@ -76,17 +71,17 @@ private extension ContentProvider {
 				self.delegate?.providerDidChangeItems(items: change)
 			}
 		}
-
-		guard let tagsProvider else {
-			return
-		}
-
 		Task { @MainActor [weak self] in
 			guard let self else {
 				return
 			}
 			for await change in await tagsProvider.stream() {
-				guard let tag = change.first else {
+				try? await itemsProvider.fetchData()
+				guard let tagID = payload.tagID else {
+					self.delegate?.providerDidChangeContent(content: .all)
+					continue
+				}
+				guard let tag = change.first(where: { $0.id == tagID }) else {
 					continue
 				}
 				self.delegate?.providerDidChangeContent(content: .tag(tag: tag))

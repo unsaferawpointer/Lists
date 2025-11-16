@@ -38,7 +38,7 @@ extension TagPicker: View {
 					}
 					.contentShape(Rectangle())
 					.onTapGesture {
-						toggleSelection(for: tag.id)
+						model.toggle(id: tag.id)
 					}
 				}
 			}
@@ -59,18 +59,6 @@ extension TagPicker: View {
 		}
 		.task {
 			try? await model.provider.fetchData()
-		}
-	}
-}
-
-// MARK: - Helpers
-private extension TagPicker {
-
-	func toggleSelection(for item: UUID) {
-		if model.selected.contains(item) {
-			model.selected.remove(item)
-		} else {
-			model.selected.insert(item)
 		}
 	}
 }
