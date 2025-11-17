@@ -81,11 +81,8 @@ extension SidebarTableAdapter.Section {
 // MARK: - Helpers
 private extension SidebarTableAdapter {
 
-	func calculate(newItems: [NavigationItem], in section: Int) -> ([IndexPath], [IndexPath]) {
+	func calculate<S: BidirectionalCollection>(oldItems: S, newItems: S) -> ([Int], [Int]) where S.Element: Identifiable {
 
-		updateCells(newItems: newItems, in: section)
-
-		let oldItems = sections[section].items
 		let diff = newItems.difference(from: oldItems) { old, new in
 			return old.id == new.id
 		}
@@ -95,8 +92,6 @@ private extension SidebarTableAdapter {
 				return nil
 			}
 			return offset
-		}.map {
-			IndexPath(row: $0, section: section)
 		}
 
 		let inserting = diff.compactMap { change -> Int? in
@@ -104,11 +99,20 @@ private extension SidebarTableAdapter {
 				return nil
 			}
 			return offset
-		}.map {
-			IndexPath(row: $0, section: section)
 		}
 
 		return (removing, inserting)
+	}
+
+	func calculate(newItems: [NavigationItem], in section: Int) -> ([IndexPath], [IndexPath]) {
+		updateCells(newItems: newItems, in: section)
+
+		let (removing, inserting) = calculate(oldItems: sections[section].items, newItems: newItems)
+
+		return (
+			removing.map { IndexPath.init(row: $0, section: section) },
+			inserting.map { IndexPath.init(row: $0, section: section) }
+		)
 	}
 
 	func updateCells(newItems: [NavigationItem], in section: Int) {
