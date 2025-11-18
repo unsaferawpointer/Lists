@@ -31,6 +31,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 
 	func viewDidLoad() {
 		Task { @MainActor in
+			view?.displayPinned(newItems: [.init(id: .all, iconName: "square.grid.2x2", title: "All")], select: .all)
 			try? await interactor?.fetchTags()
 		}
 	}

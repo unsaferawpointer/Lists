@@ -21,7 +21,7 @@ final class SidebarTableAdapter: NSObject {
 	// MARK: - Data
 
 	var sections: [Section] = [
-		.init(title: "", tinted: true, items: [.init(id: .all, iconName: "square.grid.2x2", title: "All")]),
+		.init(title: "", tinted: true, items: []),
 		.init(title: "Tags", tinted: false, items: [])
 	]
 
@@ -38,6 +38,28 @@ final class SidebarTableAdapter: NSObject {
 
 // MARK: - Public Interface
 extension SidebarTableAdapter {
+
+	func reloadPinned(newItems: [NavigationItem], select id: NavigationItem.ID? = nil) {
+
+		let (removing, inserting) = calculate(newItems: newItems, in: 0)
+
+		collectionView.performBatchUpdates {
+			self.sections[0].items = newItems
+
+			collectionView.deleteItems(at: removing)
+			collectionView.insertItems(at: inserting)
+		} completion: { [weak self] finished in
+			guard finished, let id, let index = newItems.firstIndex(where: \.id, equalsTo: id) else {
+				return
+			}
+
+			self?.collectionView.selectItem(
+				at: IndexPath(row: index, section: 0),
+				animated: true,
+				scrollPosition: .top
+			)
+		}
+	}
 
 	func reload(newItems: [NavigationItem]) {
 

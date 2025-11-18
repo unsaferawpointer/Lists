@@ -9,6 +9,7 @@ import UIKit
 
 @MainActor
 protocol SidebarView: AnyObject {
+	func displayPinned(newItems: [NavigationItem], select id: NavigationItem.ID?)
 	func display(newItems: [NavigationItem])
 }
 
@@ -66,8 +67,6 @@ class SidebarViewController: UIViewController {
 
 		adapter.delegate = delegate
 		delegate?.viewDidLoad()
-
-		collectionView.selectItem(at: .init(row: 0, section: 0), animated: true, scrollPosition: .top)
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
@@ -87,6 +86,10 @@ class SidebarViewController: UIViewController {
 
 // MARK: - SidebarView
 extension SidebarViewController: SidebarView {
+
+	func displayPinned(newItems: [NavigationItem], select id: NavigationItem.ID? = nil) {
+		adapter.reloadPinned(newItems: newItems, select: id)
+	}
 
 	func display(newItems: [NavigationItem]) {
 		adapter.reload(newItems: newItems)
