@@ -11,7 +11,7 @@ import UIKit
 import SwiftUI
 
 protocol UnitsFactoryProtocol {
-	func buildTagEditor(with model: TagEditorModel, completion: @escaping (Bool, TagEditorModel) -> Void) -> UIViewController
+	func buildListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void) -> UIViewController
 	func buildItemEditor(with model: ItemEditorModel, completion: @escaping (Bool, ItemEditorModel) -> Void) -> UIViewController
 }
 
@@ -29,8 +29,8 @@ final class UnitsFactory {
 // MARK: - UnitsFactoryProtocol
 extension UnitsFactory: UnitsFactoryProtocol {
 
-	func buildTagEditor(with model: TagEditorModel, completion: @escaping (Bool, TagEditorModel) -> Void) -> UIViewController {
-		let view = TagEditor(model: model, completion: completion)
+	func buildListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void) -> UIViewController {
+		let view = ListEditor(model: model, completion: completion)
 		return UIHostingController(rootView: view)
 	}
 	

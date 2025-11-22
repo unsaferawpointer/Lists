@@ -15,9 +15,9 @@ struct ItemEditor: View {
 
 	@FocusState var inFocus: Bool
 
-	let validator = TagValidator()
+	let validator = ListValidator()
 
-	var validationResult: TagValidator.ValidationResult {
+	var validationResult: ListValidator.ValidationResult {
 		validator.validate(name: properties.title)
 	}
 
@@ -70,5 +70,5 @@ struct ItemEditor: View {
 }
 
 #Preview {
-	ItemEditor(properties: .init(title: "Default Item", isStrikethrough: false, tags: []))
+	ItemEditor(properties: .init(title: "Default Item", isStrikethrough: false, list: nil))
 }

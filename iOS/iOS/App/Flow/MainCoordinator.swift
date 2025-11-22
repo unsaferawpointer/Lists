@@ -43,8 +43,8 @@ extension MainCoordinator: SelectionDelegate {
 		let payload: ContentPayload = switch item {
 		case .all:
 			.all
-		case let .tag(id):
-			.tag(id: id)
+		case let .list(id):
+			.list(id: id)
 		}
 
 		let content = ContentAssembly.build(router: router, payload: payload, persistentContainer: persistentContainer)

@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct TagsRequest {
+struct ListsRequest {
 	let uuid: UUID?
 }
 
 // MARK: - RequestRepresentable
-extension TagsRequest: RequestRepresentable {
+extension ListsRequest: RequestRepresentable {
 
-	typealias Entity = TagEntity
+	typealias Entity = ListEntity
 
 	var fetchLimit: Int? {
 		return uuid != nil ? 1 : nil
@@ -28,6 +28,6 @@ extension TagsRequest: RequestRepresentable {
 	}
 	
 	var nsSortDescriptors: [NSSortDescriptor]? {
-		return [NSSortDescriptor(keyPath: \TagEntity.offset, ascending: true)]
+		return [NSSortDescriptor(keyPath: \ListEntity.offset, ascending: true)]
 	}
 }

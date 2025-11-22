@@ -60,7 +60,7 @@ extension ModelsProvider where Model == Item {
 	}
 }
 
-extension ModelsProvider where Model == Tag {
+extension ModelsProvider where Model == List {
 
 	func stream() async -> AsyncStream<[Model]> {
 		await base.stream

@@ -20,6 +20,7 @@ public class ItemEntity: NSManagedObject {
 	@NSManaged public var creationDate: Date?
 	@NSManaged public var rawOptions: Int64
 	@NSManaged public var tags: NSSet?
+	@NSManaged public var list: ListEntity?
 
 	@NSManaged public var offset: Int64
 
@@ -55,7 +56,7 @@ extension ItemEntity: EntityConvertable {
 			properties: .init(
 				title: text ?? "Unknown title",
 				isStrikethrough: isStrikethrough,
-				tags: tagModels
+				list: id
 			)
 		)
 	}

@@ -1,5 +1,5 @@
 //
-//  TagPicker.swift
+//  ListPicker.swift
 //  iOS
 //
 //  Created by Anton Cherkasov on 31.10.2025.
@@ -7,42 +7,42 @@
 
 import SwiftUI
 
-struct TagPicker {
+struct ListPicker {
 
-	var model: TagPickerModel
+	var model: ListPickerModel
 
-	var completion: (Bool, Set<UUID>) -> Void
+	var completion: (Bool, UUID?) -> Void
 
 	// MARK: - Initialization
 
-	init(model: TagPickerModel, completion: @escaping (Bool, Set<UUID>) -> Void) {
+	init(model: ListPickerModel, completion: @escaping (Bool, UUID?) -> Void) {
 		self.model = model
 		self.completion = completion
 	}
 }
 
 // MARK: - View
-extension TagPicker: View {
+extension ListPicker: View {
 
 	var body: some View {
 		NavigationStack {
 			Form {
-				ForEach(model.tags) { tag in
+				ForEach(model.lists) { list in
 					HStack {
-						Label(tag.name, systemImage: tag.properties.icon?.iconName ?? "tag")
+						Label(list.name, systemImage: list.properties.icon?.iconName ?? "list")
 						Spacer()
-						if model.selected.contains(tag.id) {
+						if model.selected == list.id {
 							Image(systemName: "checkmark")
 								.foregroundColor(.blue)
 						}
 					}
 					.contentShape(Rectangle())
 					.onTapGesture {
-						model.toggle(id: tag.id)
+						model.selected = list.id
 					}
 				}
 			}
-			.navigationTitle("Select Tag")
+			.navigationTitle("Select List")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
@@ -52,7 +52,7 @@ extension TagPicker: View {
 				}
 				ToolbarItem(placement: .cancellationAction) {
 					Button(role: .close) {
-						completion(false, [])
+						completion(false, nil)
 					}
 				}
 			}
@@ -64,5 +64,5 @@ extension TagPicker: View {
 }
 
 //#Preview {
-//	TagPicker(model: <#TagPickerModel#>)
+//	ListPicker(model: <#ListPickerModel#>)
 //}

@@ -1,5 +1,5 @@
 //
-//  TagEditor.swift
+//  ListEditor.swift
 //  iOS
 //
 //  Created by Anton Cherkasov on 20.10.2025.
@@ -7,23 +7,23 @@
 
 import SwiftUI
 
-struct TagEditor: View {
+struct ListEditor: View {
 
-	@State var model: TagEditorModel
+	@State var model: ListEditorModel
 
-	var completion: ((Bool, TagEditorModel) -> Void)?
+	var completion: ((Bool, ListEditorModel) -> Void)?
 
 	@FocusState var inFocus: Bool
 
-	let validator = TagValidator()
+	let validator = ListValidator()
 
-	var validationResult: TagValidator.ValidationResult {
+	var validationResult: ListValidator.ValidationResult {
 		validator.validate(name: model.name)
 	}
 
 	// MARK: - Initialization
 
-	init(model: TagEditorModel, completion: ((Bool, TagEditorModel) -> Void)? = nil) {
+	init(model: ListEditorModel, completion: ((Bool, ListEditorModel) -> Void)? = nil) {
 		self._model = State(initialValue: model)
 		self.completion = completion
 	}
@@ -50,7 +50,7 @@ struct TagEditor: View {
 				IconPicker(selectedIcon: $model.icon)
 			}
 			.formStyle(.grouped)
-			.navigationTitle("Edit Tag")
+			.navigationTitle("Edit List")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
@@ -70,5 +70,5 @@ struct TagEditor: View {
 }
 
 #Preview {
-	TagEditor(model: .init(name: "Default Tag"))
+	ListEditor(model: .init(name: "Default List"))
 }

@@ -71,7 +71,7 @@ extension ContentPresenter: ContextMenuDelegate {
 				try? await interactor.strikeThroughItems(with: selection, flag: state == .on ? false : true)
 			}
 		case "move":
-			setTags(selected: selection)
+			fatalError()
 		default:
 			break
 		}
@@ -95,7 +95,7 @@ extension ContentPresenter: ToolbarDelegate {
 
 		switch identifier {
 		case "new":
-			createItem(with: .init(title: "", isStrikethrough: false, tags: []))
+			createItem(with: .init(title: "", isStrikethrough: false, list: nil))
 		case "delete":
 			Task {
 				try? await interactor.deleteItems(with: selection)
@@ -105,7 +105,7 @@ extension ContentPresenter: ToolbarDelegate {
 				try? await interactor.strikeThroughItems(with: selection, flag: state == .on ? false : true)
 			}
 		case "move":
-			setTags(selected: nil)
+			fatalError()
 		default:
 			break
 		}
@@ -148,24 +148,8 @@ extension ContentPresenter {
 				return
 			}
 			Task { @MainActor [weak self] in
-				let properties = Item.Properties(title: newModel.title, isStrikethrough: false, tags: [])
+				let properties = Item.Properties(title: newModel.title, isStrikethrough: false, list: nil)
 				try? await self?.interactor.addItem(with: properties)
-			}
-		}
-	}
-
-	func setTags(selected: [UUID]?) {
-		guard let selection = selected ?? view?.selection, let first = selection.first else {
-			return
-		}
-
-		let tags = cache.tags[first] ?? []
-		coordinator?.presentTagPicker(tags: tags) { [weak self] isSuccess, tags in
-			guard isSuccess else {
-				return
-			}
-			Task {
-				try? await self?.interactor.setTags(items: [first], tags: tags)
 			}
 		}
 	}
@@ -176,7 +160,7 @@ extension ContentPresenter {
 				return
 			}
 			Task { @MainActor [weak self] in
-				let properties = Item.Properties(title: newModel.title, isStrikethrough: false, tags: [])
+				let properties = Item.Properties(title: newModel.title, isStrikethrough: false, list: nil)
 				try? await self?.interactor.setText(properties.title, for: id)
 			}
 		}
@@ -197,7 +181,7 @@ extension ContentPresenter {
 
 	struct Cache {
 		var strikethroughItems: Set<UUID> = []
-		var tags: [UUID: Set<UUID>] = [:]
+		var lists: [UUID: UUID] = [:]
 	}
 }
 
@@ -206,7 +190,7 @@ extension ContentPresenter: ContentPresenterProtocol {
 
 	func present(items: [Item]) {
 		let models = items.map {
-			ContentItem(uuid: $0.id, title: $0.title, subtitle: $0.properties.tags.map(\.name).joined(separator: " | "), isStrikethrough: $0.isStrikethrough)
+			ContentItem(uuid: $0.id, title: $0.title, subtitle: nil, isStrikethrough: $0.isStrikethrough)
 		}
 
 		// MARK: - Cache
@@ -214,11 +198,11 @@ extension ContentPresenter: ContentPresenterProtocol {
 			items.filter { $0.isStrikethrough }
 				.map(\.id)
 		)
-		var tags: [UUID: Set<UUID>] = [:]
+		var lists: [UUID: UUID] = [:]
 		for item in items {
-			tags[item.id] = Set(item.properties.tags.map(\.id))
+			lists[item.id] = item.properties.list
 		}
-		cache.tags = tags
+		cache.lists = lists
 
 		view?.display(newItems: models)
 
@@ -232,8 +216,8 @@ extension ContentPresenter: ContentPresenterProtocol {
 		switch content {
 		case .all:
 			view?.displayTitle(title: "All")
-		case let .tag(tag):
-			view?.displayTitle(title: tag.name)
+		case let .list(list):
+			view?.displayTitle(title: list.name)
 		}
 	}
 }

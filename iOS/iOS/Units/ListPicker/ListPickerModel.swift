@@ -1,26 +1,24 @@
 //
-//  ItemEditorModel.swift
+//  ListPickerModel.swift
 //  iOS
 //
-//  Created by Anton Cherkasov on 23.10.2025.
+//  Created by Anton Cherkasov on 31.10.2025.
 //
 
 import Foundation
 
 @Observable
-final class ItemEditorModel {
+final class ListPickerModel {
 
-	var title: String
+	var selected: UUID?
 
 	var lists: [List] = []
 
 	@ObservationIgnored
 	let provider: ModelsProvider<List>
 
-	// MARK: - Initialization
-
-	init(title: String, provider: ModelsProvider<List>) {
-		self.title = title
+	init(selected: UUID?, provider: ModelsProvider<List>) {
+		self.selected = selected
 		self.provider = provider
 		Task { @MainActor in
 			for await change in await provider.stream() {
@@ -29,4 +27,3 @@ final class ItemEditorModel {
 		}
 	}
 }
-

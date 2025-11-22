@@ -1,5 +1,5 @@
 //
-//  TagValidator.swift
+//  ListValidator.swift
 //  iOS
 //
 //  Created by Anton Cherkasov on 20.10.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class TagValidator {
+final class ListValidator {
 
 	let minNameLength: Int = 1
 	let maxNameLength: Int = 64
@@ -46,7 +46,7 @@ final class TagValidator {
 }
 
 // MARK: - Nested Data structs
-extension TagValidator {
+extension ListValidator {
 
 	enum ValidationResult {
 
@@ -71,16 +71,16 @@ extension TagValidator {
 		var errorDescription: String? {
 			switch self {
 			case .emptyName:
-				return "Tag name cannot be empty"
+				return "List name cannot be empty"
 
 			case .tooShort(let minimum, let actual):
-				return "Tag name is too short. Minimum \(minimum) character\(minimum == 1 ? "" : "s") required, but \(actual) \(actual == 1 ? "was" : "were") provided"
+				return "List name is too short. Minimum \(minimum) character\(minimum == 1 ? "" : "s") required, but \(actual) \(actual == 1 ? "was" : "were") provided"
 
 			case .tooLong(let maximum, let actual):
-				return "Tag name is too long. Maximum \(maximum) characters allowed, but \(actual) were provided"
+				return "List name is too long. Maximum \(maximum) characters allowed, but \(actual) were provided"
 
 			case .invalidCharacters:
-				return "Tag name contains invalid characters. Please use only letters, numbers, and common punctuation"
+				return "List name contains invalid characters. Please use only letters, numbers, and common punctuation"
 			}
 		}
 

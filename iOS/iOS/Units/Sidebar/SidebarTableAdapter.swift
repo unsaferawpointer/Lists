@@ -22,7 +22,7 @@ final class SidebarTableAdapter: NSObject {
 
 	var sections: [Section] = [
 		.init(title: "", tinted: true, items: []),
-		.init(title: "Tags", tinted: false, items: [])
+		.init(title: "Lists", tinted: false, items: [])
 	]
 
 	// MARK: - Initialization
@@ -242,7 +242,7 @@ extension SidebarTableAdapter {
 
 		let items = sections[sourceIndexPath.section].items
 
-		guard case let .tag(id) = items[sourceIndexPath.row].id else {
+		guard case let .list(id) = items[sourceIndexPath.row].id else {
 			return
 		}
 
@@ -256,7 +256,7 @@ extension SidebarTableAdapter {
 		sections[sourceIndexPath.section].items.insert(item, at: destinationIndexPath.row)
 
 		let newDestination = destination.map { item -> UUID? in
-			guard case .tag(let id) = item else {
+			guard case .list(let id) = item else {
 				return nil
 			}
 			return id
@@ -266,7 +266,7 @@ extension SidebarTableAdapter {
 			return
 		}
 
-		delegate?.moveTag(with: id, to: newDestination)
+		delegate?.moveList(with: id, to: newDestination)
 	}
 
 	func collectionView(
@@ -289,7 +289,7 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 		}
 
 		let item = sections[indexPath.section][indexPath.row]
-		guard case let .tag(id) = item.id else {
+		guard case let .list(id) = item.id else {
 			return nil
 		}
 

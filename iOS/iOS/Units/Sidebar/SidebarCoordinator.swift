@@ -12,7 +12,7 @@ import SwiftUI
 
 @MainActor
 protocol SidebarCoordinatable {
-	func presentTagEditor(with model: TagEditorModel, completion: @escaping (Bool, TagEditorModel) -> Void)
+	func presentListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void)
 	func openWindow(for payload: ContentPayload)
 }
 
@@ -34,8 +34,8 @@ final class SidebarCoordinator {
 // MARK: - SidebarCoordinatable
 extension SidebarCoordinator: SidebarCoordinatable {
 
-	func presentTagEditor(with model: TagEditorModel, completion: @escaping (Bool, TagEditorModel) -> Void) {
-		let view = TagEditor(model: model) { [weak self] isSuccess, newModel in
+	func presentListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void) {
+		let view = ListEditor(model: model) { [weak self] isSuccess, newModel in
 			self?.router.dismissInMasterViewController()
 			completion(isSuccess, newModel)
 		}

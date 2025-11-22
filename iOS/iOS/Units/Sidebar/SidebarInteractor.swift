@@ -8,12 +8,12 @@
 import Foundation
 
 protocol SidebarInteractorProtocol: AnyObject {
-	func fetchTags() async throws
-	func addTag(with properties: Tag.Properties) async throws
-	func moveTag(with id: UUID, to destination: RelativeDestination<UUID>) async throws
-	func deleteTag(with id: UUID)
-	func updateTag(with id: UUID, properties: Tag.Properties) async throws
-	func tag(for id: UUID) async throws -> Tag?
+	func fetchLists() async throws
+	func addList(with properties: List.Properties) async throws
+	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws
+	func deleteList(with id: UUID)
+	func updateList(with id: UUID, properties: List.Properties) async throws
+	func list(for id: UUID) async throws -> List?
 }
 
 final class SidebarInteractor {
@@ -26,16 +26,16 @@ final class SidebarInteractor {
 
 	private let storage: StorageProtocol
 
-	private let provider: ModelsProvider<Tag>
+	private let provider: ModelsProvider<List>
 
 	// MARK: - Initialization
 
-	init(storage: StorageProtocol, provider: ModelsProvider<Tag>) {
+	init(storage: StorageProtocol, provider: ModelsProvider<List>) {
 		self.storage = storage
 		self.provider = provider
 		Task { @MainActor in
 			for await change in await provider.stream() {
-				presenter?.present(tags: change)
+				presenter?.present(lists: change)
 			}
 		}
 	}
@@ -44,30 +44,30 @@ final class SidebarInteractor {
 // MARK: - SidebarInteractorProtocol
 extension SidebarInteractor: SidebarInteractorProtocol {
 
-	func deleteTag(with id: UUID) {
+	func deleteList(with id: UUID) {
 		Task { @MainActor in
-			try? await storage.deleteTag(with: id)
+			try? await storage.deleteList(with: id)
 		}
 	}
 
-	func updateTag(with id: UUID, properties: Tag.Properties) async throws {
-		try? await storage.updateTag(with: id, properties: properties)
+	func updateList(with id: UUID, properties: List.Properties) async throws {
+		try? await storage.updateList(with: id, properties: properties)
 	}
 
-	func addTag(with properties: Tag.Properties) async throws {
-		let newTag = Tag(uuid: UUID(), properties: properties)
-		try? await storage.addTag(newTag)
+	func addList(with properties: List.Properties) async throws {
+		let newList = List(uuid: UUID(), properties: properties)
+		try? await storage.addList(newList)
 	}
 
-	func moveTag(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
-		try? await storage.moveTag(with: id, to: destination)
+	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
+		try? await storage.moveList(with: id, to: destination)
 	}
 
-	func tag(for id: UUID) async throws -> Tag? {
+	func list(for id: UUID) async throws -> List? {
 		await provider.item(for: id)
 	}
 
-	func fetchTags() async throws {
+	func fetchLists() async throws {
 		try await provider.fetchData()
 	}
 }

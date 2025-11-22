@@ -8,7 +8,7 @@
 import Foundation
 
 protocol SidebarPresenterProtocol: AnyObject {
-	func present(tags: [Tag])
+	func present(lists: [List])
 }
 
 final class SidebarPresenter {
@@ -32,7 +32,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 	func viewDidLoad() {
 		Task { @MainActor in
 			view?.displayPinned(newItems: [.init(id: .all, iconName: "square.grid.2x2", title: "All")], select: .all)
-			try? await interactor?.fetchTags()
+			try? await interactor?.fetchLists()
 		}
 	}
 
@@ -40,45 +40,45 @@ extension SidebarPresenter: SidebarViewDelegate {
 		switch menuItem {
 		case "edit":
 			Task { @MainActor in
-				guard let tag = try? await interactor?.tag(for: item) else {
+				guard let list = try? await interactor?.list(for: item) else {
 					return
 				}
-				let model = TagEditorModel(name: tag.name, icon: tag.properties.icon)
-				coordinator?.presentTagEditor(with: model) { [weak self] isSuccess, newModel in
+				let model = ListEditorModel(name: list.name, icon: list.properties.icon)
+				coordinator?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
 					guard isSuccess else {
 						return
 					}
 					Task { @MainActor [weak self] in
-						let properties = Tag.Properties(name: newModel.name, icon: newModel.icon)
-						try? await self?.interactor?.updateTag(with: item, properties: properties)
+						let properties = List.Properties(name: newModel.name, icon: newModel.icon)
+						try? await self?.interactor?.updateList(with: item, properties: properties)
 					}
 				}
 			}
 		case "new-window":
-			coordinator?.openWindow(for: .tag(id: item))
+			coordinator?.openWindow(for: .list(id: item))
 		case "delete":
-			interactor?.deleteTag(with: item)
+			interactor?.deleteList(with: item)
 		default:
 			break
 		}
 	}
 
-	func newTag() {
-		let model = TagEditorModel(name: "")
-		coordinator?.presentTagEditor(with: model) { [weak self] isSuccess, newModel in
+	func newList() {
+		let model = ListEditorModel(name: "")
+		coordinator?.presentListEditor(with: model) { [weak self] isSuccess, newModel in
 			guard isSuccess else {
 				return
 			}
 			Task { @MainActor [weak self] in
-				let properties = Tag.Properties(name: newModel.name, icon: newModel.icon)
-				try? await self?.interactor?.addTag(with: properties)
+				let properties = List.Properties(name: newModel.name, icon: newModel.icon)
+				try? await self?.interactor?.addList(with: properties)
 			}
 		}
 	}
 
-	func moveTag(with id: UUID, to destination: RelativeDestination<UUID>) {
+	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) {
 		Task {
-			try? await interactor?.moveTag(with: id, to: destination)
+			try? await interactor?.moveList(with: id, to: destination)
 		}
 	}
 
@@ -87,9 +87,9 @@ extension SidebarPresenter: SidebarViewDelegate {
 // MARK: - SidebarPresenterProtocol
 extension SidebarPresenter: SidebarPresenterProtocol {
 
-	func present(tags: [Tag]) {
+	func present(lists: [List]) {
 		Task { @MainActor in
-			let items = convert(tags: tags)
+			let items = convert(lists: lists)
 			view?.display(newItems: items)
 		}
 	}
@@ -98,9 +98,9 @@ extension SidebarPresenter: SidebarPresenterProtocol {
 // MARK: - Helpers
 private extension SidebarPresenter {
 
-	func convert(tags: [Tag]) -> [NavigationItem] {
-		tags.map { tag in
-			NavigationItem(id: .tag(id: tag.id), iconName: tag.properties.icon?.iconName ?? "tag", title: tag.name)
+	func convert(lists: [List]) -> [NavigationItem] {
+		lists.map { list in
+			NavigationItem(id: .list(id: list.id), iconName: list.properties.icon?.iconName ?? "list", title: list.name)
 		}
 	}
 }

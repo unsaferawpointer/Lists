@@ -14,7 +14,7 @@ protocol SidebarViewDelegate: AnyObject {
 
 	func contextMenu(didSelect menuItem: String, for item: UUID)
 
-	func newTag()
+	func newList()
 
-	func moveTag(with id: UUID, to destination: RelativeDestination<UUID>)
+	func moveList(with id: UUID, to destination: RelativeDestination<UUID>)
 }

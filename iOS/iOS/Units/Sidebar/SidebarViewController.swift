@@ -121,8 +121,8 @@ private extension SidebarViewController {
 		toolbarItems =
 		[
 			.flexibleSpace(),
-			UIBarButtonItem(primaryAction: UIAction(title: "Add Tag", image: UIImage(systemName: "plus"), handler: { [weak self] _ in
-				self?.delegate?.newTag()
+			UIBarButtonItem(primaryAction: UIAction(title: "New List", image: UIImage(systemName: "plus"), handler: { [weak self] _ in
+				self?.delegate?.newList()
 			}))
 		]
 	}

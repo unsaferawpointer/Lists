@@ -21,7 +21,7 @@ final class ContentProvider {
 
 	private let itemsProvider: ModelsProvider<Item>
 
-	private let tagsProvider: ModelsProvider<Tag>
+	private let listsProvider: ModelsProvider<List>
 
 	let payload: ContentPayload
 
@@ -32,13 +32,13 @@ final class ContentProvider {
 
 		let request = switch payload {
 		case .all:
-			ItemsRequest(fetchLimit: nil, tag: nil)
-		case .tag(let id):
-			ItemsRequest(fetchLimit: nil, tag: id)
+			ItemsRequest(fetchLimit: nil, list: nil)
+		case .list(let id):
+			ItemsRequest(fetchLimit: nil, list: id)
 		}
 
 		self.itemsProvider = ModelsProvider(container: container, request: request)
-		self.tagsProvider = ModelsProvider(container: container, request: TagsRequest(uuid: nil))
+		self.listsProvider = ModelsProvider(container: container, request: ListsRequest(uuid: nil))
 
 		configure()
 	}
@@ -49,7 +49,7 @@ extension ContentProvider {
 
 	func fetchContent() {
 		Task {
-			try? await tagsProvider.fetchData()
+			try? await listsProvider.fetchData()
 			try? await itemsProvider.fetchData()
 		}
 	}
@@ -75,16 +75,16 @@ private extension ContentProvider {
 			guard let self else {
 				return
 			}
-			for await change in await tagsProvider.stream() {
+			for await change in await listsProvider.stream() {
 				try? await itemsProvider.fetchData()
-				guard let tagID = payload.tagID else {
+				guard let listID = payload.listID else {
 					self.delegate?.providerDidChangeContent(content: .all)
 					continue
 				}
-				guard let tag = change.first(where: { $0.id == tagID }) else {
+				guard let list = change.first(where: { $0.id == listID }) else {
 					continue
 				}
-				self.delegate?.providerDidChangeContent(content: .tag(tag: tag))
+				self.delegate?.providerDidChangeContent(content: .list(list: list))
 			}
 		}
 	}
@@ -92,5 +92,5 @@ private extension ContentProvider {
 
 enum Content {
 	case all
-	case tag(tag: Tag)
+	case list(list: List)
 }

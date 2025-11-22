@@ -17,28 +17,28 @@ protocol StorageProtocol {
 
 	// MARK: - Add
 
-	func addItem(_ item: Item, to tagId: UUID?) async throws
-	func addTag(_ tag: Tag) async throws
+	func addItem(_ item: Item, to listId: UUID?) async throws
+	func addList(_ list: List) async throws
 
 	// MARK: - Delete
 
 	func deleteItems(with ids: [UUID]) async throws
-	func deleteTag(with id: UUID) async throws
+	func deleteList(with id: UUID) async throws
 
 	// MARK: - Modificate
 
 	func updateItems(with ids: [UUID], change: ItemChange) async throws
-	func updateTag(with id: UUID, properties: Tag.Properties) async throws
+	func updateList(with id: UUID, properties: List.Properties) async throws
 
 	// MARK: - Move
 
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws
 
-	func moveTag(with id: UUID, to destination: RelativeDestination<UUID>) async throws
+	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws
 
-	// MARK: - Tags
+	// MARK: - Lists
 
-	func setTags(items ids: [UUID], tags: Set<UUID>) async throws
+	func setList(items ids: [UUID], list: UUID?) async throws
 }
 
 
@@ -61,7 +61,7 @@ private extension Storage { }
 // MARK: - StorageProtocol
 extension Storage: StorageProtocol {
 
-	func addItem(_ item: Item, to tagId: UUID?) async throws {
+	func addItem(_ item: Item, to listId: UUID?) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
 			let newEntity = ItemEntity.create(from: item, in: context)
@@ -71,24 +71,24 @@ extension Storage: StorageProtocol {
 				newEntity.offset = lastItem.offset + 1
 			}
 
-			guard let tagId, let tag = fetchEntity(type: TagEntity.self, with: tagId, in: context) else {
+			guard let listId, let list = fetchEntity(type: ListEntity.self, with: listId, in: context) else {
 				try context.save()
 				return
 			}
-			newEntity.addToTags(tag)
+			newEntity.list = list
 			try context.save()
 		}
 	}
 
 	// MARK: - Add
 
-	func addTag(_ tag: Tag) async throws {
+	func addList(_ list: List) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
-			let newEntity = TagEntity.create(from: tag, in: context)
+			let newEntity = ListEntity.create(from: list, in: context)
 
-			let sortDescriptor = NSSortDescriptor(keyPath: \TagEntity.offset, ascending: false)
-			if let lastItem = fetchEntity(type: TagEntity.self, in: context, sort: [sortDescriptor]) {
+			let sortDescriptor = NSSortDescriptor(keyPath: \ListEntity.offset, ascending: false)
+			if let lastItem = fetchEntity(type: ListEntity.self, in: context, sort: [sortDescriptor]) {
 				newEntity.offset = lastItem.offset + 1
 			}
 			try context.save()
@@ -105,10 +105,10 @@ extension Storage: StorageProtocol {
 		}
 	}
 
-	func deleteTag(with id: UUID) async throws {
+	func deleteList(with id: UUID) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
-			try deleteEntities(type: TagEntity.self, with: [id], in: context)
+			try deleteEntities(type: ListEntity.self, with: [id], in: context)
 			try context.save()
 		}
 	}
@@ -131,10 +131,10 @@ extension Storage: StorageProtocol {
 		}
 	}
 
-	func updateTag(with id: UUID, properties: Tag.Properties) async throws {
+	func updateList(with id: UUID, properties: List.Properties) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
-			guard let entity = fetchEntity(type: TagEntity.self, with: id, in: context) else {
+			guard let entity = fetchEntity(type: ListEntity.self, with: id, in: context) else {
 				return
 			}
 			entity.title = properties.name
@@ -149,13 +149,13 @@ extension Storage: StorageProtocol {
 		try await moveEntity(type: ItemEntity.self, with: id, to: destination)
 	}
 
-	func moveTag(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
-		try await moveEntity(type: TagEntity.self, with: id, to: destination)
+	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
+		try await moveEntity(type: ListEntity.self, with: id, to: destination)
 	}
 
-	// MARK: - Tags
+	// MARK: - Lists
 
-	func setTags(items ids: [UUID], tags: Set<UUID>) async throws {
+	func setList(items ids: [UUID], list: UUID?) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
 
@@ -164,38 +164,20 @@ extension Storage: StorageProtocol {
 					lhs.offset < rhs.offset
 				}
 
-			let tagEntities = fetchEntities(type: TagEntity.self, with: nil, in: context)
-				.filter { tags.contains($0.id) }
-				.sorted { lhs, rhs in
-					lhs.offset < rhs.offset
-				}
-
-			let moving = entities.compactMap { entity -> ItemEntity? in
-				guard let uuid = entity.uuid else {
-					return nil
-				}
-				return ids.contains(uuid) ? entity : nil
+			let listEntity: ListEntity? = if let list {
+				fetchEntity(type: ListEntity.self, with: list, in: context)
+			} else {
+				nil
 			}
 
-			guard !tagEntities.isEmpty else {
-				moving.forEach {
-					$0.tags = nil
-				}
-				try context.save()
-				return
-			}
-
-			moving.forEach {
-				$0.tags = NSSet()
-				for tag in tagEntities {
-					$0.addToTags(tag)
-				}
+			entities.forEach {
+				$0.list = listEntity
 			}
 			try context.save()
 		}
 	}
 
-	func moveItems(with ids: [UUID], to tag: UUID?) async throws {
+	func moveItems(with ids: [UUID], to list: UUID?) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
 
@@ -204,14 +186,14 @@ extension Storage: StorageProtocol {
 					lhs.offset < rhs.offset
 				}
 
-			let tagEntity: TagEntity? = if let tag {
-				fetchEntity(type: TagEntity.self, with: tag, in: context)
+			let listEntity: ListEntity? = if let list {
+				fetchEntity(type: ListEntity.self, with: list, in: context)
 			} else {
 				nil
 			}
 
-			if tag != nil && tagEntity == nil {
-				throw StorageError.tagNotFound
+			if list != nil && listEntity == nil {
+				throw StorageError.listNotFound
 			}
 
 			let moving = entities.compactMap { entity -> ItemEntity? in
@@ -222,9 +204,7 @@ extension Storage: StorageProtocol {
 			}
 
 			moving.forEach {
-				if let tagEntity {
-					$0.addToTags(tagEntity)
-				}
+				$0.list = listEntity
 			}
 			try context.save()
 		}
