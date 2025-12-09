@@ -9,7 +9,7 @@ import UIKit
 
 protocol MainRoutable {
 	func showWindow()
-	func showDetail(viewController: UIViewController)
+	func showDetail(viewController: UIViewController, wrappedInNavigationController: Bool)
 	func openWindow(info: [String: String])
 }
 
@@ -63,8 +63,12 @@ extension MainRouter: MainRoutable {
 		UIApplication.shared.activateSceneSession(for: request) { _ in }
 	}
 
-	func showDetail(viewController: UIViewController) {
+	func showDetail(viewController: UIViewController, wrappedInNavigationController: Bool) {
 		guard let splitViewController = window.rootViewController as? UISplitViewController else {
+			return
+		}
+		guard wrappedInNavigationController else {
+			splitViewController.showDetailViewController(viewController, sender: nil)
 			return
 		}
 		splitViewController.showDetailViewController(UINavigationController(rootViewController: viewController), sender: nil)

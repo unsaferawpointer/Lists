@@ -32,6 +32,7 @@ extension NavigationItem {
 
 	enum Identifier: Hashable {
 		case all
+		case tags
 		case list(id: UUID)
 	}
 }

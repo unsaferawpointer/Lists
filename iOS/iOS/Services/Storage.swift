@@ -19,6 +19,7 @@ protocol StorageProtocol {
 
 	func addItem(_ item: Item, to listId: UUID?) async throws
 	func addList(_ list: List) async throws
+	func addTag(_ tag: Tag) async throws
 
 	// MARK: - Delete
 
@@ -65,6 +66,8 @@ private extension Storage { }
 // MARK: - StorageProtocol
 extension Storage: StorageProtocol {
 
+	// MARK: - Add
+
 	func addItem(_ item: Item, to listId: UUID?) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
@@ -84,8 +87,6 @@ extension Storage: StorageProtocol {
 		}
 	}
 
-	// MARK: - Add
-
 	func addList(_ list: List) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
@@ -93,6 +94,19 @@ extension Storage: StorageProtocol {
 
 			let sortDescriptor = NSSortDescriptor(keyPath: \ListEntity.offset, ascending: false)
 			if let lastItem = fetchEntity(type: ListEntity.self, in: context, sort: [sortDescriptor]) {
+				newEntity.offset = lastItem.offset + 1
+			}
+			try context.save()
+		}
+	}
+
+	func addTag(_ tag: Tag) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			let newEntity = TagEntity.create(from: tag, in: context)
+
+			let sortDescriptor = NSSortDescriptor(keyPath: \TagEntity.offset, ascending: false)
+			if let lastItem = fetchEntity(type: TagEntity.self, in: context, sort: [sortDescriptor]) {
 				newEntity.offset = lastItem.offset + 1
 			}
 			try context.save()

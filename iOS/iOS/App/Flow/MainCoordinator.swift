@@ -36,18 +36,33 @@ extension MainCoordinator: Coordinatable {
 	}
 }
 
+import SwiftUI
+
 // MARK: - SelectionDelegate
 extension MainCoordinator: SelectionDelegate {
 
 	func didSelect(item: NavigationItem.ID) {
+
+		guard item != .tags else {
+			let provider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
+			let storage = Storage(container: persistentContainer)
+			let model = TagsEditorModel(selected: [], provider: provider, storage: storage)
+			let view = TagsEditor(model: model)
+			let content = UIHostingController(rootView: view)
+			router.showDetail(viewController: content, wrappedInNavigationController: false)
+			return
+		}
+
 		let payload: ContentPayload = switch item {
 		case .all:
 			.all
 		case let .list(id):
 			.list(id: id)
+		case .tags:
+			fatalError()
 		}
 
 		let content = ContentAssembly.build(router: router, payload: payload, persistentContainer: persistentContainer)
-		router.showDetail(viewController: content)
+		router.showDetail(viewController: content, wrappedInNavigationController: true)
 	}
 }
