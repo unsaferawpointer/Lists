@@ -71,7 +71,11 @@ extension ContentPresenter: ContextMenuDelegate {
 				try? await interactor.strikeThroughItems(with: selection, flag: state == .on ? false : true)
 			}
 		case "move":
-			fatalError()
+			self.coordinator?.presentListPicker(preselected: nil) { [weak self] isSuccess, list in
+				Task { @MainActor in
+					try? await self?.interactor.setList(items: selection, list: list)
+				}
+			}
 		default:
 			break
 		}

@@ -13,7 +13,7 @@ import SwiftUI
 @MainActor
 protocol ContentCoordinatable {
 	func presentItemEditor(with properties: Item.Properties, completion: @escaping (Bool, Item.Properties) -> Void)
-	func presentListPicker(preselected: UUID?, completion: @escaping (Bool, UUID?) -> Void)
+	func presentListPicker(preselected: UUID?, completion: @escaping @MainActor (Bool, UUID?) -> Void)
 }
 
 @MainActor
@@ -50,7 +50,7 @@ extension ContentCoordinator: Coordinatable {
 // MARK: - ContentCoordinatable
 extension ContentCoordinator: ContentCoordinatable {
 
-	func presentListPicker(preselected: UUID?, completion: @escaping (Bool, UUID?) -> Void) {
+	func presentListPicker(preselected: UUID?, completion: @escaping @MainActor (Bool, UUID?) -> Void) {
 		let provider = ModelsProvider<List>(container: DefaultContainer(base: persistentContainer), request: ListsRequest(uuid: nil))
 
 		let model = ListPickerModel(selected: preselected, provider: provider)

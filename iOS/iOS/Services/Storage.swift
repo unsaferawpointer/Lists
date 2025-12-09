@@ -159,7 +159,7 @@ extension Storage: StorageProtocol {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
 
-			let entities = fetchEntities(type: ItemEntity.self, with: nil, in: context)
+			let entities = fetchEntities(type: ItemEntity.self, with: ids, in: context)
 				.sorted { lhs, rhs in
 					lhs.offset < rhs.offset
 				}
