@@ -15,4 +15,5 @@ extension UIImage {
 	static let ellipsis = UIImage(systemName: "ellipsis")
 	static let arrowLeftRight = UIImage(systemName: "arrow.left.arrow.right")
 	static let tag = UIImage(systemName: "tag")
+	static let listNumbered = UIImage(systemName: "list.bullet")
 }

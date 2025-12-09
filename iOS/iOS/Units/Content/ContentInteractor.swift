@@ -16,6 +16,7 @@ protocol ContentInteractorProtocol {
 	func deleteItems(with ids: [UUID]) async throws
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws
 	func setList(items ids: [UUID], list: UUID?) async throws
+	func setTags(_ tags: Set<UUID>, for items: [UUID]) async throws
 }
 
 final class ContentInteractor {
@@ -83,6 +84,10 @@ extension ContentInteractor: ContentInteractorProtocol {
 
 	func setList(items ids: [UUID], list: UUID?) async throws {
 		try await storage.setList(items: ids, list: list)
+	}
+
+	func setTags(_ tags: Set<UUID>, for items: [UUID]) async throws {
+		try await storage.setTags(tags, for: items)
 	}
 }
 

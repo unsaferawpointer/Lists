@@ -39,6 +39,10 @@ protocol StorageProtocol {
 	// MARK: - Lists
 
 	func setList(items ids: [UUID], list: UUID?) async throws
+
+	// MARK: - Tags
+
+	func setTags(_ tags: Set<UUID>, for items: [UUID]) async throws
 }
 
 
@@ -205,6 +209,47 @@ extension Storage: StorageProtocol {
 
 			moving.forEach {
 				$0.list = listEntity
+			}
+			try context.save()
+		}
+	}
+
+	// MARK: - Tags
+
+	func setTags(_ tags: Set<UUID>, for items: [UUID]) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+
+			let entities = fetchEntities(type: ItemEntity.self, with: items, in: context)
+				.sorted { lhs, rhs in
+					lhs.offset < rhs.offset
+				}
+
+			let tagEntities = fetchEntities(type: TagEntity.self, with: nil, in: context)
+				.filter { tags.contains($0.id) }
+				.sorted { lhs, rhs in
+					lhs.offset < rhs.offset
+				}
+
+			let moving = entities.compactMap { entity -> ItemEntity? in
+				guard let uuid = entity.uuid else {
+					return nil
+				}
+				return items.contains(uuid) ? entity : nil
+			}
+
+			guard !tagEntities.isEmpty else {
+				moving.forEach {
+					$0.tags = nil
+				}
+				try context.save()
+				return
+			}
+
+			moving.forEach {
+				for tag in tagEntities {
+					$0.addToTags(tag)
+				}
 			}
 			try context.save()
 		}

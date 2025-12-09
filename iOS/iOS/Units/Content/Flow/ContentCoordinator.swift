@@ -14,6 +14,7 @@ import SwiftUI
 protocol ContentCoordinatable {
 	func presentItemEditor(with properties: Item.Properties, completion: @escaping (Bool, Item.Properties) -> Void)
 	func presentListPicker(preselected: UUID?, completion: @escaping @MainActor (Bool, UUID?) -> Void)
+	func presentTagsPicker(preselected: Set<UUID>, completion: @escaping @MainActor (Bool, Set<UUID>) -> Void)
 }
 
 @MainActor
@@ -55,6 +56,17 @@ extension ContentCoordinator: ContentCoordinatable {
 
 		let model = ListPickerModel(selected: preselected, provider: provider)
 		let view = ListPicker(model: model) { [weak self] isSuccess, selected in
+			self?.router.dismissInDetailsViewController()
+			completion(isSuccess, selected)
+		}
+		router.presentInDetails(viewController: UIHostingController(rootView: view))
+	}
+
+	func presentTagsPicker(preselected: Set<UUID>, completion: @escaping @MainActor @Sendable (Bool, Set<UUID>) -> Void) {
+		let provider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
+
+		let model = TagsPickerModel(selected: preselected, provider: provider)
+		let view = TagsPicker(model: model) { [weak self] isSuccess, selected in
 			self?.router.dismissInDetailsViewController()
 			completion(isSuccess, selected)
 		}

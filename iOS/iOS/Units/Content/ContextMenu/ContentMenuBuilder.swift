@@ -24,8 +24,11 @@ extension ContentMenuBuilder {
 			UIAction(title: "Strikethrough", image: .strikethrough, state: state(for: "strikethrough", with: selection.first)) { [weak self] _ in
 				self?.delegate?.contextMenuSelected(menuItem: "strikethrough", with: selection, state: self?.state(for: "strikethrough", with: selection.first) ?? .off)
 			},
-			UIAction(title: "List...", image: .tag) { [weak self] _ in
+			UIAction(title: "List...", image: .listNumbered) { [weak self] _ in
 				self?.delegate?.contextMenuSelected(menuItem: "move", with: selection, state: .off)
+			},
+			UIAction(title: "Tags...", image: .tag) { [weak self] _ in
+				self?.delegate?.contextMenuSelected(menuItem: "tags", with: selection, state: .off)
 			},
 			UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
 				self?.delegate?.contextMenuSelected(menuItem: "delete", with: selection, state: .off)

@@ -76,6 +76,12 @@ extension ContentPresenter: ContextMenuDelegate {
 					try? await self?.interactor.setList(items: selection, list: list)
 				}
 			}
+		case "tags":
+			self.coordinator?.presentTagsPicker(preselected: []) { [weak self] isSuccess, tags in
+				Task { @MainActor in
+					try? await self?.interactor.setTags(tags, for: selection)
+				}
+			}
 		default:
 			break
 		}
