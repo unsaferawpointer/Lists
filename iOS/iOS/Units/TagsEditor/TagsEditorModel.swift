@@ -35,10 +35,22 @@ final class TagsEditorModel {
 // MARK: - Public Interface
 extension TagsEditorModel {
 
-	func newTag() {
-		let newTag = Tag(uuid: .init(), properties: .init(name: "New Tag"))
+	func newTag(with properties: Tag.Properties) {
+		let newTag = Tag(uuid: .init(), properties: properties)
 		Task {
 			try? await storage.addTag(newTag)
+		}
+	}
+
+	func updateTag(with id: UUID, properties: Tag.Properties) {
+		Task {
+			try? await storage.updateTag(with: id, properties: properties)
+		}
+	}
+
+	func deleteTags(with ids: [UUID]) {
+		Task {
+			try? await storage.deleteTags(with: ids)
 		}
 	}
 }

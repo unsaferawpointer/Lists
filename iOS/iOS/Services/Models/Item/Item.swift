@@ -13,11 +13,14 @@ struct Item: Sendable {
 
 	let properties: Properties
 
+	let tags: [Tag]
+
 	// MARK: - Initialization
 
-	init(uuid: UUID, properties: Properties) {
+	init(uuid: UUID, properties: Properties, tags: [Tag]) {
 		self.uuid = uuid
 		self.properties = properties
+		self.tags = tags
 	}
 }
 

@@ -13,6 +13,10 @@ final class PreviewStorage { }
 // MARK: - StorageProtocol
 extension PreviewStorage: StorageProtocol {
 
+	func updateTag(with id: UUID, properties: Tag.Properties) async throws { }
+
+	func deleteTags(with ids: [UUID]) async throws { }
+
 	func addTag(_ tag: Tag) async throws { }
 
 	func setTags(_ tags: Set<UUID>, for items: [UUID]) async throws { }

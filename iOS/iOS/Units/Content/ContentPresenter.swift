@@ -200,7 +200,12 @@ extension ContentPresenter: ContentPresenterProtocol {
 
 	func present(items: [Item]) {
 		let models = items.map {
-			ContentItem(uuid: $0.id, title: $0.title, subtitle: nil, isStrikethrough: $0.isStrikethrough)
+			ContentItem(
+				uuid: $0.id,
+				title: $0.title,
+				subtitle: $0.tags.map(\.name).joined(separator: " | "),
+				isStrikethrough: $0.isStrikethrough
+			)
 		}
 
 		// MARK: - Cache

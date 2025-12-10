@@ -60,7 +60,7 @@ extension ContentInteractor: ContentInteractorProtocol {
 	}
 
 	func addItem(with properties: Item.Properties) async throws {
-		let newItem = Item(uuid: UUID(), properties: properties)
+		let newItem = Item(uuid: UUID(), properties: properties, tags: [])
 		try await storage.addItem(newItem, to: payload.listID)
 	}
 

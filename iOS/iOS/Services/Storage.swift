@@ -25,11 +25,13 @@ protocol StorageProtocol {
 
 	func deleteItems(with ids: [UUID]) async throws
 	func deleteList(with id: UUID) async throws
+	func deleteTags(with ids: [UUID]) async throws
 
 	// MARK: - Modificate
 
 	func updateItems(with ids: [UUID], change: ItemChange) async throws
 	func updateList(with id: UUID, properties: List.Properties) async throws
+	func updateTag(with id: UUID, properties: Tag.Properties) async throws
 
 	// MARK: - Move
 
@@ -123,6 +125,14 @@ extension Storage: StorageProtocol {
 		}
 	}
 
+	func deleteTags(with ids: [UUID]) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			try deleteEntities(type: TagEntity.self, with: ids, in: context)
+			try context.save()
+		}
+	}
+
 	func deleteList(with id: UUID) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
@@ -153,6 +163,18 @@ extension Storage: StorageProtocol {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
 			guard let entity = fetchEntity(type: ListEntity.self, with: id, in: context) else {
+				return
+			}
+			entity.title = properties.name
+			entity.icon = properties.icon
+			try context.save()
+		}
+	}
+
+	func updateTag(with id: UUID, properties: Tag.Properties) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			guard let entity = fetchEntity(type: TagEntity.self, with: id, in: context) else {
 				return
 			}
 			entity.title = properties.name

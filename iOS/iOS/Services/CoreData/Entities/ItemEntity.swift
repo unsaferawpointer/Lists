@@ -57,7 +57,8 @@ extension ItemEntity: EntityConvertable {
 				title: text ?? "Unknown title",
 				isStrikethrough: isStrikethrough,
 				list: id
-			)
+			),
+			tags: (tags as? Set<TagEntity>)?.map { Tag.init(uuid: $0.id, properties: .init(name: $0.title ?? "", icon: $0.icon)) } ?? []
 		)
 	}
 
