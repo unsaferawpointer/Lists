@@ -9,7 +9,9 @@ import Foundation
 
 protocol SidebarInteractorProtocol: AnyObject {
 	func fetchLists() async throws
+	func fetchFilters() async throws
 	func addList(with properties: List.Properties) async throws
+	func addFilter(with properties: Filter.Properties) async throws
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws
 	func deleteList(with id: UUID)
 	func updateList(with id: UUID, properties: List.Properties) async throws
@@ -26,16 +28,25 @@ final class SidebarInteractor {
 
 	private let storage: StorageProtocol
 
-	private let provider: ModelsProvider<List>
+	private let listProvider: ModelsProvider<List>
+
+	private let filtersProvider: ModelsProvider<Filter>
 
 	// MARK: - Initialization
 
-	init(storage: StorageProtocol, provider: ModelsProvider<List>) {
+	init(storage: StorageProtocol, listProvider: ModelsProvider<List>, filtersProvider: ModelsProvider<Filter>) {
 		self.storage = storage
-		self.provider = provider
+		self.listProvider = listProvider
+		self.filtersProvider = filtersProvider
 		Task { @MainActor in
-			for await change in await provider.stream() {
+			for await change in await listProvider.stream() {
 				presenter?.present(lists: change)
+			}
+		}
+
+		Task { @MainActor in
+			for await change in await filtersProvider.stream() {
+				presenter?.present(filters: change)
 			}
 		}
 	}
@@ -59,15 +70,24 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 		try? await storage.addList(newList)
 	}
 
+	func addFilter(with properties: Filter.Properties) async throws {
+		let newFilter = Filter(uuid: UUID(), properties: properties)
+		try? await storage.addFilter(newFilter)
+	}
+
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
 		try? await storage.moveList(with: id, to: destination)
 	}
 
 	func list(for id: UUID) async throws -> List? {
-		await provider.item(for: id)
+		await listProvider.item(for: id)
 	}
 
 	func fetchLists() async throws {
-		try await provider.fetchData()
+		try await listProvider.fetchData()
+	}
+
+	func fetchFilters() async throws {
+		try await filtersProvider.fetchData()
 	}
 }

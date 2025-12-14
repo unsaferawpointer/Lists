@@ -9,6 +9,7 @@ import Foundation
 
 protocol SidebarPresenterProtocol: AnyObject {
 	func present(lists: [List])
+	func present(filters: [Filter])
 }
 
 final class SidebarPresenter {
@@ -40,6 +41,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 				select: .all
 			)
 			try? await interactor?.fetchLists()
+			try? await interactor?.fetchFilters()
 		}
 	}
 
@@ -83,6 +85,18 @@ extension SidebarPresenter: SidebarViewDelegate {
 		}
 	}
 
+	func newFilter() {
+		let properties = Filter.Properties(name: "", tags: [])
+		coordinator?.presentFilterEditor(with: properties) { [weak self] isSuccess, newProperties in
+			guard isSuccess else {
+				return
+			}
+			Task { @MainActor [weak self] in
+				try? await self?.interactor?.addFilter(with: newProperties)
+			}
+		}
+	}
+
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) {
 		Task {
 			try? await interactor?.moveList(with: id, to: destination)
@@ -100,10 +114,23 @@ extension SidebarPresenter: SidebarPresenterProtocol {
 			view?.display(newItems: items)
 		}
 	}
+
+	func present(filters: [Filter]) {
+		Task { @MainActor in
+			let items = convert(filters: filters)
+			view?.displayFilters(newItems: items)
+		}
+	}
 }
 
 // MARK: - Helpers
 private extension SidebarPresenter {
+
+	func convert(filters: [Filter]) -> [NavigationItem] {
+		filters.map { filter in
+			NavigationItem(id: .filter(id: filter.id), iconName: filter.properties.icon?.iconName ?? "filter", title: filter.name)
+		}
+	}
 
 	func convert(lists: [List]) -> [NavigationItem] {
 		lists.map { list in

@@ -13,6 +13,8 @@ final class PreviewStorage { }
 // MARK: - StorageProtocol
 extension PreviewStorage: StorageProtocol {
 
+	func addFilter(_ filter: Filter) async throws { }
+
 	func updateTag(with id: UUID, properties: Tag.Properties) async throws { }
 
 	func deleteTags(with ids: [UUID]) async throws { }

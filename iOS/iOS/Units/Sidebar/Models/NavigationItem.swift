@@ -34,6 +34,7 @@ extension NavigationItem {
 		case all
 		case tags
 		case list(id: UUID)
+		case filter(id: UUID)
 	}
 }
 

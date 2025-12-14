@@ -85,3 +85,16 @@ extension ModelsProvider where Model == Tag {
 		}
 	}
 }
+
+extension ModelsProvider where Model == Filter {
+
+	func stream() async -> AsyncStream<[Model]> {
+		await base.stream
+	}
+
+	func item(for id: UUID) async -> Model? {
+		await base.lastValue().first {
+			$0.id == id
+		}
+	}
+}

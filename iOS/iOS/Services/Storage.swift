@@ -20,6 +20,7 @@ protocol StorageProtocol {
 	func addItem(_ item: Item, to listId: UUID?) async throws
 	func addList(_ list: List) async throws
 	func addTag(_ tag: Tag) async throws
+	func addFilter(_ filter: Filter) async throws
 
 	// MARK: - Delete
 
@@ -111,6 +112,13 @@ extension Storage: StorageProtocol {
 			if let lastItem = fetchEntity(type: TagEntity.self, in: context, sort: [sortDescriptor]) {
 				newEntity.offset = lastItem.offset + 1
 			}
+			try context.save()
+		}
+	}
+
+	func addFilter(_ filter: Filter) async throws {
+		try await container.performBackgroundTask { context in
+			let _ = FilterEntity.create(from: filter, in: context)
 			try context.save()
 		}
 	}

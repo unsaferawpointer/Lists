@@ -13,6 +13,7 @@ import SwiftUI
 @MainActor
 protocol SidebarCoordinatable {
 	func presentListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void)
+	func presentFilterEditor(with properties: Filter.Properties, completion: @escaping (Bool, Filter.Properties) -> Void)
 	func openWindow(for payload: ContentPayload)
 }
 
@@ -36,6 +37,16 @@ extension SidebarCoordinator: SidebarCoordinatable {
 
 	func presentListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void) {
 		let view = ListEditor(model: model) { [weak self] isSuccess, newModel in
+			self?.router.dismissInMasterViewController()
+			completion(isSuccess, newModel)
+		}
+		router.presentInMaster(viewController: UIHostingController(rootView: view))
+	}
+
+	func presentFilterEditor(with properties: Filter.Properties, completion: @escaping (Bool, Filter.Properties) -> Void) {
+		let tagsProvider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
+		let model = FilterEditorModel(properties: properties, tagsProvider: tagsProvider)
+		let view = FilterEditor(model: model) { [weak self] isSuccess, newModel in
 			self?.router.dismissInMasterViewController()
 			completion(isSuccess, newModel)
 		}

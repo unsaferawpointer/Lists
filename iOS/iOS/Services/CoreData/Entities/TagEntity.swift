@@ -26,6 +26,7 @@ extension TagEntity {
 	@NSManaged public var creationDate: Date?
 	@NSManaged public var offset: Int64
 	@NSManaged public var items: NSSet?
+	@NSManaged public var filters: NSSet?
 
 }
 
@@ -113,5 +114,22 @@ extension TagEntity {
 
 	@objc(removeItems:)
 	@NSManaged public func removeFromItems(_ values: NSSet)
+
+}
+
+// MARK: Generated accessors for filters
+extension TagEntity {
+
+	@objc(addFiltersObject:)
+	@NSManaged public func addToFilters(_ value: FilterEntity)
+
+	@objc(removeFiltersObject:)
+	@NSManaged public func removeFromFilters(_ value: FilterEntity)
+
+	@objc(addFilters:)
+	@NSManaged public func addToFilters(_ values: NSSet)
+
+	@objc(removeFilters:)
+	@NSManaged public func removeFromFilters(_ values: NSSet)
 
 }

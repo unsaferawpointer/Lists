@@ -19,3 +19,20 @@ extension ItemOptions {
 
 	static let isArchived: ItemOptions = .init(rawValue: 1 << 10)
 }
+
+// MARK: - Computed Properties
+extension ItemOptions {
+
+	var isStrikethrough: Bool {
+		get {
+			contains(.strikethrough)
+		}
+		set {
+			if newValue {
+				insert(.strikethrough)
+			} else {
+				remove(.strikethrough)
+			}
+		}
+	}
+}

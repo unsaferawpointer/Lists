@@ -60,6 +60,8 @@ extension MainCoordinator: SelectionDelegate {
 			.list(id: id)
 		case .tags:
 			fatalError()
+		case let .filter(id):
+			.filter(id: id)
 		}
 
 		let content = ContentAssembly.build(router: router, payload: payload, persistentContainer: persistentContainer)

@@ -11,6 +11,7 @@ import UIKit
 protocol SidebarView: AnyObject {
 	func displayPinned(newItems: [NavigationItem], select id: NavigationItem.ID?)
 	func display(newItems: [NavigationItem])
+	func displayFilters(newItems: [NavigationItem])
 }
 
 class SidebarViewController: UIViewController {
@@ -35,7 +36,7 @@ class SidebarViewController: UIViewController {
 			var layoutConfig = UICollectionLayoutListConfiguration(appearance: .sidebar)
 			layoutConfig.showsSeparators = false
 
-			layoutConfig.headerMode = sectionIndex == 0 ? .none : .supplementary
+			layoutConfig.headerMode = .supplementary
 
 			 return NSCollectionLayoutSection.list(using: layoutConfig, layoutEnvironment: layoutEnvironment)
 		 }
@@ -91,6 +92,10 @@ extension SidebarViewController: SidebarView {
 		adapter.reloadPinned(newItems: newItems, select: id)
 	}
 
+	func displayFilters(newItems: [NavigationItem]) {
+		adapter.reload(newFilters: newItems)
+	}
+
 	func display(newItems: [NavigationItem]) {
 		adapter.reload(newItems: newItems)
 	}
@@ -118,12 +123,23 @@ private extension SidebarViewController {
 	}
 
 	func configureBottomBar() {
+
+		let menu = UIMenu(
+			children:
+				[
+					UIAction(title: "New Project", image: UIImage(systemName: "rectangle.stack")) { [weak self] _ in
+						self?.delegate?.newList()
+					},
+					UIAction(title: "New Filter", image: UIImage(systemName: "line.3.horizontal.decrease")) { [weak self] _ in
+						self?.delegate?.newFilter()
+					}
+				]
+		)
+
 		toolbarItems =
 		[
 			.flexibleSpace(),
-			UIBarButtonItem(primaryAction: UIAction(title: "New List", image: UIImage(systemName: "plus"), handler: { [weak self] _ in
-				self?.delegate?.newList()
-			}))
+			UIBarButtonItem(title: "Create New", image: UIImage(systemName: "plus"), menu: menu)
 		]
 	}
 }

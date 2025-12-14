@@ -22,7 +22,8 @@ final class SidebarTableAdapter: NSObject {
 
 	var sections: [Section] = [
 		.init(title: "", tinted: true, items: []),
-		.init(title: "Lists", tinted: false, items: [])
+		.init(title: "Filters", tinted: false, items: []),
+		.init(title: "Projects", tinted: false, items: [])
 	]
 
 	// MARK: - Initialization
@@ -61,12 +62,23 @@ extension SidebarTableAdapter {
 		}
 	}
 
-	func reload(newItems: [NavigationItem]) {
-
-		let (removing, inserting) = calculate(newItems: newItems, in: 1)
+	func reload(newFilters: [NavigationItem]) {
+		let (removing, inserting) = calculate(newItems: newFilters, in: 1)
 
 		collectionView.performBatchUpdates {
-			self.sections[1].items = newItems
+			self.sections[1].items = newFilters
+
+			collectionView.deleteItems(at: removing)
+			collectionView.insertItems(at: inserting)
+		}
+	}
+
+	func reload(newItems: [NavigationItem]) {
+
+		let (removing, inserting) = calculate(newItems: newItems, in: 2)
+
+		collectionView.performBatchUpdates {
+			self.sections[2].items = newItems
 
 			collectionView.deleteItems(at: removing)
 			collectionView.insertItems(at: inserting)
@@ -74,7 +86,7 @@ extension SidebarTableAdapter {
 	}
 
 	var isEmpty: Bool {
-		return sections[1].items.isEmpty
+		return sections[2].items.isEmpty
 	}
 }
 
@@ -196,7 +208,7 @@ extension SidebarTableAdapter: UICollectionViewDataSource {
 
 		let reorderAccessory = UICellAccessory.reorder(displayed: .whenEditing, options: .init(tintColor: .systemGray))
 
-		cell.accessories = indexPath.section == 1 ? [reorderAccessory] : []
+		cell.accessories = indexPath.section == 2 ? [reorderAccessory] : []
 
 		return cell
 	}
@@ -235,7 +247,7 @@ extension SidebarTableAdapter {
 extension SidebarTableAdapter {
 
 	func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
-		return indexPath.section == 1
+		return indexPath.section == 2
 	}
 
 	func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
@@ -274,7 +286,7 @@ extension SidebarTableAdapter {
 		targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath,
 		atCurrentIndexPath currentIndexPath: IndexPath, toProposedIndexPath proposedIndexPath: IndexPath
 	) -> IndexPath {
-		return proposedIndexPath.section == 1 ? proposedIndexPath : originalIndexPath
+		return proposedIndexPath.section == 2 ? proposedIndexPath : originalIndexPath
 	}
 }
 
@@ -284,7 +296,7 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 	func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
 		guard
 			!collectionView.isEditing, indexPaths.count == 1,
-			let indexPath = indexPaths.first, indexPath.section == 1 else {
+			let indexPath = indexPaths.first, indexPath.section == 2 else {
 			return nil
 		}
 

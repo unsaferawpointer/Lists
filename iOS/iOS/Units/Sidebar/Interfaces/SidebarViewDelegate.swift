@@ -16,5 +16,7 @@ protocol SidebarViewDelegate: AnyObject {
 
 	func newList()
 
+	func newFilter()
+
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>)
 }

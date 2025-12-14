@@ -10,6 +10,7 @@ import Foundation
 enum ContentPayload {
 	case all
 	case list(id: UUID)
+	case filter(id: UUID)
 }
 
 // MARK: - RawRepresentable
@@ -22,10 +23,23 @@ extension ContentPayload: RawRepresentable {
 		case "all":
 			self = .all
 		default:
-			guard let id = UUID(uuidString: rawValue) else {
+			let components = rawValue.split(separator: "")
+			guard components.count == 2 else {
 				return nil
 			}
-			self = .list(id: id)
+
+			guard let id = UUID(uuidString: String(components[1])) else {
+				return nil
+			}
+
+			switch components[0] {
+			case "filter":
+				self = .filter(id: id)
+			case "list":
+				self = .list(id: id)
+			default:
+				return nil
+			}
 		}
 	}
 
@@ -34,7 +48,9 @@ extension ContentPayload: RawRepresentable {
 		case .all:
 			"all"
 		case let .list(id):
-			id.uuidString
+			"list:\(id.uuidString)"
+		case let .filter(id):
+			"filter:\(id.uuidString)"
 		}
 	}
 }
@@ -44,8 +60,15 @@ extension ContentPayload {
 
 	var listID: UUID? {
 		switch self {
-		case .all:				nil
 		case let .list(id):		id
+		default:				nil
+		}
+	}
+
+	var filterID: UUID? {
+		switch self {
+		case let .filter(id):	id
+		default:				nil
 		}
 	}
 }

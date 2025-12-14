@@ -233,6 +233,8 @@ extension ContentPresenter: ContentPresenterProtocol {
 			view?.displayTitle(title: "All")
 		case let .list(list):
 			view?.displayTitle(title: list.name)
+		case let .filter(filter):
+			view?.displayTitle(title: filter.name)
 		}
 	}
 }
