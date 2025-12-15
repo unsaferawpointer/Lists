@@ -23,7 +23,7 @@ extension ContentPayload: RawRepresentable {
 		case "all":
 			self = .all
 		default:
-			let components = rawValue.split(separator: "")
+			let components = rawValue.split(separator: ":")
 			guard components.count == 2 else {
 				return nil
 			}
