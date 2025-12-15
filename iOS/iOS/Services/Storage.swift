@@ -33,6 +33,7 @@ protocol StorageProtocol {
 	func updateItems(with ids: [UUID], change: ItemChange) async throws
 	func updateList(with id: UUID, properties: List.Properties) async throws
 	func updateTag(with id: UUID, properties: Tag.Properties) async throws
+	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) async throws
 
 	// MARK: - Move
 
@@ -179,6 +180,25 @@ extension Storage: StorageProtocol {
 		}
 	}
 
+	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) async throws {
+		try await container.performBackgroundTask { [weak self] context in
+			guard let self else { return }
+			guard let entity = fetchEntity(type: FilterEntity.self, with: id, in: context) else {
+				return
+			}
+			entity.properties = properties
+
+			let tagEntities = fetchEntities(type: TagEntity.self, with: Array(tags), in: context)
+			if !tagEntities.isEmpty {
+				entity.tags = NSSet(array: tagEntities)
+			} else {
+				entity.tags = nil
+			}
+
+			try context.save()
+		}
+	}
+
 	func updateTag(with id: UUID, properties: Tag.Properties) async throws {
 		try await container.performBackgroundTask { [weak self] context in
 			guard let self else { return }
@@ -187,6 +207,7 @@ extension Storage: StorageProtocol {
 			}
 			entity.title = properties.name
 			entity.icon = properties.icon
+
 			try context.save()
 		}
 	}

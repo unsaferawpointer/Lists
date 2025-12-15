@@ -11,7 +11,7 @@ struct FilterEditor: View {
 
 	@Bindable var model: FilterEditorModel
 
-	var completion: ((Bool, Filter.Properties) -> Void)?
+	var completion: ((Bool, Filter.Properties, Set<UUID>) -> Void)?
 
 	@FocusState var inFocus: Bool
 
@@ -23,7 +23,7 @@ struct FilterEditor: View {
 
 	// MARK: - Initialization
 
-	init(model: FilterEditorModel, completion: ((Bool, Filter.Properties) -> Void)? = nil) {
+	init(model: FilterEditorModel, completion: ((Bool, Filter.Properties, Set<UUID>) -> Void)? = nil) {
 		self.model = model
 		self.completion = completion
 	}
@@ -52,7 +52,19 @@ struct FilterEditor: View {
 				}
 
 				Section {
-					Picker("Strikellthrough", selection: $model.properties.strikethrough) {
+					Picker("Strikethrough", selection: .init(get: {
+						model.properties.itemOptions?.isStrikethrough
+					}, set: { newValue in
+						guard let newValue else {
+							model.properties.itemOptions = nil
+							return
+						}
+						if newValue {
+							model.properties.itemOptions?.insert(.strikethrough)
+						} else {
+							model.properties.itemOptions?.remove(.strikethrough)
+						}
+					})) {
 						Text("Any")
 							.tag(Optional<Bool>.none)
 						Divider()
@@ -62,7 +74,6 @@ struct FilterEditor: View {
 							.tag(false)
 					}
 				}
-
 				Section("Tags") {
 					tagsPicker()
 				}
@@ -73,13 +84,13 @@ struct FilterEditor: View {
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
 					Button(role: .confirm) {
-						completion?(true, model.properties)
+						completion?(true, model.properties, model.selectedTags)
 					}
 					.disabled(!validationResult.isSuccess)
 				}
 				ToolbarItem(placement: .cancellationAction) {
 					Button(role: .close) {
-						completion?(false, .init(name: "", tags: []))
+						completion?(false, .init(name: ""), model.selectedTags)
 					}
 				}
 			}
@@ -99,17 +110,17 @@ private extension FilterEditor {
 			HStack {
 				Label(tag.name, systemImage: "tag")
 				Spacer()
-				if model.properties.tags.contains(tag.id) {
+				if model.selectedTags.contains(tag.id) {
 					Image(systemName: "checkmark")
 						.foregroundColor(.primary)
 				}
 			}
 			.contentShape(Rectangle())
 			.onTapGesture {
-				if model.properties.tags.contains(tag.id) {
-					model.properties.tags.remove(tag.id)
+				if model.selectedTags.contains(tag.id) {
+					model.selectedTags.remove(tag.id)
 				} else {
-					model.properties.tags.insert(tag.id)
+					model.selectedTags.insert(tag.id)
 				}
 			}
 		}

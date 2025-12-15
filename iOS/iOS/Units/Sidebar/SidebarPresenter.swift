@@ -20,6 +20,10 @@ final class SidebarPresenter {
 
 	var coordinator: SidebarCoordinatable?
 
+	// MARK: - Cache
+
+	private var filtersCache: [UUID: Filter] = [:]
+
 	// MARK: - Initialization
 
 	init(interactor: SidebarInteractorProtocol) {
@@ -47,7 +51,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 
 	func contextMenu(didSelect menuItem: String, for item: UUID) {
 		switch menuItem {
-		case "edit":
+		case "edit-project":
 			Task { @MainActor in
 				guard let list = try? await interactor?.list(for: item) else {
 					return
@@ -61,6 +65,16 @@ extension SidebarPresenter: SidebarViewDelegate {
 						let properties = List.Properties(name: newModel.name, icon: newModel.icon)
 						try? await self?.interactor?.updateList(with: item, properties: properties)
 					}
+				}
+			}
+		case "edit-filter":
+			guard let filter = filtersCache[item] else {
+				return
+			}
+			coordinator?.presentFilterEditor(with: filter.properties, andTags: filter.tags ?? []) { isSuccess, newProperties, tags in
+				guard isSuccess else { return }
+				Task { @MainActor [weak self] in
+					try? await self?.interactor?.updateFilter(id: item, properties: newProperties, andTags: tags)
 				}
 			}
 		case "new-window":
@@ -86,8 +100,8 @@ extension SidebarPresenter: SidebarViewDelegate {
 	}
 
 	func newFilter() {
-		let properties = Filter.Properties(name: "", tags: [])
-		coordinator?.presentFilterEditor(with: properties) { [weak self] isSuccess, newProperties in
+		let properties = Filter.Properties(name: "")
+		coordinator?.presentFilterEditor(with: properties, andTags: []) { [weak self] isSuccess, newProperties, tags in
 			guard isSuccess else {
 				return
 			}
@@ -116,6 +130,13 @@ extension SidebarPresenter: SidebarPresenterProtocol {
 	}
 
 	func present(filters: [Filter]) {
+
+		// MARK: - Update Cache
+		filtersCache.removeAll()
+		for filter in filters {
+			filtersCache[filter.id] = filter
+		}
+
 		Task { @MainActor in
 			let items = convert(filters: filters)
 			view?.displayFilters(newItems: items)

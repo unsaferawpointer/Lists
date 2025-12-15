@@ -21,8 +21,14 @@ extension FilterEntity {
 	@NSManaged public var uuid: UUID?
 	@NSManaged public var title: String?
 	@NSManaged public var text: String?
+
+	// MARK: - Raw Data
+
 	@NSManaged public var rawIcon: Int64
 	@NSManaged public var rawItemOptions: NSNumber?
+
+	// MARK: - Relationship
+
 	@NSManaged public var tags: NSSet?
 
 }
@@ -46,9 +52,9 @@ extension FilterEntity: EntityConvertable {
 			properties: .init(
 				name: title ?? "",
 				icon: icon,
-				strikethrough: itemOptions?.contains(.strikethrough),
-				tags: Set((tags as? Set<TagEntity>)?.map(\.id) ?? [])
-			)
+				itemOptions: itemOptions
+			),
+			tags: Set((tags as? Set<TagEntity>)?.map(\.id) ?? [])
 		)
 	}
 
@@ -88,6 +94,21 @@ extension FilterEntity {
 				return
 			}
 			self.rawItemOptions = NSNumber(value: newValue.rawValue)
+		}
+	}
+
+	var properties: Filter.Properties {
+		get {
+			Filter.Properties(
+				name: title ?? "",
+				icon: icon,
+				itemOptions: itemOptions
+			)
+		}
+		set {
+			self.title = newValue.name
+			self.icon = newValue.icon
+			self.itemOptions = newValue.itemOptions
 		}
 	}
 }

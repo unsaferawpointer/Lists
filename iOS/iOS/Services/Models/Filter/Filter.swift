@@ -11,12 +11,14 @@ struct Filter: Sendable {
 
 	let uuid: UUID
 	var properties: Properties
+	let tags: Set<UUID>?
 
 	// MARK: - Initialization
 
-	init(uuid: UUID, properties: Properties) {
+	init(uuid: UUID, properties: Properties, tags: Set<UUID>?) {
 		self.uuid = uuid
 		self.properties = properties
+		self.tags = tags
 	}
 }
 
@@ -48,8 +50,6 @@ extension Filter {
 	struct Properties {
 		var name: String
 		var icon: Icon?
-		var strikethrough: Bool?
-		var tags: Set<UUID>
-		var list: UUID?
+		var itemOptions: ItemOptions?
 	}
 }

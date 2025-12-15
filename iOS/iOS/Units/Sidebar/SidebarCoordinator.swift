@@ -13,7 +13,7 @@ import SwiftUI
 @MainActor
 protocol SidebarCoordinatable {
 	func presentListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void)
-	func presentFilterEditor(with properties: Filter.Properties, completion: @escaping (Bool, Filter.Properties) -> Void)
+	func presentFilterEditor(with properties: Filter.Properties, andTags tags: Set<UUID>, completion: @escaping (Bool, Filter.Properties, Set<UUID>) -> Void)
 	func openWindow(for payload: ContentPayload)
 }
 
@@ -43,12 +43,12 @@ extension SidebarCoordinator: SidebarCoordinatable {
 		router.presentInMaster(viewController: UIHostingController(rootView: view))
 	}
 
-	func presentFilterEditor(with properties: Filter.Properties, completion: @escaping (Bool, Filter.Properties) -> Void) {
+	func presentFilterEditor(with properties: Filter.Properties, andTags tags: Set<UUID>, completion: @escaping (Bool, Filter.Properties, Set<UUID>) -> Void) {
 		let tagsProvider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
-		let model = FilterEditorModel(properties: properties, tagsProvider: tagsProvider)
-		let view = FilterEditor(model: model) { [weak self] isSuccess, newModel in
+		let model = FilterEditorModel(properties: properties, selectedTags: tags, tagsProvider: tagsProvider)
+		let view = FilterEditor(model: model) { [weak self] isSuccess, newModel, tags in
 			self?.router.dismissInMasterViewController()
-			completion(isSuccess, newModel)
+			completion(isSuccess, newModel, tags)
 		}
 		router.presentInMaster(viewController: UIHostingController(rootView: view))
 	}

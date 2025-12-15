@@ -296,22 +296,36 @@ extension SidebarTableAdapter: UICollectionViewDelegate {
 	func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
 		guard
 			!collectionView.isEditing, indexPaths.count == 1,
-			let indexPath = indexPaths.first, indexPath.section == 2 else {
-			return nil
-		}
-
-		let item = sections[indexPath.section][indexPath.row]
-		guard case let .list(id) = item.id else {
+			let indexPath = indexPaths.first else {
 			return nil
 		}
 
 		let builder = SidebarMenuBuilder()
 		builder.delegate = delegate
 
-		return UIContextMenuConfiguration(
-			actionProvider: { _ in
-				builder.build(id: id)
+		switch indexPath.section {
+		case 2:
+			let item = sections[indexPath.section][indexPath.row]
+			guard case let .list(id) = item.id else {
+				return nil
 			}
-		)
+			return UIContextMenuConfiguration(
+				actionProvider: { _ in
+					builder.projectMenu(id: id)
+				}
+			)
+		case 1:
+			let item = sections[indexPath.section][indexPath.row]
+			guard case let .filter(id) = item.id else {
+				return nil
+			}
+			return UIContextMenuConfiguration(
+				actionProvider: { _ in
+					builder.filterMenu(id: id)
+				}
+			)
+		default:
+			return nil
+		}
 	}
 }

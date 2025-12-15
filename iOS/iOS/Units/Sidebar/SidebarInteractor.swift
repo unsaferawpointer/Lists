@@ -15,6 +15,7 @@ protocol SidebarInteractorProtocol: AnyObject {
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws
 	func deleteList(with id: UUID)
 	func updateList(with id: UUID, properties: List.Properties) async throws
+	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) async throws
 	func list(for id: UUID) async throws -> List?
 }
 
@@ -65,13 +66,17 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 		try? await storage.updateList(with: id, properties: properties)
 	}
 
+	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) async throws {
+		try? await storage.updateFilter(id: id, properties: properties, andTags: tags)
+	}
+
 	func addList(with properties: List.Properties) async throws {
 		let newList = List(uuid: UUID(), properties: properties)
 		try? await storage.addList(newList)
 	}
 
 	func addFilter(with properties: Filter.Properties) async throws {
-		let newFilter = Filter(uuid: UUID(), properties: properties)
+		let newFilter = Filter(uuid: UUID(), properties: properties, tags: nil)
 		try? await storage.addFilter(newFilter)
 	}
 
