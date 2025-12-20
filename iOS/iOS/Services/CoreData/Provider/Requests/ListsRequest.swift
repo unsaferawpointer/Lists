@@ -33,9 +33,7 @@ extension ListsRequest: RequestRepresentable {
 	}
 }
 
-struct ListsRequestV2 {
-
-}
+struct ListsRequestV2 { }
 
 // MARK: - ObjectsRequest
 extension ListsRequestV2: ObjectsRequest {
@@ -44,5 +42,26 @@ extension ListsRequestV2: ObjectsRequest {
 
 	var value: NSFetchRequest<ListEntity> {
 		return ListEntity.fetchRequest()
+	}
+}
+
+struct ListRequest {
+
+	let identifier: UUID
+
+	init(identifier: UUID) {
+		self.identifier = identifier
+	}
+}
+
+// MARK: - ObjectsRequest
+extension ListRequest: ObjectsRequest {
+
+	typealias Entity = ListEntity
+
+	var value: NSFetchRequest<ListEntity> {
+		let request = ListEntity.fetchRequest()
+		request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [identifier])
+		return request
 	}
 }

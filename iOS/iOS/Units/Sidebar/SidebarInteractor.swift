@@ -11,13 +11,14 @@ import Foundation
 protocol SidebarInteractorProtocol: AnyObject {
 	func fetchLists() throws
 	func fetchFilters() throws
-	func addList(with properties: List.Properties) async throws
-	func addFilter(with properties: Filter.Properties) async throws
+	func addList(with properties: List.Properties) throws
+	func addFilter(with properties: Filter.Properties) throws
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws
-	func deleteList(with id: UUID)
-	func updateList(with id: UUID, properties: List.Properties) async throws
-	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) async throws
-	func list(for id: UUID) async throws -> List?
+	func deleteList(with id: UUID) throws
+	func deleteFilter(with id: UUID) throws
+	func updateList(with id: UUID, properties: List.Properties) throws
+	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) throws
+	func list(for id: UUID) throws -> List?
 }
 
 @MainActor
@@ -29,14 +30,14 @@ final class SidebarInteractor {
 
 	// MARK: - DI by initialization
 
-	private let storage: StorageProtocol
+	private let database: any DataManager
 
 	private let providers: Providers
 
 	// MARK: - Initialization
 
-	init(storage: StorageProtocol, providers: Providers) {
-		self.storage = storage
+	init(database: any DataManager, providers: Providers) {
+		self.database = database
 		self.providers = providers
 
 		Task { [weak self] in
@@ -56,35 +57,51 @@ final class SidebarInteractor {
 // MARK: - SidebarInteractorProtocol
 extension SidebarInteractor: SidebarInteractorProtocol {
 
-	func deleteList(with id: UUID) {
-		Task { @MainActor in
-			try? await storage.deleteList(with: id)
+	func deleteList(with id: UUID) throws {
+		let request = ListRequest(identifier: id)
+		Task {
+			try await database.deleteObjects(request: request)
 		}
 	}
 
-	func updateList(with id: UUID, properties: List.Properties) async throws {
-		try? await storage.updateList(with: id, properties: properties)
+	func deleteFilter(with id: UUID) throws {
+		let request = FilterRequestV2(identifier: id)
+		Task {
+			try await database.deleteObjects(request: request)
+		}
 	}
 
-	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) async throws {
-		try? await storage.updateFilter(id: id, properties: properties, andTags: tags)
+	func updateList(with id: UUID, properties: List.Properties) throws {
+		Task {
+			let request = ListRequest(identifier: id)
+			try await database.updateObjects(request: request, properties: properties)
+		}
 	}
 
-	func addList(with properties: List.Properties) async throws {
-		let newList = List(uuid: UUID(), properties: properties)
-		try? await storage.addList(newList)
+	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) throws {
+		Task {
+			let request = FilterRequestV2(identifier: id)
+			try await database.updateObjects(request: request, properties: properties)
+		}
 	}
 
-	func addFilter(with properties: Filter.Properties) async throws {
-		let newFilter = Filter(uuid: UUID(), properties: properties, tags: nil)
-		try? await storage.addFilter(newFilter)
+	func addList(with properties: List.Properties) throws {
+		Task {
+			try await database.insertObject(type: ListEntity.self, properties: properties)
+		}
+	}
+
+	func addFilter(with properties: Filter.Properties) throws {
+		Task {
+			try await database.insertObject(type: FilterEntity.self, properties: properties)
+		}
 	}
 
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
-		try? await storage.moveList(with: id, to: destination)
+		fatalError()
 	}
 
-	func list(for id: UUID) async throws -> List? {
+	func list(for id: UUID) throws -> List? {
 		return nil
 //		await listProvider.item(for: id)
 	}
@@ -100,7 +117,7 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 
 	func fetchFilters() throws {
 		Task {
-			let filters = try await providers.filters.fetchObjects(with: FilterRequestV2())
+			let filters = try await providers.filters.fetchObjects(with: FiltersRequestV2())
 			await MainActor.run { [weak self] in
 				self?.presenter?.present(filters: filters)
 			}

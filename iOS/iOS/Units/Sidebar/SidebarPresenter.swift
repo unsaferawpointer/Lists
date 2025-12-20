@@ -48,11 +48,20 @@ extension SidebarPresenter: SidebarViewDelegate {
 		try? interactor?.fetchFilters()
 	}
 
-	func contextMenu(didSelect menuItem: String, for item: UUID) {
+	func contextMenu(didSelect menuItem: String, for item: NavigationItem.ID) {
 		switch menuItem {
-		case "edit-project":
-			Task { @MainActor in
-				guard let list = try? await interactor?.list(for: item) else {
+		case "edit":
+			switch item {
+			case let .filter(id):
+				guard let properties = filtersCache[id] else {
+					return
+				}
+				coordinator?.presentFilterEditor(with: properties, andTags: []) { [weak self] isSuccess, newProperties, tags in
+					guard isSuccess else { return }
+					try? self?.interactor?.updateFilter(id: id, properties: newProperties, andTags: tags)
+				}
+			case let .list(id):
+				guard let list = try? interactor?.list(for: id) else {
 					return
 				}
 				let model = ListEditorModel(name: list.name, icon: list.properties.icon)
@@ -60,26 +69,32 @@ extension SidebarPresenter: SidebarViewDelegate {
 					guard isSuccess else {
 						return
 					}
-					Task { @MainActor [weak self] in
-						let properties = List.Properties(name: newModel.name, icon: newModel.icon)
-						try? await self?.interactor?.updateList(with: item, properties: properties)
-					}
+					let properties = List.Properties(name: newModel.name, icon: newModel.icon)
+					try? self?.interactor?.updateList(with: id, properties: properties)
 				}
-			}
-		case "edit-filter":
-			guard let properties = filtersCache[item] else {
-				return
-			}
-			coordinator?.presentFilterEditor(with: properties, andTags: []) { isSuccess, newProperties, tags in
-				guard isSuccess else { return }
-				Task { @MainActor [weak self] in
-					try? await self?.interactor?.updateFilter(id: item, properties: newProperties, andTags: tags)
-				}
+			default:
+				fatalError()
 			}
 		case "new-window":
-			coordinator?.openWindow(for: .list(id: item))
+			switch item {
+			case .all:
+				coordinator?.openWindow(for: .all)
+			case let .filter(id):
+				coordinator?.openWindow(for: .filter(id: id))
+			case let .list(id):
+				coordinator?.openWindow(for: .list(id: id))
+			default:
+				fatalError()
+			}
 		case "delete":
-			interactor?.deleteList(with: item)
+			switch item {
+			case let .filter(id):
+				try? interactor?.deleteFilter(with: id)
+			case let .list(id):
+				try? interactor?.deleteList(with: id)
+			default:
+				fatalError()
+			}
 		default:
 			break
 		}
@@ -91,10 +106,8 @@ extension SidebarPresenter: SidebarViewDelegate {
 			guard isSuccess else {
 				return
 			}
-			Task { @MainActor [weak self] in
-				let properties = List.Properties(name: newModel.name, icon: newModel.icon)
-				try? await self?.interactor?.addList(with: properties)
-			}
+			let properties = List.Properties(name: newModel.name, icon: newModel.icon)
+			try? self?.interactor?.addList(with: properties)
 		}
 	}
 
@@ -104,9 +117,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 			guard isSuccess else {
 				return
 			}
-			Task { @MainActor [weak self] in
-				try? await self?.interactor?.addFilter(with: newProperties)
-			}
+			try? self?.interactor?.addFilter(with: newProperties)
 		}
 	}
 

@@ -7,23 +7,19 @@
 
 @preconcurrency import CoreData
 
-protocol DataManager<T> {
+protocol DataManager {
 
-	associatedtype T: ManagedObject
+	func insertObject<O: ManagedObject>(type: O.Type, properties: O.Properties) async throws
 
-	func insertObject(properties: T.Properties) async throws
+	func updateObjects<R: ObjectsRequest>(request: R, properties: R.Entity.Properties) async throws
 
-	func updateObjects(request: NSFetchRequest<T>, properties: T.Properties) async throws
-
-	func deleteObjects(request: NSFetchRequest<T>) async throws
+	func deleteObjects<R: ObjectsRequest>(request: R) async throws
 }
 
-final class Database<T: ManagedObject> {
+final class Database {
 
 	lazy var backgroundContext: NSManagedObjectContext = {
-		let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-		context.parent = container.viewContext
-		return context
+		return container.viewContext
 	}()
 
 	// MARK: - DI by initialization
@@ -40,35 +36,35 @@ final class Database<T: ManagedObject> {
 // MARK: - DataManager
 extension Database: DataManager {
 
-	func insertObject(properties: T.Properties) async throws {
+	func insertObject<O>(type: O.Type, properties: O.Properties) async throws where O : ManagedObject {
 		try await backgroundContext.perform { [weak self] in
 			guard let self else {
 				return
 			}
-			T.createObject(in: backgroundContext, with: properties)
+			O.createObject(in: backgroundContext, with: properties)
 			try backgroundContext.save()
 		}
 	}
-	
-	func updateObjects(request: NSFetchRequest<T>, properties: T.Properties) async throws {
+
+	func updateObjects<R>(request: R, properties: R.Entity.Properties) async throws where R : ObjectsRequest {
 		try await backgroundContext.perform { [weak self] in
 			guard let self else {
 				return
 			}
-			let objects = try backgroundContext.fetch(request)
+			let objects = try backgroundContext.fetch(request.value)
 			for object in objects {
 				object.update(with: properties)
 			}
 			try backgroundContext.save()
 		}
 	}
-	
-	func deleteObjects(request: NSFetchRequest<T>) async throws {
+
+	func deleteObjects<R>(request: R) async throws where R : ObjectsRequest {
 		try await backgroundContext.perform { [weak self] in
 			guard let self else {
 				return
 			}
-			let objects = try backgroundContext.fetch(request)
+			let objects = try backgroundContext.fetch(request.value)
 			for object in objects {
 				backgroundContext.delete(object)
 			}

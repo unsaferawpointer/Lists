@@ -12,7 +12,7 @@ protocol SidebarViewDelegate: AnyObject {
 
 	func viewDidLoad()
 
-	func contextMenu(didSelect menuItem: String, for item: UUID)
+	func contextMenu(didSelect menuItem: String, for item: NavigationItem.ID)
 
 	func newList()
 

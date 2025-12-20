@@ -43,11 +43,14 @@ extension ListEntity: ManagedObject {
 	typealias Properties = List.Properties
 
 	static func createObject(in context: NSManagedObjectContext, with properties: List.Properties) {
-
+		let newEntity = ListEntity(context: context)
+		newEntity.uuid = UUID()
+		newEntity.update(with: properties)
 	}
 
 	func update(with properties: List.Properties) {
-
+		self.title = properties.name
+		self.icon = properties.icon
 	}
 
 	var object: Object<Properties> {

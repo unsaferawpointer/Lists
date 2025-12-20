@@ -30,11 +30,11 @@ extension SidebarMenuBuilder {
 
 	func filterMenu(id: UUID) -> UIMenu {
 
-		var actions: [UIAction] = [buildItem(id: "edit-filter", for: id)]
+		var actions: [UIAction] = [buildItem(id: "edit", for: .filter(id: id))]
 		if availability.isEnabled(feature: .multipleWindows) {
-			actions.append(buildItem(id: "new-window", for: id))
+			actions.append(buildItem(id: "new-window", for: .filter(id: id)))
 		}
-		actions.append(buildItem(id: "delete", for: id))
+		actions.append(buildItem(id: "delete", for: .filter(id: id)))
 
 		let children = actions.map {
 			UIMenu(options: .displayInline, children: [$0])
@@ -45,11 +45,11 @@ extension SidebarMenuBuilder {
 
 	func projectMenu(id: UUID) -> UIMenu {
 
-		var actions: [UIAction] = [buildItem(id: "edit-project", for: id)]
+		var actions: [UIAction] = [buildItem(id: "edit", for: .list(id: id))]
 		if availability.isEnabled(feature: .multipleWindows) {
-			actions.append(buildItem(id: "new-window", for: id))
+			actions.append(buildItem(id: "new-window", for: .list(id: id)))
 		}
-		actions.append(buildItem(id: "delete", for: id))
+		actions.append(buildItem(id: "delete", for: .list(id: id)))
 
 		let children = actions.map {
 			UIMenu(options: .displayInline, children: [$0])
@@ -61,17 +61,13 @@ extension SidebarMenuBuilder {
 
 extension SidebarMenuBuilder {
 
-	func buildItem(id: String, for element: UUID) -> UIAction {
+	func buildItem(id: String, for element: NavigationItem.ID) -> UIAction {
 		switch id {
 		case "new-window":
 			UIAction(title: "New Window", image: UIImage(systemName: "macwindow.badge.plus")) { [weak self] _ in
 				self?.delegate?.contextMenu(didSelect: id, for: element)
 			}
-		case "edit-project":
-			UIAction(title: "Edit...", image: UIImage(systemName: "pencil")) { [weak self] _ in
-				self?.delegate?.contextMenu(didSelect: id, for: element)
-			}
-		case "edit-filter":
+		case "edit":
 			UIAction(title: "Edit...", image: UIImage(systemName: "pencil")) { [weak self] _ in
 				self?.delegate?.contextMenu(didSelect: id, for: element)
 			}

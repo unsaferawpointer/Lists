@@ -10,16 +10,15 @@ import CoreData
 
 final class SidebarAssembly {
 
+	@MainActor
 	static func build(router: MasterRoutable & MainRoutable, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
-
-		let storage = Storage(container: persistentContainer)
 
 		let providers = SidebarInteractor.Providers(
 			lists: DataProvider(container: persistentContainer),
 			filters: DataProvider(container: persistentContainer)
 		)
 
-		let interactor = SidebarInteractor(storage: storage, providers: providers)
+		let interactor = SidebarInteractor(database: Database(container: persistentContainer), providers: providers)
 		let presenter = SidebarPresenter(interactor: interactor)
 		interactor.presenter = presenter
 

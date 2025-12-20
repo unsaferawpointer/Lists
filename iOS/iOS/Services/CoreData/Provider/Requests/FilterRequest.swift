@@ -33,7 +33,26 @@ extension FilterRequest: RequestRepresentable {
 	}
 }
 
-struct FilterRequestV2 { }
+struct FiltersRequestV2 { }
+
+// MARK: - ObjectsRequest
+extension FiltersRequestV2: ObjectsRequest {
+
+	typealias Entity = FilterEntity
+
+	var value: NSFetchRequest<FilterEntity> {
+		return FilterEntity.fetchRequest()
+	}
+}
+
+struct FilterRequestV2 {
+
+	let identifier: UUID
+
+	init(identifier: UUID) {
+		self.identifier = identifier
+	}
+}
 
 // MARK: - ObjectsRequest
 extension FilterRequestV2: ObjectsRequest {
@@ -41,6 +60,8 @@ extension FilterRequestV2: ObjectsRequest {
 	typealias Entity = FilterEntity
 
 	var value: NSFetchRequest<FilterEntity> {
-		return FilterEntity.fetchRequest()
+		let request = FilterEntity.fetchRequest()
+		request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [identifier])
+		return request
 	}
 }

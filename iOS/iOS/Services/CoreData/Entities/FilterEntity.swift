@@ -47,11 +47,15 @@ extension FilterEntity: ManagedObject {
 	typealias Properties = Filter.Properties
 
 	static func createObject(in context: NSManagedObjectContext, with properties: Filter.Properties) {
-
+		let newEntity = FilterEntity(context: context)
+		newEntity.uuid = UUID()
+		newEntity.update(with: properties)
 	}
 
 	func update(with properties: Filter.Properties) {
-		
+		self.title = properties.name
+		self.icon = properties.icon
+		self.itemOptions = properties.itemOptions
 	}
 
 	var object: Object<Properties> {
