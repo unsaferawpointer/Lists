@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 struct ListsRequest {
 	let uuid: UUID?
@@ -29,5 +30,19 @@ extension ListsRequest: RequestRepresentable {
 	
 	var nsSortDescriptors: [NSSortDescriptor]? {
 		return [NSSortDescriptor(keyPath: \ListEntity.offset, ascending: true)]
+	}
+}
+
+struct ListsRequestV2 {
+
+}
+
+// MARK: - ObjectsRequest
+extension ListsRequestV2: ObjectsRequest {
+
+	typealias Entity = ListEntity
+
+	var value: NSFetchRequest<ListEntity> {
+		return ListEntity.fetchRequest()
 	}
 }

@@ -7,9 +7,10 @@
 
 import Foundation
 
+@MainActor
 protocol SidebarInteractorProtocol: AnyObject {
-	func fetchLists() async throws
-	func fetchFilters() async throws
+	func fetchLists() throws
+	func fetchFilters() throws
 	func addList(with properties: List.Properties) async throws
 	func addFilter(with properties: Filter.Properties) async throws
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) async throws
@@ -19,6 +20,7 @@ protocol SidebarInteractorProtocol: AnyObject {
 	func list(for id: UUID) async throws -> List?
 }
 
+@MainActor
 final class SidebarInteractor {
 
 	// MARK: - DI by Property
@@ -29,25 +31,23 @@ final class SidebarInteractor {
 
 	private let storage: StorageProtocol
 
-	private let listProvider: ModelsProvider<List>
-
-	private let filtersProvider: ModelsProvider<Filter>
+	private let providers: Providers
 
 	// MARK: - Initialization
 
-	init(storage: StorageProtocol, listProvider: ModelsProvider<List>, filtersProvider: ModelsProvider<Filter>) {
+	init(storage: StorageProtocol, providers: Providers) {
 		self.storage = storage
-		self.listProvider = listProvider
-		self.filtersProvider = filtersProvider
-		Task { @MainActor in
-			for await change in await listProvider.stream() {
-				presenter?.present(lists: change)
+		self.providers = providers
+
+		Task { [weak self] in
+			for await _ in providers.lists.stream {
+				try self?.fetchLists()
 			}
 		}
 
-		Task { @MainActor in
-			for await change in await filtersProvider.stream() {
-				presenter?.present(filters: change)
+		Task { [weak self] in
+			for await _ in providers.filters.stream {
+				try self?.fetchFilters()
 			}
 		}
 	}
@@ -85,14 +85,34 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 	}
 
 	func list(for id: UUID) async throws -> List? {
-		await listProvider.item(for: id)
+		return nil
+//		await listProvider.item(for: id)
 	}
 
-	func fetchLists() async throws {
-		try await listProvider.fetchData()
+	func fetchLists() throws {
+		Task {
+			let lists = try await providers.lists.fetchObjects(with: ListsRequestV2())
+			await MainActor.run { [weak self] in
+				self?.presenter?.present(lists: lists)
+			}
+		}
 	}
 
-	func fetchFilters() async throws {
-		try await filtersProvider.fetchData()
+	func fetchFilters() throws {
+		Task {
+			let filters = try await providers.filters.fetchObjects(with: FilterRequestV2())
+			await MainActor.run { [weak self] in
+				self?.presenter?.present(filters: filters)
+			}
+		}
+	}
+}
+
+// MARK: - Nested Data Structs
+extension SidebarInteractor {
+
+	struct Providers {
+		let lists: any DataProviderProtocol<ListEntity>
+		let filters: any DataProviderProtocol<FilterEntity>
 	}
 }

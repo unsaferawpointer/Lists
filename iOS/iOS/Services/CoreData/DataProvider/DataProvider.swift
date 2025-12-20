@@ -11,7 +11,9 @@ protocol DataProviderProtocol<T> {
 
 	associatedtype T: ManagedObject
 
-	func fetchObjects(with request: NSFetchRequest<T>) async throws -> [T]
+	func fetchObjects<R: ObjectsRequest>(with request: R) async throws -> [Object<T.Properties>] where R.Entity == T
+
+	var stream: NotificationCenter.Notifications { get }
 }
 
 final class DataProvider<T: ManagedObject> {
@@ -19,6 +21,7 @@ final class DataProvider<T: ManagedObject> {
 	lazy var backgroundContext: NSManagedObjectContext = {
 		let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
 		context.parent = container.viewContext
+		context.automaticallyMergesChangesFromParent = true
 		return context
 	}()
 
@@ -28,7 +31,7 @@ final class DataProvider<T: ManagedObject> {
 
 	lazy var stream: NotificationCenter.Notifications = {
 		let name: NSNotification.Name = .NSManagedObjectContextDidSave
-		return NotificationCenter.default.notifications(named: name, object: backgroundContext)
+		return NotificationCenter.default.notifications(named: name)
 	}()
 
 	// MARK: - Initialization
@@ -41,11 +44,12 @@ final class DataProvider<T: ManagedObject> {
 // MARK: - DataProviderProtocol
 extension DataProvider: DataProviderProtocol {
 
-	func fetchObjects(with request: NSFetchRequest<T>) async throws -> [T] {
+	func fetchObjects<R>(with request: R) async throws -> [Object<T.Properties>] where R : ObjectsRequest, T == R.Entity {
 		return try await withCheckedThrowingContinuation { continuation in
 			backgroundContext.performAndWait {
 				do {
-					let objects = try backgroundContext.fetch(request)
+					let entities = try backgroundContext.fetch(request.value)
+					let objects = entities.map(\.object)
 					continuation.resume(returning: objects)
 				} catch {
 					continuation.resume(throwing: error)

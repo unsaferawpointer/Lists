@@ -7,9 +7,10 @@
 
 import Foundation
 
+@MainActor
 protocol SidebarPresenterProtocol: AnyObject {
-	func present(lists: [List])
-	func present(filters: [Filter])
+	func present(filters: [Object<Filter.Properties>])
+	func present(lists: [Object<List.Properties>])
 }
 
 final class SidebarPresenter {
@@ -22,7 +23,7 @@ final class SidebarPresenter {
 
 	// MARK: - Cache
 
-	private var filtersCache: [UUID: Filter] = [:]
+	private var filtersCache: [UUID: Filter.Properties] = [:]
 
 	// MARK: - Initialization
 
@@ -35,18 +36,16 @@ final class SidebarPresenter {
 extension SidebarPresenter: SidebarViewDelegate {
 
 	func viewDidLoad() {
-		Task { @MainActor in
-			view?.displayPinned(
-				newItems:
-					[
-						.init(id: .all, iconName: "square.grid.2x2", title: "All"),
-						.init(id: .tags, iconName: "tag", title: "Tags")
-					],
-				select: .all
-			)
-			try? await interactor?.fetchLists()
-			try? await interactor?.fetchFilters()
-		}
+		view?.displayPinned(
+			newItems:
+				[
+					.init(id: .all, iconName: "square.grid.2x2", title: "All"),
+					.init(id: .tags, iconName: "tag", title: "Tags")
+				],
+			select: .all
+		)
+		try? interactor?.fetchLists()
+		try? interactor?.fetchFilters()
 	}
 
 	func contextMenu(didSelect menuItem: String, for item: UUID) {
@@ -68,10 +67,10 @@ extension SidebarPresenter: SidebarViewDelegate {
 				}
 			}
 		case "edit-filter":
-			guard let filter = filtersCache[item] else {
+			guard let properties = filtersCache[item] else {
 				return
 			}
-			coordinator?.presentFilterEditor(with: filter.properties, andTags: filter.tags ?? []) { isSuccess, newProperties, tags in
+			coordinator?.presentFilterEditor(with: properties, andTags: []) { isSuccess, newProperties, tags in
 				guard isSuccess else { return }
 				Task { @MainActor [weak self] in
 					try? await self?.interactor?.updateFilter(id: item, properties: newProperties, andTags: tags)
@@ -122,40 +121,32 @@ extension SidebarPresenter: SidebarViewDelegate {
 // MARK: - SidebarPresenterProtocol
 extension SidebarPresenter: SidebarPresenterProtocol {
 
-	func present(lists: [List]) {
-		Task { @MainActor in
-			let items = convert(lists: lists)
-			view?.display(newItems: items)
-		}
-	}
-
-	func present(filters: [Filter]) {
+	func present(filters: [Object<Filter.Properties>]) {
 
 		// MARK: - Update Cache
 		filtersCache.removeAll()
 		for filter in filters {
-			filtersCache[filter.id] = filter
+			filtersCache[filter.id] = filter.properties
 		}
 
-		Task { @MainActor in
-			let items = convert(filters: filters)
-			view?.displayFilters(newItems: items)
+		let items = filters.map {
+			NavigationItem(
+				id: .filter(id: $0.id),
+				iconName: $0.properties.icon?.iconName ?? "list",
+				title: $0.properties.name
+			)
 		}
-	}
-}
-
-// MARK: - Helpers
-private extension SidebarPresenter {
-
-	func convert(filters: [Filter]) -> [NavigationItem] {
-		filters.map { filter in
-			NavigationItem(id: .filter(id: filter.id), iconName: filter.properties.icon?.iconName ?? "filter", title: filter.name)
-		}
+		view?.displayFilters(newItems: items)
 	}
 
-	func convert(lists: [List]) -> [NavigationItem] {
-		lists.map { list in
-			NavigationItem(id: .list(id: list.id), iconName: list.properties.icon?.iconName ?? "list", title: list.name)
+	func present(lists: [Object<List.Properties>]) {
+		let items = lists.map {
+			NavigationItem(
+				id: .list(id: $0.id),
+				iconName: $0.properties.icon?.iconName ?? "list",
+				title: $0.properties.name
+			)
 		}
+		view?.display(newItems: items)
 	}
 }

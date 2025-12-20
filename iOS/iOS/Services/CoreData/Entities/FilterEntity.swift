@@ -41,6 +41,25 @@ extension FilterEntity: Identifiable {
 	}
 }
 
+// MARK: - ManagedObject
+extension FilterEntity: ManagedObject {
+
+	typealias Properties = Filter.Properties
+
+	static func createObject(in context: NSManagedObjectContext, with properties: Filter.Properties) {
+
+	}
+
+	func update(with properties: Filter.Properties) {
+		
+	}
+
+	var object: Object<Properties> {
+		let properties = Properties(name: title ?? "", icon: icon, itemOptions: itemOptions)
+		return Object(id: id, properties: properties)
+	}
+}
+
 // MARK: - EntityConvertable
 extension FilterEntity: EntityConvertable {
 

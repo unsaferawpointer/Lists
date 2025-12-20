@@ -37,6 +37,25 @@ extension ListEntity: Identifiable {
 	}
 }
 
+// MARK: - ManagedObject
+extension ListEntity: ManagedObject {
+
+	typealias Properties = List.Properties
+
+	static func createObject(in context: NSManagedObjectContext, with properties: List.Properties) {
+
+	}
+
+	func update(with properties: List.Properties) {
+
+	}
+
+	var object: Object<Properties> {
+		let properties = Properties(name: title ?? "Unknown Name", icon: icon)
+		return Object(id: id, properties: properties)
+	}
+}
+
 // MARK: - EntityConvertable
 extension ListEntity: EntityConvertable {
 

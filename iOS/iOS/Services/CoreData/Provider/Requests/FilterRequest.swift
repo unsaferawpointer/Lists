@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 struct FilterRequest {
 	let uuid: UUID?
@@ -29,5 +30,17 @@ extension FilterRequest: RequestRepresentable {
 
 	var nsSortDescriptors: [NSSortDescriptor]? {
 		return [NSSortDescriptor(keyPath: \FilterEntity.title, ascending: true)]
+	}
+}
+
+struct FilterRequestV2 { }
+
+// MARK: - ObjectsRequest
+extension FilterRequestV2: ObjectsRequest {
+
+	typealias Entity = FilterEntity
+
+	var value: NSFetchRequest<FilterEntity> {
+		return FilterEntity.fetchRequest()
 	}
 }
