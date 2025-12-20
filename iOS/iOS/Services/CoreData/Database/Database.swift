@@ -7,13 +7,6 @@
 
 @preconcurrency import CoreData
 
-protocol DataProvider<T> {
-
-	associatedtype T: ManagedObject
-
-	func fetchObjects(with request: NSFetchRequest<T>) async throws -> [T]
-}
-
 protocol DataManager<T> {
 
 	associatedtype T: ManagedObject
@@ -29,6 +22,7 @@ final class Database<T: ManagedObject> {
 
 	lazy var backgroundContext: NSManagedObjectContext = {
 		let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+		context.parent = container.viewContext
 		return context
 	}()
 
@@ -40,40 +34,6 @@ final class Database<T: ManagedObject> {
 
 	init(container: NSPersistentContainer) {
 		self.container = container
-
-		configureNotifications()
-	}
-}
-
-// MARK: - Configure
-private extension Database {
-
-	func configureNotifications() {
-		let name: NSNotification.Name = .NSManagedObjectContextDidSave
-		NotificationCenter.default.addObserver(forName: name, object: backgroundContext, queue: .main) { [weak self] notification in
-			self?.handleNotification(notification)
-		}
-	}
-
-	func handleNotification(_ notification: Notification) {
-
-	}
-}
-
-// MARK: - DataProvider
-extension Database: DataProvider {
-
-	func fetchObjects(with request: NSFetchRequest<T>) async throws -> [T] {
-		return try await withCheckedThrowingContinuation { continuation in
-			backgroundContext.performAndWait {
-				do {
-					let objects = try backgroundContext.fetch(request)
-					continuation.resume(returning: objects)
-				} catch {
-					continuation.resume(throwing: error)
-				}
-			}
-		}
 	}
 }
 
