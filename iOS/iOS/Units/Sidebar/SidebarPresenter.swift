@@ -53,13 +53,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 		case "edit":
 			switch item {
 			case let .filter(id):
-				guard let properties = filtersCache[id] else {
-					return
-				}
-				coordinator?.presentFilterEditor(with: properties, andTags: []) { [weak self] isSuccess, newProperties, tags in
-					guard isSuccess else { return }
-					try? self?.interactor?.updateFilter(id: id, properties: newProperties, andTags: tags)
-				}
+				coordinator?.presentFilterEditor(with: id)
 			case let .list(id):
 				guard let list = try? interactor?.list(for: id) else {
 					return
@@ -112,13 +106,13 @@ extension SidebarPresenter: SidebarViewDelegate {
 	}
 
 	func newFilter() {
-		let properties = Filter.Properties(name: "")
-		coordinator?.presentFilterEditor(with: properties, andTags: []) { [weak self] isSuccess, newProperties, tags in
-			guard isSuccess else {
-				return
-			}
-			try? self?.interactor?.addFilter(with: newProperties)
-		}
+//		let properties = Filter.Properties(name: "")
+//		coordinator?.presentFilterEditor(with: properties, andTags: []) { [weak self] isSuccess, newProperties, tags in
+//			guard isSuccess else {
+//				return
+//			}
+//			try? self?.interactor?.addFilter(with: newProperties)
+//		}
 	}
 
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) {

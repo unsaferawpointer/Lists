@@ -11,92 +11,104 @@ struct FilterEditor: View {
 
 	@Bindable var model: FilterEditorModel
 
-	var completion: ((Bool, Filter.Properties, Set<UUID>) -> Void)?
+	var completion: (() -> Void)?
 
 	@FocusState var inFocus: Bool
 
 	let validator = ListValidator()
 
 	var validationResult: ListValidator.ValidationResult {
-		validator.validate(name: model.properties.name)
+		return validator.validate(name: model.properties.name)
 	}
 
 	// MARK: - Initialization
 
-	init(model: FilterEditorModel, completion: ((Bool, Filter.Properties, Set<UUID>) -> Void)? = nil) {
+	init(model: FilterEditorModel, completion: (() -> Void)? = nil) {
 		self.model = model
 		self.completion = completion
 	}
 
 	var body: some View {
 		NavigationStack {
-			Form {
-				Section {
-					TextField("Enter a name", text: $model.properties.name)
-						.focused($inFocus)
-						.onAppear {
-							inFocus = true
+			Group {
+				if !model.isLoading {
+					Form {
+						Section {
+							TextField("Enter a name", text: $model.properties.name)
+								.focused($inFocus)
+								.onAppear {
+									inFocus = true
+								}
+						} header: {
+							Text("Title")
+						} footer: {
+							switch validationResult {
+							case .success:
+								EmptyView()
+							case .failure(let error):
+								Text(error.errorDescription ?? "")
+							}
 						}
-				} header: {
-					Text("Title")
-				} footer: {
-					switch validationResult {
-					case .success:
-						EmptyView()
-					case .failure(let error):
-						Text(error.errorDescription ?? "")
-					}
-				}
-				Section("Icons") {
-					IconPicker(selectedIcon: $model.properties.icon)
-				}
+						Section("Icons") {
+							IconPicker(selectedIcon: $model.properties.icon)
+						}
 
-				Section {
-					Picker("Strikethrough", selection: .init(get: {
-						model.properties.itemOptions?.isStrikethrough
-					}, set: { newValue in
-						guard let newValue else {
-							model.properties.itemOptions = nil
-							return
+						Section {
+							Picker("Strikethrough", selection: .init(get: {
+								model.properties.itemOptions?.isStrikethrough
+							}, set: { newValue in
+								guard let newValue else {
+									model.properties.itemOptions = nil
+									return
+								}
+								if newValue {
+									model.properties.itemOptions = [.strikethrough]
+								} else {
+									model.properties.itemOptions = []
+								}
+							})) {
+								Text("Any")
+									.tag(Optional<Bool>.none)
+								Divider()
+								Text("Strikethrough")
+									.tag(true)
+								Text("Not Strikethrough")
+									.tag(false)
+							}
 						}
-						if newValue {
-							model.properties.itemOptions?.insert(.strikethrough)
-						} else {
-							model.properties.itemOptions?.remove(.strikethrough)
+						Section("Tags") {
+							tagsPicker()
 						}
-					})) {
-						Text("Any")
-							.tag(Optional<Bool>.none)
-						Divider()
-						Text("Strikethrough")
-							.tag(true)
-						Text("Not Strikethrough")
-							.tag(false)
 					}
-				}
-				Section("Tags") {
-					tagsPicker()
+					.formStyle(.grouped)
+				} else {
+					ProgressView()
+						.progressViewStyle(.circular)
 				}
 			}
-			.formStyle(.grouped)
 			.navigationTitle("Edit Filter")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
 					Button(role: .confirm) {
-						completion?(true, model.properties, model.selectedTags)
+						Task {
+							await model.save()
+							await MainActor.run {
+								completion?()
+							}
+						}
 					}
-					.disabled(!validationResult.isSuccess)
+					.disabled(!validationResult.isSuccess || model.isLoading)
 				}
 				ToolbarItem(placement: .cancellationAction) {
 					Button(role: .close) {
-						completion?(false, .init(name: ""), model.selectedTags)
+						completion?()
 					}
 				}
 			}
 		}
 		.task {
-			try? await model.tagsProvider.fetchData()
+			await model.fetchData()
 		}
 	}
 }
@@ -110,17 +122,17 @@ private extension FilterEditor {
 			HStack {
 				Label(tag.name, systemImage: "tag")
 				Spacer()
-				if model.selectedTags.contains(tag.id) {
+				if model.relationships.tags?.contains(tag.id) == true {
 					Image(systemName: "checkmark")
 						.foregroundColor(.primary)
 				}
 			}
 			.contentShape(Rectangle())
 			.onTapGesture {
-				if model.selectedTags.contains(tag.id) {
-					model.selectedTags.remove(tag.id)
+				if model.relationships.tags?.contains(tag.id) == true {
+					model.relationships.tags?.remove(tag.id)
 				} else {
-					model.selectedTags.insert(tag.id)
+					model.relationships.tags?.insert(tag.id)
 				}
 			}
 		}

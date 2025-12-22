@@ -41,6 +41,30 @@ extension TagEntity: Identifiable {
 	}
 }
 
+// MARK: - ManagedObject
+extension TagEntity: ManagedObject {
+
+	typealias Properties = Tag.Properties
+
+	typealias Relationships = Tag.Relationships
+
+	static func createObject(in context: NSManagedObjectContext, with properties: Properties, relationships: Relationships?) {
+		let newEntity = TagEntity(context: context)
+		newEntity.uuid = UUID()
+		newEntity.update(with: properties, relationships: relationships)
+	}
+
+	func update(with properties: Properties, relationships: Relationships?) {
+		self.title = properties.name
+		self.icon = properties.icon
+	}
+
+	var object: Object<Properties, Relationships> {
+		let properties = Properties(name: title ?? "", icon: icon)
+		return Object(id: id, properties: properties, relationships: nil)
+	}
+}
+
 // MARK: - EntityConvertable
 extension TagEntity: EntityConvertable {
 

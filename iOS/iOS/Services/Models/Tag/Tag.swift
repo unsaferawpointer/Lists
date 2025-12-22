@@ -49,4 +49,8 @@ extension Tag {
 		var name: String
 		var icon: Icon?
 	}
+
+	struct Relationships {
+		
+	}
 }

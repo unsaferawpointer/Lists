@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 struct TagsRequest {
 	let uuid: UUID?
@@ -29,5 +30,17 @@ extension TagsRequest: RequestRepresentable {
 
 	var nsSortDescriptors: [NSSortDescriptor]? {
 		return [NSSortDescriptor(keyPath: \TagEntity.offset, ascending: true)]
+	}
+}
+
+struct TagsRequestV2 { }
+
+// MARK: - ObjectsRequest
+extension TagsRequestV2: ObjectsRequest {
+
+	typealias Entity = TagEntity
+
+	var value: NSFetchRequest<TagEntity> {
+		return TagEntity.fetchRequest()
 	}
 }
