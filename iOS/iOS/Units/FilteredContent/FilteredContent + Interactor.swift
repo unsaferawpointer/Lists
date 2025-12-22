@@ -23,7 +23,7 @@ extension FilteredContent {
 			self.provider = provider
 
 			Task { [weak self] in
-				for await notification in provider.stream {
+				for await _ in provider.stream {
 					self?.fetchData()
 				}
 			}

@@ -11,23 +11,11 @@ protocol ManagedObject: NSManagedObject, Identifiable {
 
 	associatedtype Properties
 
-	static func createObject(in context: NSManagedObjectContext, with properties: Properties)
+	associatedtype Relationships
 
-	func update(with properties: Properties)
+	static func createObject(in context: NSManagedObjectContext, with properties: Properties, relationships: Relationships?)
 
-	var object: Object<Properties> { get }
-}
+	func update(with properties: Properties, relationships: Relationships?)
 
-struct Object<Properties>: Identifiable {
-
-	let id: UUID
-
-	let properties: Properties
-
-	// MARK: - Initialization
-
-	init(id: ID, properties: Properties) {
-		self.id = id
-		self.properties = properties
-	}
+	var object: Object<Properties, Relationships> { get }
 }

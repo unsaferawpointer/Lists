@@ -46,21 +46,36 @@ extension FilterEntity: ManagedObject {
 
 	typealias Properties = Filter.Properties
 
-	static func createObject(in context: NSManagedObjectContext, with properties: Filter.Properties) {
+	typealias Relationships = Filter.Relationships
+
+	static func createObject(in context: NSManagedObjectContext, with properties: Filter.Properties, relationships: Relationships?) {
 		let newEntity = FilterEntity(context: context)
 		newEntity.uuid = UUID()
-		newEntity.update(with: properties)
+		newEntity.update(with: properties, relationships: relationships)
 	}
 
-	func update(with properties: Filter.Properties) {
+	func update(with properties: Filter.Properties, relationships: Filter.Relationships?) {
 		self.title = properties.name
 		self.icon = properties.icon
 		self.itemOptions = properties.itemOptions
+
+		guard let context = managedObjectContext, let tags = relationships?.tags.map(\.self) else {
+			return
+		}
+
+		let request: NSFetchRequest<TagEntity> = TagEntity.fetchRequest()
+		request.predicate = NSPredicate(format: "ANY uuid in %@", argumentArray: [tags])
+
+		guard let entities = try? context.fetch(request) else {
+			return
+		}
+		self.tags = NSSet(array: entities)
 	}
 
-	var object: Object<Properties> {
+	var object: Object<Properties, Relationships> {
 		let properties = Properties(name: title ?? "", icon: icon, itemOptions: itemOptions)
-		return Object(id: id, properties: properties)
+		let relationships = Relationships(tags: Set((tags as? Set<TagEntity>)?.map(\.id) ?? []))
+		return Object(id: id, properties: properties, relationships: relationships)
 	}
 }
 

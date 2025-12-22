@@ -9,8 +9,8 @@ import Foundation
 
 @MainActor
 protocol SidebarPresenterProtocol: AnyObject {
-	func present(filters: [Object<Filter.Properties>])
-	func present(lists: [Object<List.Properties>])
+	func present(filters: [Object<Filter.Properties, Filter.Relationships>])
+	func present(lists: [Object<List.Properties, List.Relationships>])
 }
 
 final class SidebarPresenter {
@@ -132,32 +132,19 @@ extension SidebarPresenter: SidebarViewDelegate {
 // MARK: - SidebarPresenterProtocol
 extension SidebarPresenter: SidebarPresenterProtocol {
 
-	func present(filters: [Object<Filter.Properties>]) {
+	func present(filters: [Object<Filter.Properties, Filter.Relationships>]) {
 
 		// MARK: - Update Cache
 		filtersCache.removeAll()
 		for filter in filters {
 			filtersCache[filter.id] = filter.properties
 		}
-
-		let items = filters.map {
-			NavigationItem(
-				id: .filter(id: $0.id),
-				iconName: $0.properties.icon?.iconName ?? "list",
-				title: $0.properties.name
-			)
-		}
+		let items = SidebarItemsFactory().items(filters: filters)
 		view?.displayFilters(newItems: items)
 	}
 
-	func present(lists: [Object<List.Properties>]) {
-		let items = lists.map {
-			NavigationItem(
-				id: .list(id: $0.id),
-				iconName: $0.properties.icon?.iconName ?? "list",
-				title: $0.properties.name
-			)
-		}
+	func present(lists: [Object<List.Properties, List.Relationships>]) {
+		let items = SidebarItemsFactory().items(lists: lists)
 		view?.display(newItems: items)
 	}
 }

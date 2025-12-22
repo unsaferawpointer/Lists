@@ -52,4 +52,8 @@ extension Filter {
 		var icon: Icon?
 		var itemOptions: ItemOptions?
 	}
+
+	struct Relationships {
+		var tags: Set<UUID>?
+	}
 }

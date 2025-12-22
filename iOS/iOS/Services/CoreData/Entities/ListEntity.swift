@@ -40,22 +40,24 @@ extension ListEntity: Identifiable {
 // MARK: - ManagedObject
 extension ListEntity: ManagedObject {
 
+	typealias Relationships = List.Relationships
+
 	typealias Properties = List.Properties
 
-	static func createObject(in context: NSManagedObjectContext, with properties: List.Properties) {
+	static func createObject(in context: NSManagedObjectContext, with properties: List.Properties, relationships: List.Relationships?) {
 		let newEntity = ListEntity(context: context)
 		newEntity.uuid = UUID()
-		newEntity.update(with: properties)
+		newEntity.update(with: properties, relationships: nil)
 	}
 
-	func update(with properties: List.Properties) {
+	func update(with properties: List.Properties, relationships: Relationships?) {
 		self.title = properties.name
 		self.icon = properties.icon
 	}
 
-	var object: Object<Properties> {
+	var object: Object<Properties, Relationships> {
 		let properties = Properties(name: title ?? "Unknown Name", icon: icon)
-		return Object(id: id, properties: properties)
+		return Object(id: id, properties: properties, relationships: nil)
 	}
 }
 

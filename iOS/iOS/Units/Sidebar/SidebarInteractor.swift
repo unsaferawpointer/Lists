@@ -74,26 +74,26 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 	func updateList(with id: UUID, properties: List.Properties) throws {
 		Task {
 			let request = ListRequest(identifier: id)
-			try await database.updateObjects(request: request, properties: properties)
+			try await database.updateObjects(request: request, properties: properties, relationships: nil)
 		}
 	}
 
 	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) throws {
 		Task {
 			let request = FilterRequestV2(identifier: id)
-			try await database.updateObjects(request: request, properties: properties)
+			try await database.updateObjects(request: request, properties: properties, relationships: nil)
 		}
 	}
 
 	func addList(with properties: List.Properties) throws {
 		Task {
-			try await database.insertObject(type: ListEntity.self, properties: properties)
+			try await database.insertObject(type: ListEntity.self, properties: properties, relationships: nil)
 		}
 	}
 
 	func addFilter(with properties: Filter.Properties) throws {
 		Task {
-			try await database.insertObject(type: FilterEntity.self, properties: properties)
+			try await database.insertObject(type: FilterEntity.self, properties: properties, relationships: nil)
 		}
 	}
 

@@ -11,7 +11,7 @@ protocol DataProviderProtocol<T> {
 
 	associatedtype T: ManagedObject
 
-	func fetchObjects<R: ObjectsRequest>(with request: R) async throws -> [Object<T.Properties>] where R.Entity == T
+	func fetchObjects<R: ObjectsRequest>(with request: R) async throws -> [Object<T.Properties, T.Relationships>] where R.Entity == T
 
 	var stream: NotificationCenter.Notifications { get }
 }
@@ -44,7 +44,7 @@ final class DataProvider<T: ManagedObject> {
 // MARK: - DataProviderProtocol
 extension DataProvider: DataProviderProtocol {
 
-	func fetchObjects<R>(with request: R) async throws -> [Object<T.Properties>] where R : ObjectsRequest, T == R.Entity {
+	func fetchObjects<R>(with request: R) async throws -> [Object<T.Properties, T.Relationships>] where R : ObjectsRequest, T == R.Entity {
 		return try await withCheckedThrowingContinuation { continuation in
 			backgroundContext.performAndWait {
 				do {
