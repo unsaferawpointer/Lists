@@ -17,6 +17,8 @@ protocol ContentInteractorProtocol {
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws
 	func setList(items ids: [UUID], list: UUID?) async throws
 	func setTags(_ tags: Set<UUID>, for items: [UUID]) async throws
+
+	var presenter: ContentPresenterProtocol? { get set }
 }
 
 final class ContentInteractor {

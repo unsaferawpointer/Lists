@@ -54,4 +54,8 @@ extension Item {
 		var isStrikethrough: Bool
 		var list: UUID?
 	}
+
+	struct Relationships {
+		
+	}
 }

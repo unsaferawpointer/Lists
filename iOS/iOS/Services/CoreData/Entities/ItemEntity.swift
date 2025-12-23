@@ -47,6 +47,30 @@ extension ItemEntity: Identifiable {
 // MARK: - Reorderable
 extension ItemEntity: Reorderable { }
 
+// MARK: - ManagedObject
+extension ItemEntity: ManagedObject {
+
+	typealias Relationships = Item.Relationships
+
+	typealias Properties = Item.Properties
+
+	static func createObject(in context: NSManagedObjectContext, with properties: Properties, relationships: Relationships?) {
+		let newEntity = ItemEntity(context: context)
+		newEntity.uuid = UUID()
+		newEntity.update(with: properties, relationships: nil)
+	}
+
+	func update(with properties: Properties, relationships: Relationships?) {
+		self.text = properties.title
+		self.isStrikethrough = properties.isStrikethrough
+	}
+
+	var object: Object<Properties, Relationships> {
+		let properties = Properties(title: text ?? "", isStrikethrough: isStrikethrough)
+		return Object(id: id, properties: properties, relationships: nil)
+	}
+}
+
 // MARK: - EntityConvertable
 extension ItemEntity: EntityConvertable {
 

@@ -15,11 +15,27 @@ final class ContentAssembly {
 
 		let storage = Storage(container: persistentContainer)
 
-		let interactor = ContentInteractor(
-			payload: payload,
-			storage: storage,
-			contentProvider: ContentProvider(payload: payload, container: DefaultContainer(base: persistentContainer))
-		)
+		var interactor: ContentInteractorProtocol = switch payload {
+		case .all:
+			ContentInteractor(
+				payload: payload,
+				storage: storage,
+				contentProvider: ContentProvider(payload: payload, container: DefaultContainer(base: persistentContainer))
+			)
+		case .list(let id):
+			ContentInteractor(
+				payload: payload,
+				storage: storage,
+				contentProvider: ContentProvider(payload: payload, container: DefaultContainer(base: persistentContainer))
+			)
+		case .filter(let id):
+			FilteredContent.Interactor(
+				identifier: id,
+				filterProvider: DataProvider<FilterEntity>(container: persistentContainer),
+				itemsProvider: DataProvider<ItemEntity>(container: persistentContainer)
+			)
+		}
+
 		let presenter = ContentPresenter(interactor: interactor)
 		interactor.presenter = presenter
 

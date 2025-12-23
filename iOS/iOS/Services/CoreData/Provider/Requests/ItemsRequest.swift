@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 struct ItemsRequest {
 	let fetchLimit: Int?
@@ -47,5 +48,39 @@ private extension ItemsRequest {
 			return nil
 		}
 		return NSPredicate(format: "ANY tags.uuid IN %@", tags)
+	}
+}
+
+struct ItemsRequestV2 {
+
+	let tags: [UUID]?
+
+	let itemOptions: ItemOptions?
+
+	// MARK: - Initialization
+
+	init(tags: [UUID]? = nil, itemOptions: ItemOptions? = nil) {
+		self.tags = tags
+		self.itemOptions = itemOptions
+	}
+}
+
+// MARK: - ObjectsRequest
+extension ItemsRequestV2: ObjectsRequest {
+
+	typealias Entity = ItemEntity
+
+	var value: NSFetchRequest<Entity> {
+		let request = ItemEntity.fetchRequest()
+
+		var predicates: [NSPredicate] = []
+		if let itemOptions {
+			predicates.append(NSPredicate(format: "rawOptions & %d != 0", argumentArray: [itemOptions.rawValue]))
+		}
+		if let tags {
+			predicates.append(NSPredicate(format: "SUBQUERY(tags, $tag, $tag.uuid IN %@).@count == %d", argumentArray: [tags, tags.count]))
+		}
+		request.predicate = predicates.isEmpty ? nil : NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+		return request
 	}
 }
