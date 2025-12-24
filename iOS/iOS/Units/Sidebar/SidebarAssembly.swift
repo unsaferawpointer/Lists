@@ -13,12 +13,9 @@ final class SidebarAssembly {
 	@MainActor
 	static func build(router: MasterRoutable & MainRoutable, persistentContainer: NSPersistentContainer, selectionDelegate: SelectionDelegate) -> UIViewController {
 
-		let providers = SidebarInteractor.Providers(
-			lists: DataProvider(container: persistentContainer),
-			filters: DataProvider(container: persistentContainer)
-		)
+		let provider = DataProvider(container: persistentContainer)
 
-		let interactor = SidebarInteractor(database: Database(container: persistentContainer), providers: providers)
+		let interactor = SidebarInteractor(database: Database(container: persistentContainer), provider: provider)
 		let presenter = SidebarPresenter(interactor: interactor)
 		interactor.presenter = presenter
 

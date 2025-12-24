@@ -32,23 +32,17 @@ final class SidebarInteractor {
 
 	private let database: any DataManager
 
-	private let providers: Providers
+	private let provider: DataProvider
 
 	// MARK: - Initialization
 
-	init(database: any DataManager, providers: Providers) {
+	init(database: any DataManager, provider: DataProvider) {
 		self.database = database
-		self.providers = providers
+		self.provider = provider
 
 		Task { [weak self] in
-			for await _ in providers.lists.stream {
+			for await _ in provider.stream {
 				try self?.fetchLists()
-			}
-		}
-
-		Task { [weak self] in
-			for await _ in providers.filters.stream {
-				try self?.fetchFilters()
 			}
 		}
 	}
@@ -108,7 +102,7 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 
 	func fetchLists() throws {
 		Task {
-			let lists = try await providers.lists.fetchObjects(with: ListsRequestV2())
+			let lists = try await provider.fetchObjects(with: ListsRequestV2())
 			await MainActor.run { [weak self] in
 				self?.presenter?.present(lists: lists)
 			}
@@ -117,19 +111,10 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 
 	func fetchFilters() throws {
 		Task {
-			let filters = try await providers.filters.fetchObjects(with: FiltersRequestV2())
+			let filters = try await provider.fetchObjects(with: FiltersRequestV2())
 			await MainActor.run { [weak self] in
 				self?.presenter?.present(filters: filters)
 			}
 		}
-	}
-}
-
-// MARK: - Nested Data Structs
-extension SidebarInteractor {
-
-	struct Providers {
-		let lists: any DataProviderProtocol<ListEntity>
-		let filters: any DataProviderProtocol<FilterEntity>
 	}
 }

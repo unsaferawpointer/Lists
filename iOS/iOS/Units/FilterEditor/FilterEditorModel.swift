@@ -27,21 +27,21 @@ final class FilterEditorModel {
 	// MARK: - Services
 
 	@ObservationIgnored
-	let providers: Providers
+	let provider: DataProvider
 
 	@ObservationIgnored
 	let dataManager: any DataManager
 
 	// MARK: - Initialization
 
-	init(id: UUID, dataManager: any DataManager, providers: Providers) {
+	init(id: UUID, dataManager: any DataManager, provider: DataProvider) {
 		self.id = id
 		self.dataManager = dataManager
-		self.providers = providers
+		self.provider = provider
 		Task {
 			let request = TagsRequestV2()
-			for await _ in providers.tags.stream {
-				let tags = try await providers.tags.fetchObjects(with: request)
+			for await _ in provider.stream {
+				let tags = try await provider.fetchObjects(with: request)
 				self.tags = tags.map {
 					Tag(uuid: $0.id, properties: .init(name: $0.properties.name))
 				}
@@ -58,11 +58,11 @@ extension FilterEditorModel {
 			self.isLoading = true
 		}
 		let request = FilterRequestV2(identifier: id)
-		guard let filters = try? await providers.filter.fetchObjects(with: request), let first = filters.first else {
+		guard let filters = try? await provider.fetchObjects(with: request), let first = filters.first else {
 			return
 		}
 		let tagsRequest = TagsRequestV2()
-		guard let tags = try? await providers.tags.fetchObjects(with: tagsRequest) else {
+		guard let tags = try? await provider.fetchObjects(with: tagsRequest) else {
 			return
 		}
 		await MainActor.run {
@@ -83,14 +83,5 @@ extension FilterEditorModel {
 			self.isLoading = true
 		}
 		try? await dataManager.updateObjects(request: request, properties: properties, relationships: relationships)
-	}
-}
-
-// MARK: - Nested Data Structs
-extension FilterEditorModel {
-
-	struct Providers {
-		let filter: any DataProviderProtocol<FilterEntity>
-		let tags: any DataProviderProtocol<TagEntity>
 	}
 }

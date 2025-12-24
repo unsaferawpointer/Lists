@@ -45,11 +45,8 @@ extension SidebarCoordinator: SidebarCoordinatable {
 
 	func presentFilterEditor(with id: UUID) {
 		let dataManager = Database(container: persistentContainer)
-		let providers = FilterEditorModel.Providers(
-			filter: DataProvider<FilterEntity>(container: persistentContainer),
-			tags: DataProvider<TagEntity>(container: persistentContainer)
-		)
-		let model = FilterEditorModel(id: id, dataManager: dataManager, providers: providers)
+		let provider = DataProvider(container: persistentContainer)
+		let model = FilterEditorModel(id: id, dataManager: dataManager, provider: provider)
 		let view = FilterEditor(model: model) { [weak self] in
 			self?.router.dismissInMasterViewController()
 		}

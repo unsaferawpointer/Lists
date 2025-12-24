@@ -31,8 +31,7 @@ final class ContentAssembly {
 		case .filter(let id):
 			FilteredContent.Interactor(
 				identifier: id,
-				filterProvider: DataProvider<FilterEntity>(container: persistentContainer),
-				itemsProvider: DataProvider<ItemEntity>(container: persistentContainer)
+				provider: DataProvider(container: persistentContainer)
 			)
 		}
 

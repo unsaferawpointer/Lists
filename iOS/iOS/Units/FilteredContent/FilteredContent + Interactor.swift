@@ -20,24 +20,16 @@ extension FilteredContent {
 
 		private let identifier: UUID
 
-		private let filterProvider: DataProvider<FilterEntity>
-
-		private let itemsProvider: DataProvider<ItemEntity>
+		private let provider: DataProvider
 
 		// MARK: - Initialization
 
-		init(identifier: UUID, filterProvider: DataProvider<FilterEntity>, itemsProvider: DataProvider<ItemEntity>) {
+		init(identifier: UUID, provider: DataProvider) {
 			self.identifier = identifier
-			self.filterProvider = filterProvider
-			self.itemsProvider = itemsProvider
+			self.provider = provider
 
 			Task { [weak self] in
-				for await _ in filterProvider.stream {
-					self?.fetchData()
-				}
-			}
-			Task { [weak self] in
-				for await _ in itemsProvider.stream {
+				for await _ in provider.stream {
 					self?.fetchData()
 				}
 			}
@@ -51,11 +43,11 @@ extension FilteredContent.Interactor: ContentInteractorProtocol {
 	func fetchItems() async throws {
 		Task {
 			let filterRequest = FilterRequestV2(identifier: identifier)
-			guard let filters = try? await filterProvider.fetchObjects(with: filterRequest), let filter = filters.first else {
+			guard let filters = try? await provider.fetchObjects(with: filterRequest), let filter = filters.first else {
 				return
 			}
 			let itemsRequest = ItemsRequestV2(tags: filter.relationships?.tags?.map(\.self), itemOptions: filter.properties.itemOptions)
-			guard let items = try? await itemsProvider.fetchObjects(with: itemsRequest) else {
+			guard let items = try? await provider.fetchObjects(with: itemsRequest) else {
 				return
 			}
 			await MainActor.run { [weak self] in
@@ -103,11 +95,11 @@ private extension FilteredContent.Interactor {
 	func fetchData() {
 		Task {
 			let filterRequest = FilterRequestV2(identifier: identifier)
-			guard let filters = try? await filterProvider.fetchObjects(with: filterRequest), let filter = filters.first else {
+			guard let filters = try? await provider.fetchObjects(with: filterRequest), let filter = filters.first else {
 				return
 			}
 			let itemsRequest = ItemsRequestV2(tags: filter.relationships?.tags?.map(\.self), itemOptions: filter.properties.itemOptions)
-			guard let items = try? await itemsProvider.fetchObjects(with: itemsRequest) else {
+			guard let items = try? await provider.fetchObjects(with: itemsRequest) else {
 				return
 			}
 			await MainActor.run { [weak self] in
