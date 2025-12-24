@@ -65,7 +65,7 @@ extension ContentCoordinator: ContentCoordinatable {
 	func presentTagsPicker(preselected: Set<UUID>, completion: @escaping @MainActor @Sendable (Bool, Set<UUID>) -> Void) {
 		let provider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
 
-		let model = TagsPickerModel(selected: preselected, provider: provider)
+		let model = TagsPicker.Model(selected: preselected, provider: provider)
 		let view = TagsPicker(model: model) { [weak self] isSuccess, selected in
 			self?.router.dismissInDetailsViewController()
 			completion(isSuccess, selected)

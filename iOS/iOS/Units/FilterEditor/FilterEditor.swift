@@ -15,6 +15,8 @@ struct FilterEditor: View {
 
 	@FocusState var inFocus: Bool
 
+	@State var tagsPickerIsPresented: Bool = false
+
 	let validator = ListValidator()
 
 	var validationResult: ListValidator.ValidationResult {
@@ -33,14 +35,14 @@ struct FilterEditor: View {
 			Group {
 				if !model.isLoading {
 					Form {
-						Section {
-							TextField("Enter a name", text: $model.properties.name)
-								.focused($inFocus)
-								.onAppear {
-									inFocus = true
-								}
-						} header: {
-							Text("Title")
+						Section.init {
+							LabeledContent("Name:") {
+								TextField("Required", text: $model.properties.name)
+									.focused($inFocus)
+									.onAppear {
+										inFocus = true
+									}
+							}
 						} footer: {
 							switch validationResult {
 							case .success:
@@ -49,12 +51,13 @@ struct FilterEditor: View {
 								Text(error.errorDescription ?? "")
 							}
 						}
+
 						Section("Icons") {
 							IconPicker(selectedIcon: $model.properties.icon)
 						}
 
-						Section {
-							Picker("Strikethrough", selection: .init(get: {
+						LabeledContent("Strikethrough:") {
+							Picker("", selection: .init(get: {
 								model.properties.itemOptions?.isStrikethrough
 							}, set: { newValue in
 								guard let newValue else {
@@ -75,9 +78,21 @@ struct FilterEditor: View {
 								Text("Not Strikethrough")
 									.tag(false)
 							}
+							.labelsHidden()
 						}
-						Section("Tags") {
+
+
+						NavigationLink {
 							tagsPicker()
+						} label: {
+							HStack {
+								Text("Tags:")
+									.lineLimit(1)
+								Spacer()
+								Text(model.tagsDescription)
+									.foregroundStyle(.secondary)
+									.lineLimit(1)
+							}
 						}
 					}
 					.formStyle(.grouped)
@@ -89,22 +104,7 @@ struct FilterEditor: View {
 			.navigationTitle("Edit Filter")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
-				ToolbarItem(placement: .confirmationAction) {
-					Button(role: .confirm) {
-						Task {
-							await model.save()
-							await MainActor.run {
-								completion?()
-							}
-						}
-					}
-					.disabled(!validationResult.isSuccess || model.isLoading)
-				}
-				ToolbarItem(placement: .cancellationAction) {
-					Button(role: .close) {
-						completion?()
-					}
-				}
+				buildToolbar()
 			}
 		}
 		.task {
@@ -116,23 +116,45 @@ struct FilterEditor: View {
 // MARK: - Helpers
 private extension FilterEditor {
 
-	@ViewBuilder
-	func tagsPicker() -> some View {
-		ForEach(model.tags) { tag in
-			HStack {
-				Label(tag.name, systemImage: "tag")
-				Spacer()
-				if model.relationships.tags?.contains(tag.id) == true {
-					Image(systemName: "checkmark")
-						.foregroundColor(.primary)
+	@ToolbarContentBuilder
+	func buildToolbar() -> some ToolbarContent {
+		ToolbarItem(placement: .confirmationAction) {
+			Button(role: .confirm) {
+				Task {
+					await model.save()
+					await MainActor.run {
+						completion?()
+					}
 				}
 			}
-			.contentShape(Rectangle())
-			.onTapGesture {
-				if model.relationships.tags?.contains(tag.id) == true {
-					model.relationships.tags?.remove(tag.id)
-				} else {
-					model.relationships.tags?.insert(tag.id)
+			.disabled(!validationResult.isSuccess || model.isLoading)
+		}
+		ToolbarItem(placement: .cancellationAction) {
+			Button(role: .close) {
+				completion?()
+			}
+		}
+	}
+
+	@ViewBuilder
+	func tagsPicker() -> some View {
+		Form {
+			ForEach(model.tags) { tag in
+				HStack {
+					Label(tag.name, systemImage: "tag")
+					Spacer()
+					if model.relationships.tags?.contains(tag.id) == true {
+						Image(systemName: "checkmark")
+							.foregroundColor(.primary)
+					}
+				}
+				.contentShape(Rectangle())
+				.onTapGesture {
+					if model.relationships.tags?.contains(tag.id) == true {
+						model.relationships.tags?.remove(tag.id)
+					} else {
+						model.relationships.tags?.insert(tag.id)
+					}
 				}
 			}
 		}

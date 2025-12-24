@@ -50,6 +50,18 @@ final class FilterEditorModel {
 	}
 }
 
+// MARK: - Computed Properties
+extension FilterEditorModel {
+
+	var tagsDescription: String {
+		tags.filter { tag in
+			relationships.tags?.contains(tag.id) == true
+		}.map {
+			$0.name
+		}.joined(separator: ", ")
+	}
+}
+
 // MARK: - Public Interface
 extension FilterEditorModel {
 

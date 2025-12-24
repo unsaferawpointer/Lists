@@ -1,0 +1,34 @@
+//
+//  TagsPickerModel.swift
+//  iOS
+//
+//  Created by Anton Cherkasov on 09.12.2025.
+//
+
+import Foundation
+
+extension TagsPicker {
+
+	@Observable
+	final class Model {
+
+		var selected: Set<UUID>
+
+		var tags: [Tag] = []
+
+		@ObservationIgnored
+		let provider: ModelsProvider<Tag>
+
+		// MARK: - Initialization
+
+		init(selected: Set<UUID>, provider: ModelsProvider<Tag>) {
+			self.selected = selected
+			self.provider = provider
+			Task { @MainActor in
+				for await change in await provider.stream() {
+					self.tags = change
+				}
+			}
+		}
+	}
+}

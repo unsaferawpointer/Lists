@@ -9,13 +9,13 @@ import SwiftUI
 
 struct TagsPicker {
 
-	var model: TagsPickerModel
+	var model: TagsPicker.Model
 
 	var completion: (Bool, Set<UUID>) -> Void
 
 	// MARK: - Initialization
 
-	init(model: TagsPickerModel, completion: @escaping (Bool, Set<UUID>) -> Void) {
+	init(model: TagsPicker.Model, completion: @escaping (Bool, Set<UUID>) -> Void) {
 		self.model = model
 		self.completion = completion
 	}
@@ -29,7 +29,7 @@ extension TagsPicker: View {
 			Form {
 				ForEach(model.tags) { tag in
 					HStack {
-						Label(tag.name, systemImage: tag.properties.icon?.iconName ?? "list")
+						Label(tag.name, systemImage: tag.properties.icon?.iconName ?? "tag")
 						Spacer()
 						if model.selected.contains(tag.id) {
 							Image(systemName: "checkmark")
