@@ -16,7 +16,7 @@ final class FilterEditorModel {
 
 	var properties: Filter.Properties = .init(name: "")
 
-	var relationships: Filter.Relationships = .init()
+	var relationships: Filter.Relationships = .init(tagsMatchType: .any)
 
 	var isLoading = false
 
@@ -54,62 +54,59 @@ final class FilterEditorModel {
 extension FilterEditorModel {
 
 	var tagsDescription: String {
-		tags.filter { tag in
+		guard relationships.tags?.isEmpty == false else {
+			return "Not Selected"
+		}
+		return tags.filter { tag in
 			relationships.tags?.contains(tag.id) == true
 		}.map {
 			$0.name
 		}.joined(separator: ", ")
+	}
+
+	var tagsFilterDescription: String {
+		guard relationships.tags?.isEmpty == false else {
+			return "No tags selected"
+		}
+		return relationships.tagsMatchType.description
 	}
 }
 
 // MARK: - Public Interface
 extension FilterEditorModel {
 
+	@MainActor
 	func fetchData() async {
-		await MainActor.run {
-			self.isLoading = true
+		self.isLoading = true
+
+		let tagsRequest = TagsRequestV2()
+		guard let tags = try? await provider.fetchObjects(with: tagsRequest) else {
+			return
 		}
+		self.tags = tags.map {
+			Tag(uuid: $0.id, properties: .init(name: $0.properties.name))
+		}
+
 		if let id {
 			let request = FilterRequestV2(identifier: id)
 			guard let filters = try? await provider.fetchObjects(with: request), let first = filters.first else {
 				return
 			}
-			let tagsRequest = TagsRequestV2()
-			guard let tags = try? await provider.fetchObjects(with: tagsRequest) else {
-				return
-			}
-			await MainActor.run {
-				self.properties = first.properties
-				self.relationships = first.relationships ?? .init()
-
-				self.tags = tags.map {
-					Tag(uuid: $0.id, properties: .init(name: $0.properties.name))
-				}
-			}
-		} else {
-			let tagsRequest = TagsRequestV2()
-			guard let tags = try? await provider.fetchObjects(with: tagsRequest) else {
-				return
-			}
-			await MainActor.run {
-				self.tags = tags.map {
-					Tag(uuid: $0.id, properties: .init(name: $0.properties.name))
-				}
-			}
+			self.properties = first.properties
+			self.relationships = first.relationships ?? .init(tagsMatchType: .any)
 		}
 		self.isLoading = false
 	}
 
+	@MainActor
 	func save() async {
-		await MainActor.run {
-			self.isLoading = true
-		}
-		if let id {
-			let request = FilterRequestV2(identifier: id)
-			try? await dataManager.updateObjects(request: request, properties: properties, relationships: relationships)
-		} else {
+		self.isLoading = true
+		guard let id else {
 			try? await dataManager.insertObject(type: FilterEntity.self, properties: properties, relationships: relationships)
+			return
 		}
-
+		let request = FilterRequestV2(identifier: id)
+		try? await dataManager.updateObjects(request: request, properties: properties, relationships: relationships)
 	}
 }
+

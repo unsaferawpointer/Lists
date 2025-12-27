@@ -57,7 +57,7 @@ struct FilterEditor: View {
 							}
 						}
 						Section {
-							LabeledContent("Strikethrough:") {
+							LabeledContent("Strikethrough") {
 								Picker("", selection: .init(get: {
 									model.properties.itemOptions?.isStrikethrough
 								}, set: { newValue in
@@ -83,17 +83,10 @@ struct FilterEditor: View {
 							}
 						}
 						Section {
-							Picker(selection: .init(get: {
-								model.relationships.tagsMatchType ?? .any
-							}, set: { newValue in
-								model.relationships.tagsMatchType = newValue
-							})) {
-								Text("Any")
-									.tag(Optional<TagsFilter.MatchType>.some(.any))
-								Text("All")
-									.tag(Optional<TagsFilter.MatchType>.some(.all))
-								Text("Not")
-									.tag(Optional<TagsFilter.MatchType>.some(.not))
+							Picker(selection: $model.relationships.tagsMatchType) {
+								ForEach(TagsFilter.MatchType.allCases, id: \.self) { type in
+									Text(type.title)
+								}
 							} label: {
 								Text("Match Type")
 							}
@@ -110,6 +103,8 @@ struct FilterEditor: View {
 										.lineLimit(1)
 								}
 							}
+						} footer: {
+							Text(model.tagsFilterDescription)
 						}
 					}
 					.formStyle(.grouped)
@@ -181,6 +176,7 @@ private extension FilterEditor {
 					}
 				}
 			}
+			.navigationTitle("Choose Tags")
 		} else {
 			ContentUnavailableView("No Tags", systemImage: "tag", description: Text("Add tag"))
 		}

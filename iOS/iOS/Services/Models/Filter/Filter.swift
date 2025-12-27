@@ -54,7 +54,7 @@ extension Filter {
 	}
 
 	struct Relationships {
-		var tagsMatchType: TagsFilter.MatchType?
+		var tagsMatchType: TagsFilter.MatchType
 		var tags: Set<UUID>?
 	}
 }

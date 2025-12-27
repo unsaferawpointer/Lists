@@ -26,7 +26,7 @@ extension FilterEntity {
 
 	@NSManaged public var rawIcon: Int64
 	@NSManaged public var rawItemOptions: NSNumber?
-	@NSManaged public var rawTagsMatchType: NSNumber?
+	@NSManaged public var rawTagsMatchType: Int64
 
 	// MARK: - Relationship
 
@@ -60,13 +60,9 @@ extension FilterEntity: ManagedObject {
 		self.icon = properties.icon
 		self.itemOptions = properties.itemOptions
 
-		guard
-			let context = managedObjectContext,
-			let tags = relationships?.tags.map(\.self),
-			let rawTagsMatchType = relationships?.tagsMatchType?.rawValue
-		else {
+		guard let context = managedObjectContext, let tags = relationships?.tags.map(\.self), let tagsMatchType = relationships?.tagsMatchType else {
 			self.tags = nil
-			self.rawTagsMatchType = nil
+			self.rawTagsMatchType = 0
 			return
 		}
 
@@ -77,13 +73,13 @@ extension FilterEntity: ManagedObject {
 			return
 		}
 		self.tags = NSSet(array: entities)
-		self.rawTagsMatchType = NSNumber(value: rawTagsMatchType)
+		self.rawTagsMatchType = tagsMatchType.rawValue
 	}
 
 	var object: Object<Properties, Relationships> {
 		let properties = Properties(name: title ?? "", icon: icon, itemOptions: itemOptions)
 		let relationships = Relationships(
-			tagsMatchType: .init(rawValue: rawTagsMatchType?.int64Value ?? 0),
+			tagsMatchType: .init(rawValue: rawTagsMatchType) ?? .any,
 			tags: Set((tags as? Set<TagEntity>)?.map(\.id) ?? [])
 		)
 		return Object(id: id, properties: properties, relationships: relationships)
@@ -133,8 +129,8 @@ extension FilterEntity {
 	var tagsFilter: TagsFilter? {
 		get {
 			guard
-				let tags = self.tags as? Set<TagEntity>, let rawMatchType = rawTagsMatchType?.int64Value,
-				let matchType = TagsFilter.MatchType(rawValue: rawMatchType)
+				let tags = self.tags as? Set<TagEntity>,
+				let matchType = TagsFilter.MatchType(rawValue: rawTagsMatchType)
 			else {
 				return nil
 			}
