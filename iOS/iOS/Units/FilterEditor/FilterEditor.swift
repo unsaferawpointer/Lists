@@ -42,7 +42,7 @@ struct FilterEditor: View {
 									}
 							}
 							NavigationLink {
-								IconPicker(selectedIcon: $model.properties.icon)
+								IconPicker(selected: $model.properties.icon)
 							} label: {
 								LabeledContent("Icon") {
 									Image(systemName: model.properties.icon?.iconName ?? "tag")

@@ -7,27 +7,20 @@
 
 import SwiftUI
 
-extension Icon: Identifiable {
-
-	var id: RawValue { rawValue }
-}
-
 struct IconPicker {
 
 	let icons: [Icon]
-	let columns: Int
 
-	@Binding var selectedIcon: Icon?
+	@Binding var selected: Icon?
 
-	private let gridItem: GridItem
+	let columns: [GridItem] = [GridItem(.adaptive(minimum: 64), spacing: 24)]
+
 
 	// MARK: - Initialization
 
-	init(icons: [Icon] = Icon.allCases, selectedIcon: Binding<Icon?>, columns: Int = 1) {
+	init(icons: [Icon] = Icon.allCases, selected: Binding<Icon?>) {
 		self.icons = icons
-		self._selectedIcon = selectedIcon
-		self.columns = columns
-		self.gridItem = GridItem(.flexible())
+		self._selected = selected
 	}
 }
 
@@ -35,20 +28,20 @@ struct IconPicker {
 extension IconPicker: View {
 
 	var body: some View {
-		ScrollView(.horizontal, showsIndicators: false) {
-			LazyHGrid(rows: Array(repeating: gridItem, count: columns), spacing: 16) {
-				ForEach(icons) { icon in
+		Form {
+			LazyVGrid(columns: columns, spacing: 15) {
+				ForEach(icons, id: \.self) { icon in
 					IconCell(
 						icon: icon,
-						isSelected: selectedIcon?.id == icon.id
+						isSelected: selected?.id == icon.id
 					)
 					.onTapGesture {
-						selectedIcon = icon
+						selected = icon
 					}
 				}
 			}
 		}
-		.frame(height: CGFloat(columns) * 80) // Высота зависит от количества рядов
+		.navigationTitle("Choose icon")
 	}
 }
 
@@ -83,5 +76,5 @@ struct IconCell: View {
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-	IconPicker(selectedIcon: .constant(.cloud))
+	IconPicker(selected: .constant(.cloud))
 }

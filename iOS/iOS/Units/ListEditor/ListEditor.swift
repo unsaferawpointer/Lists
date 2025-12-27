@@ -47,7 +47,7 @@ struct ListEditor: View {
 						Text(error.errorDescription ?? "")
 					}
 				}
-				IconPicker(selectedIcon: $model.icon)
+				IconPicker(selected: $model.icon)
 			}
 			.formStyle(.grouped)
 			.navigationTitle("Edit List")

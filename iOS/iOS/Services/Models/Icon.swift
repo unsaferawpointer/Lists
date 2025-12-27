@@ -62,5 +62,13 @@ extension Icon {
 	}
 }
 
+// MARK: - Identifiable
+extension Icon: Identifiable {
+
+	var id: RawValue {
+		return rawValue
+	}
+}
+
 // MARK: - CaseIterable
 extension Icon: CaseIterable { }
