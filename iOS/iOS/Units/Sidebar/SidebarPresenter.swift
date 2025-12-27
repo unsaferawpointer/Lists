@@ -106,13 +106,7 @@ extension SidebarPresenter: SidebarViewDelegate {
 	}
 
 	func newFilter() {
-//		let properties = Filter.Properties(name: "")
-//		coordinator?.presentFilterEditor(with: properties, andTags: []) { [weak self] isSuccess, newProperties, tags in
-//			guard isSuccess else {
-//				return
-//			}
-//			try? self?.interactor?.addFilter(with: newProperties)
-//		}
+		coordinator?.presentFilterEditor(with: nil)
 	}
 
 	func moveList(with id: UUID, to destination: RelativeDestination<UUID>) {

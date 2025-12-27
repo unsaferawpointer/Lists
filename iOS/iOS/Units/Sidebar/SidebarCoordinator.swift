@@ -13,7 +13,7 @@ import SwiftUI
 @MainActor
 protocol SidebarCoordinatable {
 	func presentListEditor(with model: ListEditorModel, completion: @escaping (Bool, ListEditorModel) -> Void)
-	func presentFilterEditor(with id: UUID)
+	func presentFilterEditor(with id: UUID?)
 	func openWindow(for payload: ContentPayload)
 }
 
@@ -43,7 +43,7 @@ extension SidebarCoordinator: SidebarCoordinatable {
 		router.presentInMaster(viewController: UIHostingController(rootView: view))
 	}
 
-	func presentFilterEditor(with id: UUID) {
+	func presentFilterEditor(with id: UUID?) {
 		let dataManager = Database(container: persistentContainer)
 		let provider = DataProvider(container: persistentContainer)
 		let model = FilterEditorModel(id: id, dataManager: dataManager, provider: provider)

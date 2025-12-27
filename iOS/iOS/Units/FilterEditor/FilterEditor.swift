@@ -15,8 +15,6 @@ struct FilterEditor: View {
 
 	@FocusState var inFocus: Bool
 
-	@State var tagsPickerIsPresented: Bool = false
-
 	let validator = ListValidator()
 
 	var validationResult: ListValidator.ValidationResult {
@@ -35,13 +33,20 @@ struct FilterEditor: View {
 			Group {
 				if !model.isLoading {
 					Form {
-						Section.init {
-							LabeledContent("Name:") {
+						Section {
+							LabeledContent("Name") {
 								TextField("Required", text: $model.properties.name)
 									.focused($inFocus)
 									.onAppear {
 										inFocus = true
 									}
+							}
+							NavigationLink {
+								IconPicker(selectedIcon: $model.properties.icon)
+							} label: {
+								LabeledContent("Icon") {
+									Image(systemName: model.properties.icon?.iconName ?? "tag")
+								}
 							}
 						} footer: {
 							switch validationResult {
@@ -51,47 +56,59 @@ struct FilterEditor: View {
 								Text(error.errorDescription ?? "")
 							}
 						}
-
-						Section("Icons") {
-							IconPicker(selectedIcon: $model.properties.icon)
+						Section {
+							LabeledContent("Strikethrough:") {
+								Picker("", selection: .init(get: {
+									model.properties.itemOptions?.isStrikethrough
+								}, set: { newValue in
+									guard let newValue else {
+										model.properties.itemOptions = nil
+										return
+									}
+									if newValue {
+										model.properties.itemOptions = [.strikethrough]
+									} else {
+										model.properties.itemOptions = []
+									}
+								})) {
+									Text("Any")
+										.tag(Optional<Bool>.none)
+									Divider()
+									Text("Strikethrough")
+										.tag(true)
+									Text("Not Strikethrough")
+										.tag(false)
+								}
+								.labelsHidden()
+							}
 						}
-
-						LabeledContent("Strikethrough:") {
-							Picker("", selection: .init(get: {
-								model.properties.itemOptions?.isStrikethrough
+						Section {
+							Picker(selection: .init(get: {
+								model.relationships.tagsMatchType ?? .any
 							}, set: { newValue in
-								guard let newValue else {
-									model.properties.itemOptions = nil
-									return
-								}
-								if newValue {
-									model.properties.itemOptions = [.strikethrough]
-								} else {
-									model.properties.itemOptions = []
-								}
+								model.relationships.tagsMatchType = newValue
 							})) {
 								Text("Any")
-									.tag(Optional<Bool>.none)
-								Divider()
-								Text("Strikethrough")
-									.tag(true)
-								Text("Not Strikethrough")
-									.tag(false)
+									.tag(Optional<TagsFilter.MatchType>.some(.any))
+								Text("All")
+									.tag(Optional<TagsFilter.MatchType>.some(.all))
+								Text("Not")
+									.tag(Optional<TagsFilter.MatchType>.some(.not))
+							} label: {
+								Text("Match Type")
 							}
-							.labelsHidden()
-						}
 
-
-						NavigationLink {
-							tagsPicker()
-						} label: {
-							HStack {
-								Text("Tags:")
-									.lineLimit(1)
-								Spacer()
-								Text(model.tagsDescription)
-									.foregroundStyle(.secondary)
-									.lineLimit(1)
+							NavigationLink {
+								tagsPicker()
+							} label: {
+								HStack {
+									Text("Tags:")
+										.lineLimit(1)
+									Spacer()
+									Text(model.tagsDescription)
+										.foregroundStyle(.secondary)
+										.lineLimit(1)
+								}
 							}
 						}
 					}
@@ -137,26 +154,35 @@ private extension FilterEditor {
 	}
 
 	@ViewBuilder
+	func buildIconPicker() -> some View {
+
+	}
+
+	@ViewBuilder
 	func tagsPicker() -> some View {
-		Form {
-			ForEach(model.tags) { tag in
-				HStack {
-					Label(tag.name, systemImage: "tag")
-					Spacer()
-					if model.relationships.tags?.contains(tag.id) == true {
-						Image(systemName: "checkmark")
-							.foregroundColor(.primary)
+		if !model.tags.isEmpty {
+			Form {
+				ForEach(model.tags) { tag in
+					HStack {
+						Label(tag.name, systemImage: "tag")
+						Spacer()
+						if model.relationships.tags?.contains(tag.id) == true {
+							Image(systemName: "checkmark")
+								.foregroundColor(.primary)
+						}
 					}
-				}
-				.contentShape(Rectangle())
-				.onTapGesture {
-					if model.relationships.tags?.contains(tag.id) == true {
-						model.relationships.tags?.remove(tag.id)
-					} else {
-						model.relationships.tags?.insert(tag.id)
+					.contentShape(Rectangle())
+					.onTapGesture {
+						if model.relationships.tags?.contains(tag.id) == true {
+							model.relationships.tags?.remove(tag.id)
+						} else {
+							model.relationships.tags?.insert(tag.id)
+						}
 					}
 				}
 			}
+		} else {
+			ContentUnavailableView("No Tags", systemImage: "tag", description: Text("Add tag"))
 		}
 	}
 }

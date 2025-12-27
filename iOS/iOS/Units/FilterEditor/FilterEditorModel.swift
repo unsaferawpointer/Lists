@@ -12,7 +12,7 @@ final class FilterEditorModel {
 
 	// MARK: - Basic Data
 
-	let id: UUID
+	let id: UUID?
 
 	var properties: Filter.Properties = .init(name: "")
 
@@ -34,7 +34,7 @@ final class FilterEditorModel {
 
 	// MARK: - Initialization
 
-	init(id: UUID, dataManager: any DataManager, provider: DataProvider) {
+	init(id: UUID?, dataManager: any DataManager, provider: DataProvider) {
 		self.id = id
 		self.dataManager = dataManager
 		self.provider = provider
@@ -69,31 +69,47 @@ extension FilterEditorModel {
 		await MainActor.run {
 			self.isLoading = true
 		}
-		let request = FilterRequestV2(identifier: id)
-		guard let filters = try? await provider.fetchObjects(with: request), let first = filters.first else {
-			return
-		}
-		let tagsRequest = TagsRequestV2()
-		guard let tags = try? await provider.fetchObjects(with: tagsRequest) else {
-			return
-		}
-		await MainActor.run {
-			self.properties = first.properties
-			self.relationships = first.relationships ?? .init()
-
-			self.tags = tags.map {
-				Tag(uuid: $0.id, properties: .init(name: $0.properties.name))
+		if let id {
+			let request = FilterRequestV2(identifier: id)
+			guard let filters = try? await provider.fetchObjects(with: request), let first = filters.first else {
+				return
 			}
+			let tagsRequest = TagsRequestV2()
+			guard let tags = try? await provider.fetchObjects(with: tagsRequest) else {
+				return
+			}
+			await MainActor.run {
+				self.properties = first.properties
+				self.relationships = first.relationships ?? .init()
 
-			self.isLoading = false
+				self.tags = tags.map {
+					Tag(uuid: $0.id, properties: .init(name: $0.properties.name))
+				}
+			}
+		} else {
+			let tagsRequest = TagsRequestV2()
+			guard let tags = try? await provider.fetchObjects(with: tagsRequest) else {
+				return
+			}
+			await MainActor.run {
+				self.tags = tags.map {
+					Tag(uuid: $0.id, properties: .init(name: $0.properties.name))
+				}
+			}
 		}
+		self.isLoading = false
 	}
 
 	func save() async {
-		let request = FilterRequestV2(identifier: id)
 		await MainActor.run {
 			self.isLoading = true
 		}
-		try? await dataManager.updateObjects(request: request, properties: properties, relationships: relationships)
+		if let id {
+			let request = FilterRequestV2(identifier: id)
+			try? await dataManager.updateObjects(request: request, properties: properties, relationships: relationships)
+		} else {
+			try? await dataManager.insertObject(type: FilterEntity.self, properties: properties, relationships: relationships)
+		}
+
 	}
 }
