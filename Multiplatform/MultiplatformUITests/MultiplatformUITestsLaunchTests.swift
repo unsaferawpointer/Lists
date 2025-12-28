@@ -1,13 +1,13 @@
 //
-//  ListsUITestsLaunchTests.swift
-//  ListsUITests
+//  MultiplatformUITestsLaunchTests.swift
+//  MultiplatformUITests
 //
-//  Created by Anton Cherkasov on 05.10.2025.
+//  Created by Anton Cherkasov on 28.12.2025.
 //
 
 import XCTest
 
-final class ListsUITestsLaunchTests: XCTestCase {
+final class MultiplatformUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

@@ -1,13 +1,13 @@
 //
-//  ListsTests.swift
-//  ListsTests
+//  MultiplatformTests.swift
+//  MultiplatformTests
 //
-//  Created by Anton Cherkasov on 05.10.2025.
+//  Created by Anton Cherkasov on 28.12.2025.
 //
 
 import Testing
 
-struct ListsTests {
+struct MultiplatformTests {
 
     @Test func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.

@@ -1,13 +1,13 @@
 //
-//  ListsUITests.swift
-//  ListsUITests
+//  MultiplatformUITests.swift
+//  MultiplatformUITests
 //
-//  Created by Anton Cherkasov on 05.10.2025.
+//  Created by Anton Cherkasov on 28.12.2025.
 //
 
 import XCTest
 
-final class ListsUITests: XCTestCase {
+final class MultiplatformUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
