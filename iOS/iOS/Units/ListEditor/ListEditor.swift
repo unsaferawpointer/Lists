@@ -47,7 +47,13 @@ struct ListEditor: View {
 						Text(error.errorDescription ?? "")
 					}
 				}
-				IconPicker(selected: $model.icon)
+				NavigationLink {
+					IconPicker(selected: $model.icon)
+				} label: {
+					LabeledContent("Icon") {
+						Image(systemName: model.icon?.iconName ?? "tag")
+					}
+				}
 			}
 			.formStyle(.grouped)
 			.navigationTitle("Edit List")
