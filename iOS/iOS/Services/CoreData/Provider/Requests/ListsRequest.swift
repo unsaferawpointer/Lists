@@ -8,35 +8,10 @@
 import Foundation
 import CoreData
 
-struct ListsRequest {
-	let uuid: UUID?
-}
-
-// MARK: - RequestRepresentable
-extension ListsRequest: RequestRepresentable {
-
-	typealias Entity = ListEntity
-
-	var fetchLimit: Int? {
-		return uuid != nil ? 1 : nil
-	}
-
-	var nsPredicate: NSPredicate? {
-		guard let id = uuid else {
-			return nil
-		}
-		return NSPredicate(format: "uuid == %@", argumentArray: [id])
-	}
-	
-	var nsSortDescriptors: [NSSortDescriptor]? {
-		return [NSSortDescriptor(keyPath: \ListEntity.offset, ascending: true)]
-	}
-}
-
-struct ListsRequestV2 { }
+struct ListsRequest { }
 
 // MARK: - ObjectsRequest
-extension ListsRequestV2: ObjectsRequest {
+extension ListsRequest: ObjectsRequest {
 
 	typealias Entity = ListEntity
 

@@ -71,7 +71,7 @@ extension TagsEditor: View {
 			}
 		}
 		.task {
-			try? await model.provider.fetchData()
+			await model.fetchTags()
 		}
 	}
 }

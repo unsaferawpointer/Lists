@@ -8,35 +8,10 @@
 import Foundation
 import CoreData
 
-struct FilterRequest {
-	let uuid: UUID?
-}
-
-// MARK: - RequestRepresentable
-extension FilterRequest: RequestRepresentable {
-
-	typealias Entity = FilterEntity
-
-	var fetchLimit: Int? {
-		return uuid != nil ? 1 : nil
-	}
-
-	var nsPredicate: NSPredicate? {
-		guard let id = uuid else {
-			return nil
-		}
-		return NSPredicate(format: "uuid == %@", argumentArray: [id])
-	}
-
-	var nsSortDescriptors: [NSSortDescriptor]? {
-		return [NSSortDescriptor(keyPath: \FilterEntity.title, ascending: true)]
-	}
-}
-
-struct FiltersRequestV2 { }
+struct FiltersRequest { }
 
 // MARK: - ObjectsRequest
-extension FiltersRequestV2: ObjectsRequest {
+extension FiltersRequest: ObjectsRequest {
 
 	typealias Entity = FilterEntity
 
@@ -45,7 +20,7 @@ extension FiltersRequestV2: ObjectsRequest {
 	}
 }
 
-struct FilterRequestV2 {
+struct FilterRequest {
 
 	let identifier: UUID
 
@@ -55,7 +30,7 @@ struct FilterRequestV2 {
 }
 
 // MARK: - ObjectsRequest
-extension FilterRequestV2: ObjectsRequest {
+extension FilterRequest: ObjectsRequest {
 
 	typealias Entity = FilterEntity
 

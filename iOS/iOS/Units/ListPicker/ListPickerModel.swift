@@ -12,18 +12,33 @@ final class ListPickerModel {
 
 	var selected: UUID?
 
-	var lists: [List] = []
+	var lists: [Object<List.Properties, List.Relationships>] = []
 
 	@ObservationIgnored
-	let provider: ModelsProvider<List>
+	let provider: DataProvider
 
-	init(selected: UUID?, provider: ModelsProvider<List>) {
+	// MARK: - Initialization
+
+	init(selected: UUID?, provider: DataProvider) {
 		self.selected = selected
 		self.provider = provider
-		Task { @MainActor in
-			for await change in await provider.stream() {
-				self.lists = change
+		Task {
+			for await _ in provider.stream {
+				await fetchData()
 			}
 		}
+	}
+}
+
+// MARK: - Public Interface
+extension ListPickerModel {
+
+	@MainActor
+	func fetchData() async {
+		let request = ListsRequest()
+		guard let fetchedLists = try? await provider.fetchObjects(with: request) else {
+			return
+		}
+		self.lists = fetchedLists
 	}
 }

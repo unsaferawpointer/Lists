@@ -67,7 +67,8 @@ extension ItemEntity: ManagedObject {
 
 	var object: Object<Properties, Relationships> {
 		let properties = Properties(title: text ?? "", isStrikethrough: isStrikethrough)
-		return Object(id: id, properties: properties, relationships: nil)
+		let relationships = Relationships(tags: (tags as? Set<TagEntity>)?.map { $0.object } ?? [])
+		return Object(id: id, properties: properties, relationships: relationships)
 	}
 }
 

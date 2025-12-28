@@ -59,7 +59,7 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 	}
 
 	func deleteFilter(with id: UUID) throws {
-		let request = FilterRequestV2(identifier: id)
+		let request = FilterRequest(identifier: id)
 		Task {
 			try await database.deleteObjects(request: request)
 		}
@@ -74,7 +74,7 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 
 	func updateFilter(id: UUID, properties: Filter.Properties, andTags tags: Set<UUID>) throws {
 		Task {
-			let request = FilterRequestV2(identifier: id)
+			let request = FilterRequest(identifier: id)
 			try await database.updateObjects(request: request, properties: properties, relationships: nil)
 		}
 	}
@@ -102,7 +102,7 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 
 	func fetchLists() throws {
 		Task {
-			let lists = try await provider.fetchObjects(with: ListsRequestV2())
+			let lists = try await provider.fetchObjects(with: ListsRequest())
 			await MainActor.run { [weak self] in
 				self?.presenter?.present(lists: lists)
 			}
@@ -111,7 +111,7 @@ extension SidebarInteractor: SidebarInteractorProtocol {
 
 	func fetchFilters() throws {
 		Task {
-			let filters = try await provider.fetchObjects(with: FiltersRequestV2())
+			let filters = try await provider.fetchObjects(with: FiltersRequest())
 			await MainActor.run { [weak self] in
 				self?.presenter?.present(filters: filters)
 			}

@@ -9,64 +9,24 @@ import Foundation
 import CoreData
 
 struct ItemsRequest {
-	let fetchLimit: Int?
-	let list: UUID?
-	let tags: [UUID]?
-}
 
-// MARK: - RequestRepresentable
-extension ItemsRequest: RequestRepresentable {
-
-	typealias Entity = ItemEntity
-
-	var nsPredicate: NSPredicate? {
-		let predicates = [listPredicate, tagsPredicate].compactMap(\.self)
-		guard !predicates.isEmpty else {
-			return nil
-		}
-		return NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
-	}
-	
-	var nsSortDescriptors: [NSSortDescriptor]? {
-		return [NSSortDescriptor(keyPath: \ItemEntity.offset, ascending: true)]
-	}
-
-}
-
-// MARK: - Helpers
-private extension ItemsRequest {
-
-	var listPredicate: NSPredicate? {
-		guard let id = list else {
-			return nil
-		}
-		return NSPredicate(format: "list.uuid == %@", id as CVarArg)
-	}
-
-	var tagsPredicate: NSPredicate? {
-		guard let tags else {
-			return nil
-		}
-		return NSPredicate(format: "ANY tags.uuid IN %@", tags)
-	}
-}
-
-struct ItemsRequestV2 {
-
-	let tags: [UUID]?
+	let tagsFilter: TagsFilter?
 
 	let itemOptions: ItemOptions?
 
+	let list: UUID?
+
 	// MARK: - Initialization
 
-	init(tags: [UUID]? = nil, itemOptions: ItemOptions? = nil) {
-		self.tags = tags
+	init(tagsFilter: TagsFilter? = nil, itemOptions: ItemOptions? = nil, list: UUID? = nil) {
+		self.tagsFilter = tagsFilter
 		self.itemOptions = itemOptions
+		self.list = list
 	}
 }
 
 // MARK: - ObjectsRequest
-extension ItemsRequestV2: ObjectsRequest {
+extension ItemsRequest: ObjectsRequest {
 
 	typealias Entity = ItemEntity
 
@@ -77,8 +37,41 @@ extension ItemsRequestV2: ObjectsRequest {
 		if let itemOptions {
 			predicates.append(NSPredicate(format: "rawOptions & %d != 0", argumentArray: [itemOptions.rawValue]))
 		}
-		if let tags {
-			predicates.append(NSPredicate(format: "SUBQUERY(tags, $tag, $tag.uuid IN %@).@count == %d", argumentArray: [tags, tags.count]))
+		if let tagsFilter {
+
+			let tags = tagsFilter.tags
+
+			switch tagsFilter.matchType {
+			case .any:
+				predicates.append(
+					NSPredicate(
+						format: "SUBQUERY(tags, $tag, $tag.uuid IN %@).@count > 0",
+						argumentArray: [tags]
+					)
+				)
+			case .all:
+				predicates.append(
+					NSPredicate(
+						format: "SUBQUERY(tags, $tag, $tag.uuid IN %@).@count == %d",
+						argumentArray: [tags, tags.count]
+					)
+				)
+			case .not:
+				predicates.append(
+					NSPredicate(
+						format: "SUBQUERY(tags, $tag, $tag.uuid IN %@).@count == %d",
+						argumentArray: [tags, 0]
+					)
+				)
+			}
+		}
+		if let list {
+			predicates.append(
+				NSPredicate(
+					format: "list.uuid == %d",
+					argumentArray: [list]
+				)
+			)
 		}
 		request.predicate = predicates.isEmpty ? nil : NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
 		return request

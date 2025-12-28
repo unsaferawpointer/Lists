@@ -29,7 +29,7 @@ extension ListPicker: View {
 			Form {
 				ForEach(model.lists) { list in
 					HStack {
-						Label(list.name, systemImage: list.properties.icon?.iconName ?? "list")
+						Label(list.properties.name, systemImage: list.properties.icon?.iconName ?? "list")
 						Spacer()
 						if model.selected == list.id {
 							Image(systemName: "checkmark")
@@ -58,7 +58,7 @@ extension ListPicker: View {
 			}
 		}
 		.task {
-			try? await model.provider.fetchData()
+			await model.fetchData()
 		}
 	}
 }

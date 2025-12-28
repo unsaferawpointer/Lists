@@ -58,3 +58,13 @@ extension Filter {
 		var tags: Set<UUID>?
 	}
 }
+
+extension Filter.Relationships {
+
+	var tagsFilter: TagsFilter? {
+		guard let tags, !tags.isEmpty else {
+			return nil
+		}
+		return .init(matchType: tagsMatchType, tags: Array(tags))
+	}
+}

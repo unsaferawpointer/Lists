@@ -44,7 +44,7 @@ extension MainCoordinator: SelectionDelegate {
 	func didSelect(item: NavigationItem.ID) {
 
 		guard item != .tags else {
-			let provider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
+			let provider = DataProvider(container: persistentContainer)
 			let storage = Storage(container: persistentContainer)
 			let model = TagsEditorModel(selected: [], provider: provider, storage: storage)
 			let view = TagsEditor(model: model)

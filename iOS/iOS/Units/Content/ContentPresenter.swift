@@ -8,8 +8,7 @@
 import Foundation
 
 protocol ContentPresenterProtocol: AnyObject {
-	func present(items: [Item])
-	func present(content: Content)
+	func present(items: [Object<Item.Properties, Item.Relationships>])
 }
 
 final class ContentPresenter {
@@ -198,19 +197,19 @@ extension ContentPresenter {
 // MARK: - ContentPresenterProtocol
 extension ContentPresenter: ContentPresenterProtocol {
 
-	func present(items: [Item]) {
+	func present(items: [Object<Item.Properties, Item.Relationships>]) {
 		let models = items.map {
 			ContentItem(
 				uuid: $0.id,
-				title: $0.title,
-				subtitle: $0.tags.map(\.name).joined(separator: " | "),
-				isStrikethrough: $0.isStrikethrough
+				title: $0.properties.title,
+				subtitle: $0.relationships?.tags.map(\.properties.name).joined(separator: " | "),
+				isStrikethrough: $0.properties.isStrikethrough
 			)
 		}
 
 		// MARK: - Cache
 		cache.strikethroughItems = Set(
-			items.filter { $0.isStrikethrough }
+			items.filter { $0.properties.isStrikethrough }
 				.map(\.id)
 		)
 		var lists: [UUID: UUID] = [:]
@@ -225,16 +224,5 @@ extension ContentPresenter: ContentPresenterProtocol {
 
 		let model = getToolbarModel()
 		view?.display(toolbar: model)
-	}
-
-	func present(content: Content) {
-		switch content {
-		case .all:
-			view?.displayTitle(title: "All")
-		case let .list(list):
-			view?.displayTitle(title: list.name)
-		case let .filter(filter):
-			view?.displayTitle(title: filter.name)
-		}
 	}
 }

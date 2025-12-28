@@ -62,7 +62,7 @@ extension TagsPicker: View {
 			}
 		}
 		.task {
-			try? await model.provider.fetchData()
+			await model.fetchData()
 		}
 	}
 }

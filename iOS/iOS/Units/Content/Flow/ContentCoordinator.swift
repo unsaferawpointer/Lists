@@ -52,7 +52,7 @@ extension ContentCoordinator: Coordinatable {
 extension ContentCoordinator: ContentCoordinatable {
 
 	func presentListPicker(preselected: UUID?, completion: @escaping @MainActor (Bool, UUID?) -> Void) {
-		let provider = ModelsProvider<List>(container: DefaultContainer(base: persistentContainer), request: ListsRequest(uuid: nil))
+		let provider = DataProvider(container: persistentContainer)
 
 		let model = ListPickerModel(selected: preselected, provider: provider)
 		let view = ListPicker(model: model) { [weak self] isSuccess, selected in
@@ -63,7 +63,7 @@ extension ContentCoordinator: ContentCoordinatable {
 	}
 
 	func presentTagsPicker(preselected: Set<UUID>, completion: @escaping @MainActor @Sendable (Bool, Set<UUID>) -> Void) {
-		let provider = ModelsProvider<Tag>(container: DefaultContainer(base: persistentContainer), request: TagsRequest(uuid: nil))
+		let provider = DataProvider(container: persistentContainer)
 
 		let model = TagsPicker.Model(selected: preselected, provider: provider)
 		let view = TagsPicker(model: model) { [weak self] isSuccess, selected in

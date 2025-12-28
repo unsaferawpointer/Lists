@@ -33,20 +33,24 @@ final class ContentInteractor {
 
 	private let storage: StorageProtocol
 
-	private let contentProvider: ContentProvider
+	private let itemsProvider: ItemsProvider
 
 	// MARK: - Initialization
 
 	init(
 		payload: ContentPayload,
 		storage: StorageProtocol,
-		contentProvider: ContentProvider
+		itemsProvider: ItemsProvider
 	) {
 		self.payload = payload
 		self.storage = storage
-		self.contentProvider = contentProvider
+		self.itemsProvider = itemsProvider
 
-		contentProvider.delegate = self
+		Task {
+			for await _ in itemsProvider.stream {
+				try? await fetchItems()
+			}
+		}
 	}
 }
 
@@ -54,11 +58,13 @@ final class ContentInteractor {
 extension ContentInteractor: ContentInteractorProtocol {
 
 	func item(for id: UUID) async throws -> Item? {
-		try? await contentProvider.item(for: id)
+		return nil
 	}
 
+	@MainActor
 	func fetchItems() async throws {
-		contentProvider.fetchContent()
+		let items = try await itemsProvider.fetchItems()
+		presenter?.present(items: items)
 	}
 
 	func addItem(with properties: Item.Properties) async throws {
@@ -90,17 +96,5 @@ extension ContentInteractor: ContentInteractorProtocol {
 
 	func setTags(_ tags: Set<UUID>, for items: [UUID]) async throws {
 		try await storage.setTags(tags, for: items)
-	}
-}
-
-// MARK: - ContentProviderDelegate
-extension ContentInteractor: ContentProviderDelegate {
-
-	func providerDidChangeContent(content: Content) {
-		presenter?.present(content: content)
-	}
-	
-	func providerDidChangeItems(items: [Item]) {
-		presenter?.present(items: items)
 	}
 }

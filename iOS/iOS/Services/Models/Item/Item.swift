@@ -56,6 +56,6 @@ extension Item {
 	}
 
 	struct Relationships {
-		
+		var tags: [Object<Tag.Properties, Tag.Relationships>]
 	}
 }

@@ -8,35 +8,10 @@
 import Foundation
 import CoreData
 
-struct TagsRequest {
-	let uuid: UUID?
-}
-
-// MARK: - RequestRepresentable
-extension TagsRequest: RequestRepresentable {
-
-	typealias Entity = TagEntity
-
-	var fetchLimit: Int? {
-		return uuid != nil ? 1 : nil
-	}
-
-	var nsPredicate: NSPredicate? {
-		guard let id = uuid else {
-			return nil
-		}
-		return NSPredicate(format: "uuid == %@", argumentArray: [id])
-	}
-
-	var nsSortDescriptors: [NSSortDescriptor]? {
-		return [NSSortDescriptor(keyPath: \TagEntity.offset, ascending: true)]
-	}
-}
-
-struct TagsRequestV2 { }
+struct TagsRequest { }
 
 // MARK: - ObjectsRequest
-extension TagsRequestV2: ObjectsRequest {
+extension TagsRequest: ObjectsRequest {
 
 	typealias Entity = TagEntity
 

@@ -14,24 +14,26 @@ final class ContentAssembly {
 	static func build(router: any ContentRoutable, payload: ContentPayload, persistentContainer: NSPersistentContainer) -> UIViewController {
 
 		let storage = Storage(container: persistentContainer)
+		let dataProvider = DataProvider(container: persistentContainer)
 
 		var interactor: ContentInteractorProtocol = switch payload {
 		case .all:
 			ContentInteractor(
 				payload: payload,
 				storage: storage,
-				contentProvider: ContentProvider(payload: payload, container: DefaultContainer(base: persistentContainer))
+				itemsProvider: CommonItemsProvider(request: .init(), dataProvider: dataProvider)
 			)
 		case .list(let id):
 			ContentInteractor(
 				payload: payload,
 				storage: storage,
-				contentProvider: ContentProvider(payload: payload, container: DefaultContainer(base: persistentContainer))
+				itemsProvider: ListItemsProvider(id: id, dataProvider: dataProvider)
 			)
 		case .filter(let id):
-			FilteredContent.Interactor(
-				identifier: id,
-				provider: DataProvider(container: persistentContainer)
+			ContentInteractor(
+				payload: payload,
+				storage: storage,
+				itemsProvider: FilteredItemsProvider(id: id, dataProvider: dataProvider)
 			)
 		}
 

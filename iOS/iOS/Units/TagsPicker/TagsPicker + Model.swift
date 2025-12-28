@@ -17,18 +17,33 @@ extension TagsPicker {
 		var tags: [Tag] = []
 
 		@ObservationIgnored
-		let provider: ModelsProvider<Tag>
+		let provider: DataProvider
 
 		// MARK: - Initialization
 
-		init(selected: Set<UUID>, provider: ModelsProvider<Tag>) {
+		init(selected: Set<UUID>, provider: DataProvider) {
 			self.selected = selected
 			self.provider = provider
-			Task { @MainActor in
-				for await change in await provider.stream() {
-					self.tags = change
+			Task { [weak self] in
+				for await _ in provider.stream {
+					await self?.fetchData()
 				}
 			}
+		}
+	}
+}
+
+// MARK: - Public Interface
+extension TagsPicker.Model {
+
+	@MainActor
+	func fetchData() async {
+		let request = TagsRequest()
+		guard let tags = try? await provider.fetchObjects(with: request) else {
+			return
+		}
+		self.tags = tags.map {
+			Tag(uuid: $0.id, properties: .init(name: $0.properties.name))
 		}
 	}
 }

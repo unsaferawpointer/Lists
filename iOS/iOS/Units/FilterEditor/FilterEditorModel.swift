@@ -39,7 +39,7 @@ final class FilterEditorModel {
 		self.dataManager = dataManager
 		self.provider = provider
 		Task {
-			let request = TagsRequestV2()
+			let request = TagsRequest()
 			for await _ in provider.stream {
 				let tags = try await provider.fetchObjects(with: request)
 				self.tags = tags.map {
@@ -79,7 +79,7 @@ extension FilterEditorModel {
 	func fetchData() async {
 		self.isLoading = true
 
-		let tagsRequest = TagsRequestV2()
+		let tagsRequest = TagsRequest()
 		guard let tags = try? await provider.fetchObjects(with: tagsRequest) else {
 			return
 		}
@@ -88,7 +88,7 @@ extension FilterEditorModel {
 		}
 
 		if let id {
-			let request = FilterRequestV2(identifier: id)
+			let request = FilterRequest(identifier: id)
 			guard let filters = try? await provider.fetchObjects(with: request), let first = filters.first else {
 				return
 			}
@@ -105,7 +105,7 @@ extension FilterEditorModel {
 			try? await dataManager.insertObject(type: FilterEntity.self, properties: properties, relationships: relationships)
 			return
 		}
-		let request = FilterRequestV2(identifier: id)
+		let request = FilterRequest(identifier: id)
 		try? await dataManager.updateObjects(request: request, properties: properties, relationships: relationships)
 	}
 }
