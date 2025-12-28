@@ -43,6 +43,7 @@ final class SidebarInteractor {
 		Task { [weak self] in
 			for await _ in provider.stream {
 				try self?.fetchLists()
+				try self?.fetchFilters()
 			}
 		}
 	}
