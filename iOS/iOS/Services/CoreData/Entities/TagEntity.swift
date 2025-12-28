@@ -9,7 +9,7 @@ import Foundation
 import CoreData
 
 @objc(TagEntity)
-public class TagEntity: NSManagedObject {
+public final class TagEntity: NSManagedObject {
 
 }
 
@@ -54,9 +54,25 @@ extension TagEntity: ManagedObject {
 		newEntity.update(with: properties, relationships: relationships)
 	}
 
+	static func createObject(in context: NSManagedObjectContext, with properties: Tag.Properties) -> TagEntity {
+		let newEntity = TagEntity(context: context)
+		newEntity.uuid = UUID()
+		newEntity.update(with: properties)
+		return newEntity
+	}
+
 	func update(with properties: Properties, relationships: Relationships?) {
 		self.title = properties.name
 		self.icon = properties.icon
+	}
+
+	func update(with properties: Tag.Properties) {
+		self.title = properties.name
+		self.icon = properties.icon
+	}
+
+	var properties: Tag.Properties {
+		Properties(name: title ?? "", icon: icon)
 	}
 
 	var object: Object<Properties, Relationships> {

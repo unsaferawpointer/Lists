@@ -49,7 +49,7 @@ extension Item {
 // MARK: - Nested Data Structs
 extension Item {
 
-	struct Properties {
+	struct Properties: Sendable {
 		var title: String
 		var isStrikethrough: Bool
 		var list: UUID?

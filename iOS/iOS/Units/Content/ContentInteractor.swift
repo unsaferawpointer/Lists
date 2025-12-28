@@ -31,7 +31,7 @@ final class ContentInteractor {
 
 	private let payload: ContentPayload
 
-	private let storage: StorageProtocol
+	private let dataManager: DataManager
 
 	private let itemsProvider: ItemsProvider
 
@@ -39,11 +39,11 @@ final class ContentInteractor {
 
 	init(
 		payload: ContentPayload,
-		storage: StorageProtocol,
+		dataManager: DataManager,
 		itemsProvider: ItemsProvider
 	) {
 		self.payload = payload
-		self.storage = storage
+		self.dataManager = dataManager
 		self.itemsProvider = itemsProvider
 
 		Task {
@@ -68,33 +68,38 @@ extension ContentInteractor: ContentInteractorProtocol {
 	}
 
 	func addItem(with properties: Item.Properties) async throws {
-		let newItem = Item(uuid: UUID(), properties: properties, tags: [])
-		try await storage.addItem(newItem, to: payload.listID)
+		try await dataManager.insertItem(
+			id: UUID(),
+			properties: properties,
+			to: payload.listID
+		)
 	}
 
 	func setText(_ text: String, for item: UUID) async throws {
-		let change: ItemChange = .text(value: text)
-		try await storage.updateItems(with: [item], change: change)
+		try await dataManager.updateItems(ids: [item], text: text)
 	}
 
 	func strikeThroughItems(with ids: [UUID], flag: Bool) async throws {
-		let change: ItemChange = .strikethrough(value: flag)
-		try await storage.updateItems(with: ids, change: change)
+		if flag {
+			try await dataManager.updateItems(ids: ids, insert: .strikethrough)
+		} else {
+			try await dataManager.updateItems(ids: ids, remove: .strikethrough)
+		}
 	}
 
 	func deleteItems(with ids: [UUID]) async throws {
-		try await storage.deleteItems(with: ids)
+		try await dataManager.deleteItems(ids: ids)
 	}
 
 	func moveItem(with id: UUID, to destination: RelativeDestination<UUID>) async throws {
-		try await storage.moveItem(with: id, to: destination)
+		try await dataManager.moveItem(with: id, to: destination)
 	}
 
 	func setList(items ids: [UUID], list: UUID?) async throws {
-		try await storage.setList(items: ids, list: list)
+		try await dataManager.updateItems(ids: ids, list: list)
 	}
 
 	func setTags(_ tags: Set<UUID>, for items: [UUID]) async throws {
-		try await storage.setTags(tags, for: items)
+		try await dataManager.updateItems(ids: items, tags: tags)
 	}
 }

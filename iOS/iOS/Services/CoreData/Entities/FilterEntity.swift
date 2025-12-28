@@ -10,7 +10,7 @@ public import Foundation
 public import CoreData
 
 @objc(FilterEntity)
-public class FilterEntity: NSManagedObject { }
+public final class FilterEntity: NSManagedObject { }
 
 extension FilterEntity {
 
@@ -55,6 +55,13 @@ extension FilterEntity: ManagedObject {
 		newEntity.update(with: properties, relationships: relationships)
 	}
 
+	static func createObject(in context: NSManagedObjectContext, with properties: Filter.Properties) -> FilterEntity {
+		let newEntity = FilterEntity(context: context)
+		newEntity.uuid = UUID()
+		newEntity.update(with: properties)
+		return newEntity
+	}
+
 	func update(with properties: Filter.Properties, relationships: Filter.Relationships?) {
 		self.title = properties.name
 		self.icon = properties.icon
@@ -74,6 +81,12 @@ extension FilterEntity: ManagedObject {
 		}
 		self.tags = NSSet(array: entities)
 		self.rawTagsMatchType = tagsMatchType.rawValue
+	}
+
+	func update(with properties: Filter.Properties) {
+		self.title = properties.name
+		self.icon = properties.icon
+		self.itemOptions = properties.itemOptions
 	}
 
 	var object: Object<Properties, Relationships> {

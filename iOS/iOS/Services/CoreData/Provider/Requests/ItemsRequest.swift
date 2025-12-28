@@ -32,6 +32,7 @@ extension ItemsRequest: ObjectsRequest {
 
 	var value: NSFetchRequest<Entity> {
 		let request = ItemEntity.fetchRequest()
+		request.sortDescriptors = [NSSortDescriptor(keyPath: \ItemEntity.offset, ascending: true)]
 
 		var predicates: [NSPredicate] = []
 		if let itemOptions {

@@ -20,19 +20,19 @@ final class ContentAssembly {
 		case .all:
 			ContentInteractor(
 				payload: payload,
-				storage: storage,
+				dataManager: Database(container: persistentContainer),
 				itemsProvider: CommonItemsProvider(request: .init(), dataProvider: dataProvider)
 			)
 		case .list(let id):
 			ContentInteractor(
 				payload: payload,
-				storage: storage,
+				dataManager: Database(container: persistentContainer),
 				itemsProvider: ListItemsProvider(id: id, dataProvider: dataProvider)
 			)
 		case .filter(let id):
 			ContentInteractor(
 				payload: payload,
-				storage: storage,
+				dataManager: Database(container: persistentContainer),
 				itemsProvider: FilteredItemsProvider(id: id, dataProvider: dataProvider)
 			)
 		}

@@ -9,7 +9,7 @@ import Foundation
 import CoreData
 
 @objc(ListEntity)
-public class ListEntity: NSManagedObject { }
+public final class ListEntity: NSManagedObject { }
 
 extension ListEntity {
 
@@ -50,9 +50,25 @@ extension ListEntity: ManagedObject {
 		newEntity.update(with: properties, relationships: nil)
 	}
 
+	static func createObject(in context: NSManagedObjectContext, with properties: List.Properties) -> ListEntity {
+		let newEntity = ListEntity(context: context)
+		newEntity.uuid = UUID()
+		newEntity.update(with: properties, relationships: nil)
+		return newEntity
+	}
+
 	func update(with properties: List.Properties, relationships: Relationships?) {
 		self.title = properties.name
 		self.icon = properties.icon
+	}
+
+	func update(with properties: List.Properties) {
+		self.title = properties.name
+		self.icon = properties.icon
+	}
+
+	var properties: List.Properties {
+		Properties(name: title ?? "Unknown Name", icon: icon)
 	}
 
 	var object: Object<Properties, Relationships> {

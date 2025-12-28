@@ -27,10 +27,10 @@ final class DataProvider {
 
 	let container: NSPersistentContainer
 
-	lazy var stream: NotificationCenter.Notifications = {
+	var stream: NotificationCenter.Notifications {
 		let name: NSNotification.Name = .NSManagedObjectContextDidSave
 		return NotificationCenter.default.notifications(named: name)
-	}()
+	}
 
 	// MARK: - Initialization
 

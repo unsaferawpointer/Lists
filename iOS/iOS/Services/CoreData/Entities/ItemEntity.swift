@@ -13,7 +13,7 @@ public typealias ItemEntityCoreDataClassSet = NSSet
 public typealias ItemEntityCoreDataPropertiesSet = NSSet
 
 @objc(ItemEntity)
-public class ItemEntity: NSManagedObject {
+public final class ItemEntity: NSManagedObject {
 
 	@NSManaged public var uuid: UUID?
 	@NSManaged public var text: String?
@@ -60,9 +60,25 @@ extension ItemEntity: ManagedObject {
 		newEntity.update(with: properties, relationships: nil)
 	}
 
+	static func createObject(in context: NSManagedObjectContext, with properties: Item.Properties) -> ItemEntity {
+		let newEntity = ItemEntity(context: context)
+		newEntity.uuid = UUID()
+		newEntity.update(with: properties)
+		return newEntity
+	}
+
 	func update(with properties: Properties, relationships: Relationships?) {
 		self.text = properties.title
 		self.isStrikethrough = properties.isStrikethrough
+	}
+
+	func update(with properties: Item.Properties) {
+		self.text = properties.title
+		self.isStrikethrough = properties.isStrikethrough
+	}
+
+	var properties: Item.Properties {
+		Properties(title: text ?? "", isStrikethrough: isStrikethrough)
 	}
 
 	var object: Object<Properties, Relationships> {
