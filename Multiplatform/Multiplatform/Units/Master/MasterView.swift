@@ -30,6 +30,7 @@ struct MasterView: View {
 			}
 		}
 		.listStyle(.sidebar)
+		.navigationTitle("Lists")
 		.toolbar {
 			ToolbarItem(placement: .bottomBar) {
 				Spacer()
