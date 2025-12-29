@@ -13,11 +13,13 @@ final class Project {
 
 	var uuid: UUID
 
-	var text: String
+	var name: String
 
 	// MARK: - Options
 
 	var isArchived: Bool
+
+	var icon: Icon
 
 	// MARK: - Relationships
 
@@ -32,13 +34,15 @@ final class Project {
 
 	init(
 		uuid: UUID = UUID(),
-		text: String = "",
+		name: String = "",
 		isArchived: Bool = false,
+		icon: Icon = .none,
 		creationDate: Date = .now
 	) {
 		self.uuid = uuid
-		self.text = text
+		self.name = name
 		self.isArchived = isArchived
+		self.icon = icon
 		self.creationDate = creationDate
 	}
 }

@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MasterView: View {
 
-	@State var isExpanded: Bool = true
+	@Environment(\.modelContext) private var modelContext
+	@Query(sort: \Project.creationDate, order: .forward, animation: .default) private var projects: [Project]
 
 	var body: some View {
 		List {
@@ -19,12 +21,12 @@ struct MasterView: View {
 			} label: {
 				Label("Tags", systemImage: "tag")
 			}
-			Section("Filters") {
-				ForEach(0..<7) { _ in
+			Section("Projects") {
+				ForEach(projects) { project in
 					NavigationLink {
 						ContentView()
 					} label: {
-						Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+						Label(project.name, systemImage: project.icon.systemName)
 					}
 				}
 			}
@@ -36,10 +38,23 @@ struct MasterView: View {
 				Spacer()
 			}
 			ToolbarItem(placement: .bottomBar) {
-				Button(action: { }) {
+				Button {
+					addProject()
+				} label: {
 					Label("Add Item", systemImage: "plus")
 				}
 			}
+		}
+	}
+}
+
+// MARK: - Helpers
+private extension MasterView {
+
+	func addProject() {
+		withAnimation {
+			let newProject = Project(name: "Default Project", icon: .star)
+			modelContext.insert(newProject)
 		}
 	}
 }
