@@ -1,19 +1,19 @@
 //
-//  Tag.swift
+//  Project.swift
 //  Multiplatform
 //
-//  Created by Anton Cherkasov on 28.12.2025.
+//  Created by Anton Cherkasov on 29.12.2025.
 //
 
 import Foundation
 import SwiftData
 
 @Model
-final class Tag {
+final class Project {
 
 	var uuid: UUID
 
-	var title: String
+	var text: String
 
 	// MARK: - Options
 
@@ -21,11 +21,8 @@ final class Tag {
 
 	// MARK: - Relationships
 
-	@Relationship(deleteRule: .nullify)
+	@Relationship(deleteRule: .cascade)
 	var items: [Item] = []
-
-	@Relationship(deleteRule: .nullify, inverse: \Filter.tags)
-	var filters: [Filter] = []
 
 	// MARK: - Additional Info
 
@@ -35,12 +32,12 @@ final class Tag {
 
 	init(
 		uuid: UUID = UUID(),
-		title: String = "",
+		text: String = "",
 		isArchived: Bool = false,
 		creationDate: Date = .now
 	) {
 		self.uuid = uuid
-		self.title = title
+		self.text = text
 		self.isArchived = isArchived
 		self.creationDate = creationDate
 	}

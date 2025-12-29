@@ -21,26 +21,37 @@ final class Item {
 
 	var isArchived: Bool
 
-	var creationDate: Date
-
 	// MARK: - Relationships
 
 	@Relationship(deleteRule: .nullify, inverse: \Tag.items)
 	var tags: [Tag] = []
 
+	@Relationship(deleteRule: .nullify, inverse: \Project.items)
+	var project: Project?
+
+	// MARK: - Additional Info
+
+	var creationDate: Date
+
+	// MARK: - Order
+
+	var index: Int
+
 	// MARK: - Initialization
 
 	init(
-		uuid: UUID,
+		uuid: UUID = UUID(),
 		text: String = "",
 		isCompleted: Bool = false,
 		isArchived: Bool = false,
-		creationDate: Date = .now
+		creationDate: Date = .now,
+		index: Int = 0
 	) {
 		self.uuid = uuid
 		self.text = text
 		self.isCompleted = isCompleted
 		self.isArchived = isArchived
 		self.creationDate = creationDate
+		self.index = index
 	}
 }

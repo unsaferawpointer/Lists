@@ -1,15 +1,15 @@
 //
-//  Tag.swift
+//  Filter.swift
 //  Multiplatform
 //
-//  Created by Anton Cherkasov on 28.12.2025.
+//  Created by Anton Cherkasov on 29.12.2025.
 //
 
 import Foundation
 import SwiftData
 
 @Model
-final class Tag {
+final class Filter {
 
 	var uuid: UUID
 
@@ -17,15 +17,14 @@ final class Tag {
 
 	// MARK: - Options
 
-	var isArchived: Bool
+	var isCompleted: Bool = false
+
+	var isAchieved: Bool = false
 
 	// MARK: - Relationships
 
-	@Relationship(deleteRule: .nullify)
-	var items: [Item] = []
-
-	@Relationship(deleteRule: .nullify, inverse: \Filter.tags)
-	var filters: [Filter] = []
+	@Relationship(deleteRule: .cascade)
+	var tags: [Tag] = []
 
 	// MARK: - Additional Info
 
@@ -36,12 +35,14 @@ final class Tag {
 	init(
 		uuid: UUID = UUID(),
 		title: String = "",
-		isArchived: Bool = false,
+		isCompleted: Bool = false,
+		isAchieved: Bool = false,
 		creationDate: Date = .now
 	) {
 		self.uuid = uuid
 		self.title = title
-		self.isArchived = isArchived
+		self.isCompleted = isCompleted
+		self.isAchieved = isAchieved
 		self.creationDate = creationDate
 	}
 }
