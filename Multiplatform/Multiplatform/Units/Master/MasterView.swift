@@ -28,6 +28,13 @@ struct MasterView: View {
 					} label: {
 						Label(project.name, systemImage: project.icon.systemName)
 					}
+					.contextMenu {
+						Button(role: .destructive) {
+							deleteProject(project: project)
+						} label: {
+							Label("Delete", systemImage: "trash")
+						}
+					}
 				}
 			}
 		}
@@ -55,6 +62,12 @@ private extension MasterView {
 		withAnimation {
 			let newProject = Project(name: "Default Project", icon: .star)
 			modelContext.insert(newProject)
+		}
+	}
+
+	func deleteProject(project: Project) {
+		withAnimation {
+			modelContext.delete(project)
 		}
 	}
 }
