@@ -9,7 +9,7 @@ import Foundation
 
 enum Icon: Int, Codable {
 
-	case none
+	case none = 0
 	case star
 	case folder
 	case bolt
@@ -29,7 +29,7 @@ extension Icon {
 	var systemName: String {
 		switch self {
 		case .none:
-			"custom.list.bullet"
+			"list.bullet"
 		case .star:
 			"star"
 		case .folder:

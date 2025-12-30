@@ -30,6 +30,8 @@ final class Project {
 
 	var creationDate: Date
 
+	var index: Int
+
 	// MARK: - Initialization
 
 	init(
@@ -37,12 +39,14 @@ final class Project {
 		name: String = "",
 		isArchived: Bool = false,
 		icon: Icon = .none,
-		creationDate: Date = .now
+		creationDate: Date = .now,
+		index: Int = 0
 	) {
 		self.uuid = uuid
 		self.name = name
 		self.isArchived = isArchived
 		self.icon = icon
 		self.creationDate = creationDate
+		self.index = index
 	}
 }

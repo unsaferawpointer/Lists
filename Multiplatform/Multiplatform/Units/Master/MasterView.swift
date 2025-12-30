@@ -11,7 +11,13 @@ import SwiftData
 struct MasterView: View {
 
 	@Environment(\.modelContext) private var modelContext
+
+	// MARK: - Project Support
+
 	@Query(sort: \Project.creationDate, order: .forward, animation: .default) private var projects: [Project]
+
+	@State var presentedProject: Project?
+	@State var projectEditorIsPresented: Bool = false
 
 	var body: some View {
 		List {
@@ -29,6 +35,12 @@ struct MasterView: View {
 						Label(project.name, systemImage: project.icon.systemName)
 					}
 					.contextMenu {
+						Button {
+							self.presentedProject = project
+						} label: {
+							Label("Edit...", systemImage: "pencil")
+						}
+						Divider()
 						Button(role: .destructive) {
 							deleteProject(project: project)
 						} label: {
@@ -40,6 +52,19 @@ struct MasterView: View {
 		}
 		.listStyle(.sidebar)
 		.navigationTitle("Lists")
+		.sheet(isPresented: $projectEditorIsPresented) {
+			TagEditor(title: "New Project", model: .init(name: "")) { newModel in
+				withAnimation {
+					let newProject = Project(name: newModel.name)
+					modelContext.insert(newProject)
+				}
+			}
+		}
+		.sheet(item: $presentedProject) { project in
+			TagEditor(title: "Edit Tag", model: .init(name: project.name)) { newModel in
+				project.name = newModel.name
+			}
+		}
 		.toolbar {
 			ToolbarItem(placement: .bottomBar) {
 				Spacer()
@@ -60,8 +85,7 @@ private extension MasterView {
 
 	func addProject() {
 		withAnimation {
-			let newProject = Project(name: "Default Project", icon: .star)
-			modelContext.insert(newProject)
+			self.projectEditorIsPresented = true
 		}
 	}
 
