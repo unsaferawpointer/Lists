@@ -21,7 +21,11 @@ struct MasterView: View {
 
 	var body: some View {
 		List {
-			Label("All", systemImage: "square.grid.2x2")
+			NavigationLink {
+				ContentView(predicate: .all)
+			} label: {
+				Label("All", systemImage: "square.grid.2x2")
+			}
 			NavigationLink {
 				TagsEditor()
 			} label: {
@@ -30,7 +34,7 @@ struct MasterView: View {
 			Section("Projects") {
 				ForEach(projects) { project in
 					NavigationLink {
-						ContentView()
+						ContentView(predicate: .inProject(id: project.id))
 					} label: {
 						Label(project.name, systemImage: project.icon.systemName)
 					}
@@ -61,7 +65,7 @@ struct MasterView: View {
 			}
 		}
 		.sheet(item: $presentedProject) { project in
-			TagEditor(title: "Edit Tag", model: .init(name: project.name)) { newModel in
+			TagEditor(title: "Edit Project", model: .init(name: project.name)) { newModel in
 				project.name = newModel.name
 			}
 		}

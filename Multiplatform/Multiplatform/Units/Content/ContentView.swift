@@ -10,6 +10,8 @@ import SwiftData
 
 struct ContentView: View {
 
+	@State var predicate: ItemsPredicate
+
 	@Environment(\.modelContext) private var modelContext
 
 	@Query private var items: [Item]
@@ -18,6 +20,13 @@ struct ContentView: View {
 	@State var selection: Set<UUID> = []
 
 	@State var tagsPickerIsPresented: Bool = false
+
+	// MARK: - Initialization
+
+	init(predicate: ItemsPredicate) {
+		self._predicate = State(initialValue: predicate)
+		self._items = Query(filter: predicate.predicate, sort: \.index, animation: .default)
+	}
 
 	var body: some View {
 		List(selection: $selection) {
@@ -87,6 +96,15 @@ private extension ContentView {
 	func addItem() {
 		withAnimation {
 			let newItem = Item(uuid: .init(), text: "New Item")
+			switch predicate {
+			case .all:
+				break
+			case let .inProject(id):
+				guard let project = modelContext.model(for: id) as? Project else {
+					return
+				}
+				newItem.project = project
+			}
 			modelContext.insert(newItem)
 		}
 	}
@@ -109,6 +127,6 @@ private extension ContentView {
 }
 
 #Preview {
-	ContentView()
+	ContentView(predicate: .all)
 		.modelContainer(for: Item.self, inMemory: true)
 }
