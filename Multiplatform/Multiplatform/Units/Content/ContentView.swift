@@ -31,12 +31,14 @@ struct ContentView: View {
 	var body: some View {
 		List(selection: $selection) {
 			ForEach(items) { item in
-				VStack(alignment: .leading) {
+				VStack(alignment: .leading, spacing: 2) {
 					Text(item.text)
 						.foregroundStyle(item.isCompleted ? .secondary : .primary)
 						.strikethrough(item.isCompleted)
 					if !item.tags.isEmpty {
 						Text(item.tags.map(\.title).joined(separator: " | "))
+							.foregroundStyle(.secondary)
+							.font(.caption2)
 					}
 				}
 			}
