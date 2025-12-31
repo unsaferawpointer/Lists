@@ -15,23 +15,32 @@ struct TagsPicker: View {
 	@Environment(\.modelContext) private var modelContext
 	@Query private var tags: [Tag]
 
-	@Binding var selection: Set<UUID>
+	@State var selection: Set<PersistentIdentifier>
+
+	let completion: (Set<PersistentIdentifier>) -> Void
+
+	// MARK: - Initialization
+
+	init(selected: Set<PersistentIdentifier>, completion: @escaping (Set<PersistentIdentifier>) -> Void) {
+		self._selection = State(initialValue: selected)
+		self.completion = completion
+	}
 
 	var body: some View {
 		NavigationStack {
 			List {
 				ForEach(tags, id: \.uuid) { tag in
 					Button {
-						if selection.contains(tag.uuid) {
-							selection.remove(tag.uuid)
+						if selection.contains(tag.id) {
+							selection.remove(tag.id)
 						} else {
-							selection.insert(tag.uuid)
+							selection.insert(tag.id)
 						}
 					} label: {
 						HStack {
 							Label(tag.title, systemImage: "tag")
 							Spacer()
-							if selection.contains(tag.uuid) {
+							if selection.contains(tag.id) {
 								Image(systemName: "checkmark")
 							}
 						}
@@ -51,6 +60,7 @@ struct TagsPicker: View {
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button(role: .confirm) {
+						completion(selection)
 						dismiss()
 					}
 				}
@@ -60,6 +70,6 @@ struct TagsPicker: View {
 }
 
 #Preview {
-	TagsPicker(selection: .constant([]))
+	TagsPicker(selected: []) { _ in }
 		.modelContainer(for: Tag.self, inMemory: true)
 }

@@ -10,38 +10,38 @@ import SwiftData
 
 struct ContentView: View {
 
-	@State var predicate: ItemsPredicate
-
 	@Environment(\.modelContext) private var modelContext
 
 	@Query private var items: [Item]
 	@Query private var tags: [Tag]
 
-	@State var selection: Set<UUID> = []
+	@State var selection: Set<PersistentIdentifier> = []
 
-	@State var tagsPickerIsPresented: Bool = false
+	@State var presentedItem: Item?
+
+	let model: Model
 
 	// MARK: - Initialization
 
 	init(predicate: ItemsPredicate) {
-		self._predicate = State(initialValue: predicate)
+		self.model = .init(predicate: predicate)
 		self._items = Query(filter: predicate.predicate, sort: \.index, animation: .default)
 	}
 
 	var body: some View {
 		List(selection: $selection) {
-			ForEach(items, id: \.uuid) { item in
-				VStack {
+			ForEach(items) { item in
+				VStack(alignment: .leading) {
 					Text(item.text)
 						.foregroundStyle(item.isCompleted ? .secondary : .primary)
 						.strikethrough(item.isCompleted)
 					if !item.tags.isEmpty {
-						Text(tags.map(\.title).joined(separator: " | "))
+						Text(item.tags.map(\.title).joined(separator: " | "))
 					}
 				}
 			}
 		}
-		.contextMenu(forSelectionType: UUID.self) { selected in
+		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
 			Button("Mark As Completed") {
 				updateItems(selected: selected, isCompleted: true)
 			}
@@ -49,10 +49,12 @@ struct ContentView: View {
 				updateItems(selected: selected, isCompleted: false)
 			}
 			Divider()
-			Button("Tags...", systemImage: "tag") {
-				self.tagsPickerIsPresented = true
+			if let first = selection.first {
+				Button("Tags...", systemImage: "tag") {
+					self.presentedItem = items.first(where: { $0.id == first })
+				}
+				Divider()
 			}
-			Divider()
 			Button(role: .destructive) {
 				deleteItems(selected: selected)
 			} label: {
@@ -60,20 +62,10 @@ struct ContentView: View {
 			}
 		}
 		.listStyle(.inset)
-		.sheet(isPresented: $tagsPickerIsPresented) {
-			TagsPicker(
-				selection: .init(get: {
-					guard let first = items.first(where: { selection.contains($0.uuid) }) else {
-						return []
-					}
-					return Set(first.tags.map(\.uuid))
-				}, set: { newValue in
-					guard let first = items.first(where: { selection.contains($0.uuid) }) else {
-						return
-					}
-					first.tags = tags.filter { newValue.contains($0.uuid) }
-				})
-			)
+		.sheet(item: $presentedItem) { item in
+			TagsPicker(selected: Set(item.tags.map(\.id))) { newTags in
+				item.tags = tags.filter { newTags.contains($0.id) }
+			}
 		}
 		.toolbar {
 			ToolbarItem(placement: .primaryAction) {
@@ -96,33 +88,19 @@ private extension ContentView {
 
 	func addItem() {
 		withAnimation {
-			let newItem = Item(uuid: .init(), text: "New Item")
-			switch predicate {
-			case .all:
-				break
-			case let .inProject(id):
-				guard let project = modelContext.model(for: id) as? Project else {
-					return
-				}
-				newItem.project = project
-			}
-			modelContext.insert(newItem)
+			model.addItem(in: modelContext)
 		}
 	}
 
-	func deleteItems(selected: Set<UUID>) {
+	func deleteItems(selected: Set<PersistentIdentifier>) {
 		withAnimation {
-			for item in items.filter( { selected.contains($0.uuid)} ) {
-				modelContext.delete(item)
-			}
+			model.deleteItems(selected, in: modelContext)
 		}
 	}
 
-	func updateItems(selected: Set<UUID>, isCompleted: Bool) {
+	func updateItems(selected: Set<PersistentIdentifier>, isCompleted: Bool) {
 		withAnimation {
-			for item in items.filter( { selected.contains($0.uuid)} ) {
-				item.isCompleted = isCompleted
-			}
+			model.updateItems(selected: selected, isCompleted: isCompleted, in: modelContext)
 		}
 	}
 }
