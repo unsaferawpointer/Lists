@@ -33,6 +33,7 @@ struct ContentView: View {
 			ForEach(items, id: \.uuid) { item in
 				VStack {
 					Text(item.text)
+						.foregroundStyle(item.isCompleted ? .secondary : .primary)
 						.strikethrough(item.isCompleted)
 					if !item.tags.isEmpty {
 						Text(tags.map(\.title).joined(separator: " | "))
