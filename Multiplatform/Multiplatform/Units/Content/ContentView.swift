@@ -41,6 +41,9 @@ struct ContentView: View {
 							.font(.caption2)
 					}
 				}
+				.contextMenu {
+					buildMenu(selected: [item.id])
+				}
 				.moveDisabled(model.moveDisabled)
 			}
 			.onMove { indices, target in
@@ -48,24 +51,7 @@ struct ContentView: View {
 			}
 		}
 		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
-			Button("Mark As Completed") {
-				updateItems(selected: selected, isCompleted: true)
-			}
-			Button("Mark As Incomplete") {
-				updateItems(selected: selected, isCompleted: false)
-			}
-			Divider()
-			if let first = selection.first {
-				Button("Tags...", systemImage: "tag") {
-					self.presentedItem = items.first(where: { $0.id == first })
-				}
-				Divider()
-			}
-			Button(role: .destructive) {
-				deleteItems(selected: selected)
-			} label: {
-				Text("Delete")
-			}
+			buildMenu(selected: selected)
 		}
 		.listStyle(.inset)
 		.sheet(item: $presentedItem) { item in
@@ -85,6 +71,32 @@ struct ContentView: View {
 					Label("Add Item", systemImage: "plus")
 				}
 			}
+		}
+	}
+}
+
+// MARK: - View Builders
+private extension ContentView {
+
+	@ViewBuilder
+	func buildMenu(selected: Set<PersistentIdentifier>) -> some View {
+		Button("Mark As Completed") {
+			updateItems(selected: selected, isCompleted: true)
+		}
+		Button("Mark As Incomplete") {
+			updateItems(selected: selected, isCompleted: false)
+		}
+		Divider()
+		if let first = selected.first {
+			Button("Tags...", systemImage: "tag") {
+				self.presentedItem = items.first(where: { $0.id == first })
+			}
+			Divider()
+		}
+		Button(role: .destructive) {
+			deleteItems(selected: selected)
+		} label: {
+			Text("Delete")
 		}
 	}
 }
