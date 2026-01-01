@@ -41,6 +41,10 @@ struct ContentView: View {
 							.font(.caption2)
 					}
 				}
+				.moveDisabled(model.moveDisabled)
+			}
+			.onMove { indices, target in
+				model.moveItems(items, indices: indices, to: target)
 			}
 		}
 		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in

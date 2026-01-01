@@ -24,6 +24,19 @@ extension ContentView {
 	}
 }
 
+// MARK: - Computed Properties
+extension ContentView.Model {
+
+	var moveDisabled: Bool {
+		guard case .inProject = predicate else {
+			return true
+		}
+		return false
+	}
+}
+
+import SwiftUI
+
 // MARK: - Public Interface
 extension ContentView.Model {
 
@@ -56,6 +69,14 @@ extension ContentView.Model {
 				continue
 			}
 			item.isCompleted = isCompleted
+		}
+	}
+
+	func moveItems(_ items: [Item], indices: IndexSet, to target: Int) {
+		var modificated = items
+		modificated.move(fromOffsets: indices, toOffset: target)
+		for (index, item) in modificated.enumerated() {
+			item.index = index
 		}
 	}
 }

@@ -11,9 +11,9 @@ import SwiftData
 struct TagsEditor: View {
 
 	@Environment(\.modelContext) private var modelContext
-	@Query(sort: \Tag.creationDate, order: .forward, animation: .default) private var tags: [Tag]
+	@Query(sort: \Tag.index, order: .forward, animation: .default) private var tags: [Tag]
 
-	@State var selection: Set<UUID> = []
+	@State var selection: Set<PersistentIdentifier> = []
 
 	@State private var editMode: EditMode = .inactive
 
@@ -21,9 +21,11 @@ struct TagsEditor: View {
 
 	@State var isPresented: Bool = false
 
+	let model = Model()
+
 	var body: some View {
 		List(selection: $selection) {
-			ForEach(tags, id: \.uuid) { tag in
+			ForEach(tags) { tag in
 				HStack {
 					if editMode == .inactive {
 						Image(systemName: "tag")
@@ -32,19 +34,23 @@ struct TagsEditor: View {
 					Spacer()
 				}
 				.contextMenu {
-					buildMenu(for: [tag.uuid])
+					buildMenu(for: [tag.id])
+				}
+			}
+			.onMove { indices, target in
+				withAnimation {
+					model.moveTags(tags, indices: indices, to: target)
 				}
 			}
 		}
-		.contextMenu(forSelectionType: UUID.self) { selected in
+		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
 			buildMenu(for: selected)
 		}
 		.listStyle(.inset)
 		.sheet(isPresented: $isPresented) {
 			TagEditor(title: "New Tag", model: .init(name: "")) { newModel in
 				withAnimation {
-					let newTag = Tag(uuid: UUID(), title: newModel.name)
-					modelContext.insert(newTag)
+					model.addTag(with: newModel.name, to: modelContext, allTags: tags)
 				}
 			}
 		}
@@ -74,10 +80,10 @@ struct TagsEditor: View {
 private extension TagsEditor {
 
 	@ViewBuilder
-	func buildMenu(for selected: Set<UUID>) -> some View {
+	func buildMenu(for selected: Set<PersistentIdentifier>) -> some View {
 		if let first = selected.first, selected.count == 1 {
 			Button("Edit...") {
-				self.presented = tags.first(where: { $0.uuid == first })
+				self.presented = tags.first(where: { $0.id == first })
 			}
 		}
 		Divider()
@@ -98,12 +104,10 @@ private extension TagsEditor {
 		}
 	}
 
-	func deleteTags(selected: Set<UUID>) {
+	func deleteTags(selected: Set<PersistentIdentifier>) {
 		withAnimation {
 			editMode = .inactive
-			for tag in tags.filter( { selected.contains($0.uuid)} ) {
-				modelContext.delete(tag)
-			}
+			model.deleteTags(selected: selected, in: modelContext)
 		}
 	}
 }

@@ -31,17 +31,21 @@ final class Tag {
 
 	var creationDate: Date
 
+	var index: Int
+
 	// MARK: - Initialization
 
 	init(
 		uuid: UUID = UUID(),
 		title: String = "",
 		isArchived: Bool = false,
-		creationDate: Date = .now
+		creationDate: Date = .now,
+		index: Int = 0
 	) {
 		self.uuid = uuid
 		self.title = title
 		self.isArchived = isArchived
 		self.creationDate = creationDate
+		self.index = index
 	}
 }
