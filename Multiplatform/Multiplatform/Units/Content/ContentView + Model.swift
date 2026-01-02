@@ -53,8 +53,8 @@ import SwiftUI
 // MARK: - Public Interface
 extension ContentView.Model {
 
-	func addItem(in modelContext: ModelContext, to items: [Item]) {
-		let newItem = Item(uuid: .init(), text: "New Item")
+	func addItem(in modelContext: ModelContext, to items: [Item], with text: String) {
+		let newItem = Item(uuid: .init(), text: text)
 
 		if let last = items.last {
 			newItem.index = last.index + 1
@@ -88,6 +88,10 @@ extension ContentView.Model {
 			}
 			item.isCompleted = isCompleted
 		}
+	}
+
+	func updateItem(_ item: Item, with text: String) {
+		item.text = text
 	}
 
 	func moveItems(_ items: [Item], indices: IndexSet, to target: Int) {

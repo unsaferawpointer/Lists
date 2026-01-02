@@ -19,6 +19,10 @@ struct ContentView: View {
 
 	@State var presentedItem: Item?
 
+	@State var isPresentedItemEditor: Bool = false
+
+	@State var presentedItemForTagsPicker: Item?
+
 	let model: Model
 
 	// MARK: - Initialization
@@ -59,9 +63,23 @@ struct ContentView: View {
 		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
 			buildMenu(selected: selected)
 		}
-		.sheet(item: $presentedItem) { item in
+		.sheet(item: $presentedItemForTagsPicker) { item in
 			TagsPicker(selected: Set(item.tags.map(\.id))) { newTags in
 				item.tags = tags.filter { newTags.contains($0.id) }
+			}
+		}
+		.sheet(isPresented: $isPresentedItemEditor) {
+			ItemEditor(title: "New Item", model: .init(text: "")) { newModel in
+				withAnimation {
+					model.addItem(in: modelContext, to: items, with: newModel.text)
+				}
+			}
+		}
+		.sheet(item: $presentedItem) { item in
+			ItemEditor(title: "Edit Item", model: .init(text: item.text)) { newModel in
+				withAnimation {
+					model.updateItem(item, with: newModel.text)
+				}
 			}
 		}
 		.toolbar {
@@ -85,13 +103,19 @@ private extension ContentView {
 
 	@ViewBuilder
 	func buildMenu(selected: Set<PersistentIdentifier>) -> some View {
+		if let first = selected.first {
+			Button("Edit...", systemImage: "pencil") {
+				self.presentedItem = items.first(where: { $0.id == first })
+			}
+			Divider()
+		}
 		Toggle(sources: model.completionSources(for: selected, in: items), isOn: \.self) {
 			Text("Completed")
 		}
 		Divider()
 		if let first = selected.first {
 			Button("Tags...", systemImage: "tag") {
-				self.presentedItem = items.first(where: { $0.id == first })
+				self.presentedItemForTagsPicker = items.first(where: { $0.id == first })
 			}
 			Divider()
 		}
@@ -108,7 +132,7 @@ private extension ContentView {
 
 	func addItem() {
 		withAnimation {
-			model.addItem(in: modelContext, to: items)
+			self.isPresentedItemEditor = true
 		}
 	}
 
