@@ -108,7 +108,7 @@ private extension ContentView {
 
 	func addItem() {
 		withAnimation {
-			model.addItem(in: modelContext)
+			model.addItem(in: modelContext, to: items)
 		}
 	}
 

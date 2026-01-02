@@ -53,17 +53,22 @@ import SwiftUI
 // MARK: - Public Interface
 extension ContentView.Model {
 
-	func addItem(in modelContext: ModelContext) {
+	func addItem(in modelContext: ModelContext, to items: [Item]) {
 		let newItem = Item(uuid: .init(), text: "New Item")
+
+		if let last = items.last {
+			newItem.index = last.index + 1
+		}
+
 		switch predicate {
 		case .all:
 			break
 		case let .inProject(id):
-			guard let project = modelContext.model(for: id) as? Project else {
-				return
+			if let project = modelContext.model(for: id) as? Project {
+				newItem.project = project
 			}
-			newItem.project = project
 		}
+
 		modelContext.insert(newItem)
 	}
 
