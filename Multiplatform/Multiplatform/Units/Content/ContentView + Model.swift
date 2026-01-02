@@ -44,7 +44,10 @@ extension ContentView.Model {
 				item.isCompleted = newValue
 			}
 		}
+	}
 
+	func showEditButton(selected: Set<PersistentIdentifier>) -> Bool {
+		return !selected.isEmpty
 	}
 }
 
@@ -73,11 +76,13 @@ extension ContentView.Model {
 	}
 
 	func deleteItems(_ items: Set<PersistentIdentifier>, in modelContext: ModelContext) {
-		for id in items {
-			guard let item = modelContext.model(for: id) as? Item else {
-				continue
+		try? modelContext.transaction {
+			for id in items {
+				guard let item = modelContext.model(for: id) as? Item else {
+					continue
+				}
+				modelContext.delete(item)
 			}
-			modelContext.delete(item)
 		}
 	}
 

@@ -15,6 +15,8 @@ struct ContentView: View {
 	@Query private var items: [Item]
 	@Query private var tags: [Tag]
 
+	@State private var editMode: EditMode = .inactive
+
 	@State var selection: Set<PersistentIdentifier> = []
 
 	@State var presentedItem: Item?
@@ -84,17 +86,35 @@ struct ContentView: View {
 		}
 		.toolbar {
 			ToolbarItem(placement: .primaryAction) {
-				EditButton()
+				if !items.isEmpty {
+					EditButton()
+				}
 			}
 			ToolbarItem(placement: .bottomBar) {
 				Spacer()
 			}
 			ToolbarItem(placement: .bottomBar) {
-				Button(action: addItem) {
-					Label("Add Item", systemImage: "plus")
+				if editMode == .active {
+					Menu("", systemImage: "ellipsis") {
+						Toggle(sources: model.completionSources(for: selection, in: items), isOn: \.self) {
+							Label("Completed", systemImage: "checkbox")
+						}
+						Divider()
+						Button(role: .destructive) {
+							deleteItems(selected: selection)
+						} label: {
+							Text("Delete")
+						}
+					}
+					.disabled(!model.showEditButton(selected: selection))
+				} else {
+					Button(action: addItem) {
+						Label("Add Item", systemImage: "plus")
+					}
 				}
 			}
 		}
+		.environment(\.editMode, $editMode)
 	}
 }
 
@@ -137,6 +157,7 @@ private extension ContentView {
 
 	func deleteItems(selected: Set<PersistentIdentifier>) {
 		withAnimation {
+			editMode = .inactive
 			model.deleteItems(selected, in: modelContext)
 		}
 	}
