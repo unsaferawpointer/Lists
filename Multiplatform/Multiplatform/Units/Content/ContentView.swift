@@ -103,22 +103,21 @@ private extension ContentView {
 
 	@ViewBuilder
 	func buildMenu(selected: Set<PersistentIdentifier>) -> some View {
+		Toggle(sources: model.completionSources(for: selected, in: items), isOn: \.self) {
+			Label("Completed", systemImage: "checkbox")
+		}
+		Divider()
 		if let first = selected.first {
 			Button("Edit...", systemImage: "pencil") {
 				self.presentedItem = items.first(where: { $0.id == first })
 			}
-			Divider()
 		}
-		Toggle(sources: model.completionSources(for: selected, in: items), isOn: \.self) {
-			Text("Completed")
-		}
-		Divider()
 		if let first = selected.first {
 			Button("Tags...", systemImage: "tag") {
 				self.presentedItemForTagsPicker = items.first(where: { $0.id == first })
 			}
-			Divider()
 		}
+		Divider()
 		Button(role: .destructive) {
 			deleteItems(selected: selected)
 		} label: {
