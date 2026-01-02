@@ -21,6 +21,10 @@ final class Filter {
 
 	var isAchieved: Bool = false
 
+	var icon: Icon
+
+	var matchType: MatchType
+
 	// MARK: - Relationships
 
 	@Relationship(deleteRule: .cascade)
@@ -37,12 +41,16 @@ final class Filter {
 		title: String = "",
 		isCompleted: Bool = false,
 		isAchieved: Bool = false,
+		matchType: MatchType = .any,
+		icon: Icon = .none,
 		creationDate: Date = .now
 	) {
 		self.uuid = uuid
 		self.title = title
 		self.isCompleted = isCompleted
 		self.isAchieved = isAchieved
+		self.matchType = matchType
+		self.icon = icon
 		self.creationDate = creationDate
 	}
 }

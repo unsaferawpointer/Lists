@@ -15,9 +15,13 @@ struct MasterView: View {
 	// MARK: - Project Support
 
 	@Query(sort: \Project.creationDate, order: .forward, animation: .default) private var projects: [Project]
+	@Query(animation: .default) private var filters: [Filter]
 
 	@State var presentedProject: Project?
 	@State var projectEditorIsPresented: Bool = false
+
+	@State var presentedFilter: Filter?
+	@State var filterEditorIsPresented: Bool = false
 
 	var body: some View {
 		List {
@@ -30,6 +34,24 @@ struct MasterView: View {
 				TagsEditor()
 			} label: {
 				Label("Tags", systemImage: "tag")
+			}
+			Section("Filters") {
+				ForEach(filters) { filter in
+					Label(filter.title, systemImage: filter.icon.systemName)
+						.contextMenu {
+							Button {
+								self.presentedFilter = filter
+							} label: {
+								Label("Edit...", systemImage: "pencil")
+							}
+							Divider()
+							Button(role: .destructive) {
+								deleteFilter(filter: filter)
+							} label: {
+								Label("Delete", systemImage: "trash")
+							}
+						}
+				}
 			}
 			Section("Projects") {
 				ForEach(projects) { project in
@@ -57,7 +79,7 @@ struct MasterView: View {
 		.listStyle(.sidebar)
 		.navigationTitle("Lists")
 		.sheet(isPresented: $projectEditorIsPresented) {
-			TagEditor(title: "New Project", model: .init(name: "")) { newModel in
+			ProjectEditor(title: "New Project", model: .init(name: "")) { newModel in
 				withAnimation {
 					let newProject = Project(name: newModel.name)
 					modelContext.insert(newProject)
@@ -65,8 +87,24 @@ struct MasterView: View {
 			}
 		}
 		.sheet(item: $presentedProject) { project in
-			TagEditor(title: "Edit Project", model: .init(name: project.name)) { newModel in
+			ProjectEditor(title: "Edit Project", model: .init(name: project.name)) { newModel in
 				project.name = newModel.name
+			}
+		}
+		.sheet(isPresented: $filterEditorIsPresented) {
+			FilterEditor(title: "New Filter", model: .init(name: "")) { newModel in
+				withAnimation {
+					let newFilter = Filter(title: newModel.name)
+					modelContext.insert(newFilter)
+				}
+			}
+		}
+		.sheet(item: $presentedFilter) { filter in
+			FilterEditor(title: "Edit Filter", model: .init(name: filter.title)) { newModel in
+				withAnimation {
+					let newFilter = Filter(title: newModel.name)
+					modelContext.insert(newFilter)
+				}
 			}
 		}
 		.toolbar {
@@ -74,10 +112,17 @@ struct MasterView: View {
 				Spacer()
 			}
 			ToolbarItem(placement: .bottomBar) {
-				Button {
-					addProject()
-				} label: {
-					Label("Add Item", systemImage: "plus")
+				Menu("", systemImage: "plus") {
+					Button {
+						addProject()
+					} label: {
+						Label("New Project", systemImage: "list.bullet")
+					}
+					Button {
+						addFilter()
+					} label: {
+						Label("New Filter", systemImage: "line.3.horizontal.decrease")
+					}
 				}
 			}
 		}
@@ -93,9 +138,21 @@ private extension MasterView {
 		}
 	}
 
+	func addFilter() {
+		withAnimation {
+			self.filterEditorIsPresented = true
+		}
+	}
+
 	func deleteProject(project: Project) {
 		withAnimation {
 			modelContext.delete(project)
+		}
+	}
+
+	func deleteFilter(filter: Filter) {
+		withAnimation {
+			modelContext.delete(filter)
 		}
 	}
 }
