@@ -35,35 +35,46 @@ struct ContentView: View {
 	}
 
 	var body: some View {
-		List(selection: $selection) {
-			ForEach(items) { item in
-				HStack(spacing: 16) {
-					Circle()
-						.foregroundStyle(.quaternary)
-						.frame(width: 4, height: 4)
-					VStack(alignment: .leading, spacing: 2) {
-						Text(item.text)
-							.foregroundStyle(item.isCompleted ? .secondary : .primary)
-							.strikethrough(item.isCompleted)
-						if !item.tags.isEmpty {
-							Text(item.tags.map(\.title).joined(separator: " | "))
-								.foregroundStyle(.secondary)
-								.font(.caption2)
+		Group {
+			if items.isEmpty {
+				ContentUnavailableView(
+					"No items yet",
+					systemImage: "shippingbox",
+					description: Text("Tap the + button to create your first project")
+				)
+			} else {
+				List(selection: $selection) {
+					ForEach(items) { item in
+						HStack(spacing: 16) {
+							Circle()
+								.foregroundStyle(.quaternary)
+								.frame(width: 4, height: 4)
+							VStack(alignment: .leading, spacing: 2) {
+								Text(item.text)
+									.foregroundStyle(item.isCompleted ? .secondary : .primary)
+									.strikethrough(item.isCompleted)
+								if !item.tags.isEmpty {
+									Text(item.tags.map(\.title).joined(separator: " | "))
+										.foregroundStyle(.secondary)
+										.font(.caption2)
+								}
+							}
 						}
+						.contextMenu {
+							buildMenu(selected: [item.id])
+						}
+						.moveDisabled(model.moveDisabled)
+					}
+					.onMove { indices, target in
+						model.moveItems(items, indices: indices, to: target)
 					}
 				}
-				.contextMenu {
-					buildMenu(selected: [item.id])
+				.listStyle(.inset)
+				.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
+					buildMenu(selected: selected)
 				}
-				.moveDisabled(model.moveDisabled)
+
 			}
-			.onMove { indices, target in
-				model.moveItems(items, indices: indices, to: target)
-			}
-		}
-		.listStyle(.inset)
-		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
-			buildMenu(selected: selected)
 		}
 		.sheet(item: $presentedItemForTagsPicker) { item in
 			TagsPicker(selected: Set(item.tags.map(\.id))) { newTags in
