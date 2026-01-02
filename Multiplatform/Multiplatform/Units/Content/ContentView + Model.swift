@@ -33,6 +33,19 @@ extension ContentView.Model {
 		}
 		return false
 	}
+
+	func completionSources(for selected: Set<PersistentIdentifier>, in items: [Item]) -> [Binding<Bool>] {
+		return items.filter { item in
+			selected.contains(item.id)
+		}.map { item in
+			Binding {
+				item.isCompleted
+			} set: { newValue in
+				item.isCompleted = newValue
+			}
+		}
+
+	}
 }
 
 import SwiftUI

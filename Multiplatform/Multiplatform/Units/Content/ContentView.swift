@@ -80,11 +80,8 @@ private extension ContentView {
 
 	@ViewBuilder
 	func buildMenu(selected: Set<PersistentIdentifier>) -> some View {
-		Button("Mark As Completed") {
-			updateItems(selected: selected, isCompleted: true)
-		}
-		Button("Mark As Incomplete") {
-			updateItems(selected: selected, isCompleted: false)
+		Toggle(sources: model.completionSources(for: selected, in: items), isOn: \.self) {
+			Text("Completed")
 		}
 		Divider()
 		if let first = selected.first {
