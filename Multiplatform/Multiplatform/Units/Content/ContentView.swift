@@ -31,14 +31,19 @@ struct ContentView: View {
 	var body: some View {
 		List(selection: $selection) {
 			ForEach(items) { item in
-				VStack(alignment: .leading, spacing: 2) {
-					Text(item.text)
-						.foregroundStyle(item.isCompleted ? .secondary : .primary)
-						.strikethrough(item.isCompleted)
-					if !item.tags.isEmpty {
-						Text(item.tags.map(\.title).joined(separator: " | "))
-							.foregroundStyle(.secondary)
-							.font(.caption2)
+				HStack(spacing: 16) {
+					Circle()
+						.foregroundStyle(.quaternary)
+						.frame(width: 4, height: 4)
+					VStack(alignment: .leading, spacing: 2) {
+						Text(item.text)
+							.foregroundStyle(item.isCompleted ? .secondary : .primary)
+							.strikethrough(item.isCompleted)
+						if !item.tags.isEmpty {
+							Text(item.tags.map(\.title).joined(separator: " | "))
+								.foregroundStyle(.secondary)
+								.font(.caption2)
+						}
 					}
 				}
 				.contextMenu {
@@ -50,10 +55,10 @@ struct ContentView: View {
 				model.moveItems(items, indices: indices, to: target)
 			}
 		}
+		.listStyle(.inset)
 		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
 			buildMenu(selected: selected)
 		}
-		.listStyle(.inset)
 		.sheet(item: $presentedItem) { item in
 			TagsPicker(selected: Set(item.tags.map(\.id))) { newTags in
 				item.tags = tags.filter { newTags.contains($0.id) }
