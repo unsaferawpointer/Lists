@@ -35,55 +35,8 @@ struct MasterView: View {
 			} label: {
 				Label("Tags", systemImage: "tag")
 			}
-			Section("Filters") {
-				ForEach(filters) { filter in
-					NavigationLink {
-						ContentView(
-							predicate: .filter(
-								tags: Set(filter.tags.map(\.uuid)),
-								matchType: filter.matchType
-							)
-						)
-					} label: {
-						Label(filter.title, systemImage: filter.icon != .none ? filter.icon.systemName : "line.3.horizontal.decrease")
-					}
-					.contextMenu {
-						Button {
-							self.presentedFilter = filter
-						} label: {
-							Label("Edit...", systemImage: "pencil")
-						}
-						Divider()
-						Button(role: .destructive) {
-							deleteFilter(filter: filter)
-						} label: {
-							Label("Delete", systemImage: "trash")
-						}
-					}
-				}
-			}
-			Section("Projects") {
-				ForEach(projects) { project in
-					NavigationLink {
-						ContentView(predicate: .inProject(id: project.id))
-					} label: {
-						Label(project.name, systemImage: project.icon.systemName)
-					}
-					.contextMenu {
-						Button {
-							self.presentedProject = project
-						} label: {
-							Label("Edit...", systemImage: "pencil")
-						}
-						Divider()
-						Button(role: .destructive) {
-							deleteProject(project: project)
-						} label: {
-							Label("Delete", systemImage: "trash")
-						}
-					}
-				}
-			}
+			buildFiltersSection()
+			buildProjectsSection()
 		}
 		.listStyle(.sidebar)
 		.navigationTitle("Lists")
@@ -153,6 +106,71 @@ struct MasterView: View {
 						addFilter()
 					} label: {
 						Label("New Filter", systemImage: "line.3.horizontal.decrease")
+					}
+				}
+			}
+		}
+	}
+}
+
+// MARK: - View Builders
+private extension MasterView {
+
+	@ViewBuilder
+	func buildFiltersSection() -> some View {
+		if !filters.isEmpty {
+			Section("Filters") {
+				ForEach(filters) { filter in
+					NavigationLink {
+						ContentView(
+							predicate: .filter(
+								tags: Set(filter.tags.map(\.uuid)),
+								matchType: filter.matchType
+							)
+						)
+					} label: {
+						Label(filter.title, systemImage: filter.icon != .none ? filter.icon.systemName : "line.3.horizontal.decrease")
+					}
+					.contextMenu {
+						Button {
+							self.presentedFilter = filter
+						} label: {
+							Label("Edit...", systemImage: "pencil")
+						}
+						Divider()
+						Button(role: .destructive) {
+							deleteFilter(filter: filter)
+						} label: {
+							Label("Delete", systemImage: "trash")
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@ViewBuilder
+	func buildProjectsSection() -> some View {
+		if !projects.isEmpty {
+			Section("Projects") {
+				ForEach(projects) { project in
+					NavigationLink {
+						ContentView(predicate: .inProject(id: project.id))
+					} label: {
+						Label(project.name, systemImage: project.icon.systemName)
+					}
+					.contextMenu {
+						Button {
+							self.presentedProject = project
+						} label: {
+							Label("Edit...", systemImage: "pencil")
+						}
+						Divider()
+						Button(role: .destructive) {
+							deleteProject(project: project)
+						} label: {
+							Label("Delete", systemImage: "trash")
+						}
 					}
 				}
 			}
