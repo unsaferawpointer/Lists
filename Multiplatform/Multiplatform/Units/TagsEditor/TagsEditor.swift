@@ -24,29 +24,39 @@ struct TagsEditor: View {
 	let model = Model()
 
 	var body: some View {
-		List(selection: $selection) {
-			ForEach(tags) { tag in
-				HStack {
-					if editMode == .inactive {
-						Image(systemName: "tag")
+		Group {
+			if tags.isEmpty {
+				ContentUnavailableView(
+					"No tags yet",
+					systemImage: "tag",
+					description: Text("Tap the + button to create your first tag")
+				)
+			} else {
+				List(selection: $selection) {
+					ForEach(tags) { tag in
+						HStack {
+							if editMode == .inactive {
+								Image(systemName: "tag")
+							}
+							Text(tag.title)
+							Spacer()
+						}
+						.contextMenu {
+							buildMenu(for: [tag.id])
+						}
 					}
-					Text(tag.title)
-					Spacer()
+					.onMove { indices, target in
+						withAnimation {
+							model.moveTags(tags, indices: indices, to: target)
+						}
+					}
 				}
-				.contextMenu {
-					buildMenu(for: [tag.id])
+				.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
+					buildMenu(for: selected)
 				}
-			}
-			.onMove { indices, target in
-				withAnimation {
-					model.moveTags(tags, indices: indices, to: target)
-				}
+				.listStyle(.inset)
 			}
 		}
-		.contextMenu(forSelectionType: PersistentIdentifier.self) { selected in
-			buildMenu(for: selected)
-		}
-		.listStyle(.inset)
 		.sheet(isPresented: $isPresented) {
 			TagEditor(title: "New Tag", model: .init(name: "")) { newModel in
 				withAnimation {
