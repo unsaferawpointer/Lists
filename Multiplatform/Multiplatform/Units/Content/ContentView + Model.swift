@@ -13,7 +13,6 @@ extension ContentView {
 	@Observable
 	final class Model {
 
-		@ObservationIgnored
 		let predicate: ItemsPredicate
 
 		// MARK: - Initialization
@@ -70,6 +69,8 @@ extension ContentView.Model {
 			if let project = modelContext.model(for: id) as? Project {
 				newItem.project = project
 			}
+		case .filter:
+			break
 		}
 
 		modelContext.insert(newItem)

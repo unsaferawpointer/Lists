@@ -37,20 +37,29 @@ struct MasterView: View {
 			}
 			Section("Filters") {
 				ForEach(filters) { filter in
-					Label(filter.title, systemImage: filter.icon.systemName)
-						.contextMenu {
-							Button {
-								self.presentedFilter = filter
-							} label: {
-								Label("Edit...", systemImage: "pencil")
-							}
-							Divider()
-							Button(role: .destructive) {
-								deleteFilter(filter: filter)
-							} label: {
-								Label("Delete", systemImage: "trash")
-							}
+					NavigationLink {
+						ContentView(
+							predicate: .filter(
+								tags: Set(filter.tags.map(\.uuid)),
+								matchType: filter.matchType
+							)
+						)
+					} label: {
+						Label(filter.title, systemImage: filter.icon != .none ? filter.icon.systemName : "line.3.horizontal.decrease")
+					}
+					.contextMenu {
+						Button {
+							self.presentedFilter = filter
+						} label: {
+							Label("Edit...", systemImage: "pencil")
 						}
+						Divider()
+						Button(role: .destructive) {
+							deleteFilter(filter: filter)
+						} label: {
+							Label("Delete", systemImage: "trash")
+						}
+					}
 				}
 			}
 			Section("Projects") {
@@ -92,18 +101,40 @@ struct MasterView: View {
 			}
 		}
 		.sheet(isPresented: $filterEditorIsPresented) {
-			FilterEditor(title: "New Filter", model: .init(name: "")) { newModel in
+			FilterEditor(title: "New Filter", model: .init(name: "", matchType: .any, tags: [])) { newModel in
 				withAnimation {
 					let newFilter = Filter(title: newModel.name)
+					newFilter.matchType = newModel.matchType
+					let tags = newModel.tags.compactMap { id -> Tag? in
+						guard let tag = modelContext.model(for: id) as? Tag else {
+							return nil
+						}
+						return tag
+					}
+					newFilter.tags = tags
 					modelContext.insert(newFilter)
 				}
 			}
 		}
 		.sheet(item: $presentedFilter) { filter in
-			FilterEditor(title: "Edit Filter", model: .init(name: filter.title)) { newModel in
+			FilterEditor(
+				title: "Edit Filter",
+				model: .init(
+					name: filter.title,
+					matchType: filter.matchType,
+					tags: Set(filter.tags.map(\.id))
+				)
+			) { newModel in
 				withAnimation {
-					let newFilter = Filter(title: newModel.name)
-					modelContext.insert(newFilter)
+					filter.title = newModel.name
+					filter.matchType = newModel.matchType
+					let tags = newModel.tags.compactMap { id -> Tag? in
+						guard let tag = modelContext.model(for: id) as? Tag else {
+							return nil
+						}
+						return tag
+					}
+					filter.tags = tags
 				}
 			}
 		}

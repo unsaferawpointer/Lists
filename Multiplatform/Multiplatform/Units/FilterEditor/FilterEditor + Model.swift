@@ -6,10 +6,13 @@
 //
 
 import Foundation
+import SwiftData
 
 extension FilterEditor {
 
 	struct Model {
 		var name: String
+		var matchType: MatchType
+		var tags: Set<PersistentIdentifier>
 	}
 }

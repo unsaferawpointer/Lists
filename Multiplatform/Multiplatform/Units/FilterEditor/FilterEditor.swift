@@ -6,10 +6,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct FilterEditor {
 
 	@Environment(\.dismiss) var dismiss
+
+	@Environment(\.modelContext) private var modelContext
+
+	@Query private var tags: [Tag]
 
 	let title: String
 
@@ -35,6 +40,48 @@ extension FilterEditor: View {
 				LabeledContent("Name") {
 					TextField("Required", text: $model.name)
 				}
+
+				Section("Tags") {
+					Picker(selection: $model.matchType) {
+						ForEach(MatchType.allCases) { type in
+							Text(type.name)
+								.tag(type)
+						}
+					} label: {
+						Text("Match type")
+					}
+					NavigationLink {
+						List {
+							ForEach(tags) { tag in
+								Button {
+									if model.tags.contains(tag.id) {
+										model.tags.remove(tag.id)
+									} else {
+										model.tags.insert(tag.id)
+									}
+								} label: {
+									HStack {
+										Label(tag.title, systemImage: "tag")
+										Spacer()
+										if model.tags.contains(tag.id) {
+											Image(systemName: "checkmark")
+										}
+									}
+									.listItemTint(.primary)
+								}
+							}
+						}
+					} label: {
+						HStack {
+							Text("Selected")
+								.lineLimit(1)
+							Spacer()
+							Text(model.tags.isEmpty ? "Not Selected" : tags.filter { model.tags.contains($0.id) }.map(\.title).joined(separator: " | "))
+								.foregroundStyle(.secondary)
+								.lineLimit(1)
+						}
+					}
+				}
 			}
 			.navigationTitle(title)
 			.navigationBarTitleDisplayMode(.inline)
@@ -56,7 +103,7 @@ extension FilterEditor: View {
 }
 
 #Preview {
-	FilterEditor(title: "Edit Filter", model: .init(name: "Default Filter")) { newModel in
+	FilterEditor(title: "Edit Filter", model: .init(name: "Default Filter", matchType: .any, tags: [])) { newModel in
 
 	}
 }
