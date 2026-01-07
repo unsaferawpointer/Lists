@@ -37,10 +37,18 @@ extension FilterEditor: View {
 	var body: some View {
 		NavigationStack {
 			Form {
-				LabeledContent("Name") {
-					TextField("Required", text: $model.name)
+				Section {
+					LabeledContent("Name") {
+						TextField("Required", text: $model.name)
+					}
+					NavigationLink {
+						IconPicker(icon: $model.icon)
+					} label: {
+						LabeledContent("icon") {
+							Image(systemName: model.icon.systemName)
+						}
+					}
 				}
-
 				Section("Tags") {
 					Picker(selection: $model.matchType) {
 						ForEach(MatchType.allCases) { type in
@@ -103,7 +111,7 @@ extension FilterEditor: View {
 }
 
 #Preview {
-	FilterEditor(title: "Edit Filter", model: .init(name: "Default Filter", matchType: .any, tags: [])) { newModel in
+	FilterEditor(title: "Edit Filter", model: .init(name: "Default Filter", icon: .receipt, matchType: .any, tags: [])) { newModel in
 
 	}
 }

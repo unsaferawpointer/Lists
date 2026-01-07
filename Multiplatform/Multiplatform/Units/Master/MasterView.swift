@@ -54,10 +54,11 @@ struct MasterView: View {
 			}
 		}
 		.sheet(isPresented: $filterEditorIsPresented) {
-			FilterEditor(title: "New Filter", model: .init(name: "", matchType: .any, tags: [])) { newModel in
+			FilterEditor(title: "New Filter", model: .init(name: "", icon: .none, matchType: .any, tags: [])) { newModel in
 				withAnimation {
 					let newFilter = Filter(title: newModel.name)
 					newFilter.matchType = newModel.matchType
+					newFilter.icon = newModel.icon
 					let tags = newModel.tags.compactMap { id -> Tag? in
 						guard let tag = modelContext.model(for: id) as? Tag else {
 							return nil
@@ -74,6 +75,7 @@ struct MasterView: View {
 				title: "Edit Filter",
 				model: .init(
 					name: filter.title,
+					icon: filter.icon,
 					matchType: filter.matchType,
 					tags: Set(filter.tags.map(\.id))
 				)
@@ -81,6 +83,7 @@ struct MasterView: View {
 				withAnimation {
 					filter.title = newModel.name
 					filter.matchType = newModel.matchType
+					filter.icon = newModel.icon
 					let tags = newModel.tags.compactMap { id -> Tag? in
 						guard let tag = modelContext.model(for: id) as? Tag else {
 							return nil
