@@ -34,6 +34,8 @@ final class Filter {
 
 	var creationDate: Date
 
+	var index: Int
+
 	// MARK: - Initialization
 
 	init(
@@ -43,7 +45,8 @@ final class Filter {
 		isAchieved: Bool = false,
 		matchType: MatchType = .any,
 		icon: Icon = .none,
-		creationDate: Date = .now
+		creationDate: Date = .now,
+		index: Int = 0
 	) {
 		self.uuid = uuid
 		self.title = title
@@ -52,5 +55,6 @@ final class Filter {
 		self.matchType = matchType
 		self.icon = icon
 		self.creationDate = creationDate
+		self.index = index
 	}
 }

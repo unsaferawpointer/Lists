@@ -15,7 +15,7 @@ struct MasterView: View {
 	// MARK: - Project Support
 
 	@Query(sort: \Project.creationDate, order: .forward, animation: .default) private var projects: [Project]
-	@Query(animation: .default) private var filters: [Filter]
+	@Query(sort: \Filter.index, animation: .default) private var filters: [Filter]
 
 	@State var presentedProject: Project?
 	@State var projectEditorIsPresented: Bool = false
@@ -30,13 +30,15 @@ struct MasterView: View {
 			} label: {
 				Label("All", systemImage: "square.grid.2x2")
 			}
-			NavigationLink {
-				TagsEditor()
-			} label: {
-				Label("Tags", systemImage: "tag")
-			}
 			buildFiltersSection()
 			buildProjectsSection()
+			Section {
+				NavigationLink {
+					TagsEditor()
+				} label: {
+					Label("Tags", systemImage: "tag")
+				}
+			}
 		}
 		.listStyle(.sidebar)
 		.navigationTitle("Lists")
@@ -59,6 +61,7 @@ struct MasterView: View {
 					let newFilter = Filter(title: newModel.name)
 					newFilter.matchType = newModel.matchType
 					newFilter.icon = newModel.icon
+					newFilter.index = filters.count
 					let tags = newModel.tags.compactMap { id -> Tag? in
 						guard let tag = modelContext.model(for: id) as? Tag else {
 							return nil
@@ -95,6 +98,9 @@ struct MasterView: View {
 			}
 		}
 		.toolbar {
+			ToolbarItem(placement: .primaryAction) {
+				EditButton()
+			}
 			ToolbarItem(placement: .bottomBar) {
 				Spacer()
 			}
@@ -122,30 +128,37 @@ private extension MasterView {
 	@ViewBuilder
 	func buildFiltersSection() -> some View {
 		if !filters.isEmpty {
-			Section("Filters") {
-				ForEach(filters) { filter in
-					NavigationLink {
-						ContentView(
-							predicate: .filter(
-								tags: Set(filter.tags.map(\.uuid)),
-								matchType: filter.matchType
-							)
+			ForEach(filters) { filter in
+				NavigationLink {
+					ContentView(
+						predicate: .filter(
+							tags: Set(filter.tags.map(\.uuid)),
+							matchType: filter.matchType
 						)
+					)
+				} label: {
+					Label(filter.title, systemImage: filter.icon != .none ? filter.icon.systemName : "line.3.horizontal.decrease")
+				}
+				.contextMenu {
+					Button {
+						self.presentedFilter = filter
 					} label: {
-						Label(filter.title, systemImage: filter.icon != .none ? filter.icon.systemName : "line.3.horizontal.decrease")
+						Label("Edit...", systemImage: "pencil")
 					}
-					.contextMenu {
-						Button {
-							self.presentedFilter = filter
-						} label: {
-							Label("Edit...", systemImage: "pencil")
-						}
-						Divider()
-						Button(role: .destructive) {
-							deleteFilter(filter: filter)
-						} label: {
-							Label("Delete", systemImage: "trash")
-						}
+					Divider()
+					Button(role: .destructive) {
+						deleteFilter(filter: filter)
+					} label: {
+						Label("Delete", systemImage: "trash")
+					}
+				}
+			}
+			.onMove { indices, target in
+				withAnimation {
+					var modificated = filters
+					modificated.move(fromOffsets: indices, toOffset: target)
+					for (index, item) in modificated.enumerated() {
+						item.index = index
 					}
 				}
 			}
