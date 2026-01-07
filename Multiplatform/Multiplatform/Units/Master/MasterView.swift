@@ -26,7 +26,7 @@ struct MasterView: View {
 	var body: some View {
 		List {
 			NavigationLink {
-				ContentView(predicate: .all)
+				ContentView(predicate: .init(type: .all))
 			} label: {
 				Label("All", systemImage: "square.grid.2x2")
 			}
@@ -56,10 +56,11 @@ struct MasterView: View {
 			}
 		}
 		.sheet(isPresented: $filterEditorIsPresented) {
-			FilterEditor(title: "New Filter", model: .init(name: "", icon: .none, matchType: .any, tags: [])) { newModel in
+			FilterEditor(title: "New Filter", model: .init(name: "", icon: .none, status: .any, matchType: .any, tags: [])) { newModel in
 				withAnimation {
 					let newFilter = Filter(title: newModel.name)
 					newFilter.matchType = newModel.matchType
+					newFilter.status = newModel.status
 					newFilter.icon = newModel.icon
 					newFilter.index = filters.count
 					let tags = newModel.tags.compactMap { id -> Tag? in
@@ -79,6 +80,7 @@ struct MasterView: View {
 				model: .init(
 					name: filter.title,
 					icon: filter.icon,
+					status: filter.status,
 					matchType: filter.matchType,
 					tags: Set(filter.tags.map(\.id))
 				)
@@ -86,6 +88,7 @@ struct MasterView: View {
 				withAnimation {
 					filter.title = newModel.name
 					filter.matchType = newModel.matchType
+					filter.status = newModel.status
 					filter.icon = newModel.icon
 					let tags = newModel.tags.compactMap { id -> Tag? in
 						guard let tag = modelContext.model(for: id) as? Tag else {
@@ -131,9 +134,12 @@ private extension MasterView {
 			ForEach(filters) { filter in
 				NavigationLink {
 					ContentView(
-						predicate: .filter(
-							tags: Set(filter.tags.map(\.uuid)),
-							matchType: filter.matchType
+						predicate: .init(
+							type: .filter(
+								tags: Set(filter.tags.map(\.uuid)),
+								matchType: filter.matchType
+							),
+							status: filter.status
 						)
 					)
 				} label: {
@@ -171,7 +177,7 @@ private extension MasterView {
 			Section("Projects") {
 				ForEach(projects) { project in
 					NavigationLink {
-						ContentView(predicate: .inProject(id: project.id))
+						ContentView(predicate: .init(type: .inProject(id: project.id), status: .any))
 					} label: {
 						Label(project.name, systemImage: project.icon.systemName)
 					}

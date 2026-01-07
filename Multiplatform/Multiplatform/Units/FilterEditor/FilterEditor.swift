@@ -49,6 +49,14 @@ extension FilterEditor: View {
 						}
 					}
 				}
+				Picker(selection: $model.status) {
+					ForEach(Status.allCases) { status in
+						Text(status.name)
+							.tag(status)
+					}
+				} label: {
+					Text("Status")
+				}
 				Section("Tags") {
 					Picker(selection: $model.matchType) {
 						ForEach(MatchType.allCases) { type in
@@ -111,7 +119,10 @@ extension FilterEditor: View {
 }
 
 #Preview {
-	FilterEditor(title: "Edit Filter", model: .init(name: "Default Filter", icon: .receipt, matchType: .any, tags: [])) { newModel in
+	FilterEditor(
+		title: "Edit Filter",
+		model: .init(name: "Default Filter", icon: .receipt, status: .any, matchType: .any, tags: [])
+	) { newModel in
 
 	}
 }

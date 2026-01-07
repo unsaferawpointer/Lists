@@ -17,7 +17,7 @@ final class Filter {
 
 	// MARK: - Options
 
-	var isCompleted: Bool = false
+	var status: Status
 
 	var isAchieved: Bool = false
 
@@ -41,7 +41,7 @@ final class Filter {
 	init(
 		uuid: UUID = UUID(),
 		title: String = "",
-		isCompleted: Bool = false,
+		status: Status = .any,
 		isAchieved: Bool = false,
 		matchType: MatchType = .any,
 		icon: Icon = .none,
@@ -50,7 +50,7 @@ final class Filter {
 	) {
 		self.uuid = uuid
 		self.title = title
-		self.isCompleted = isCompleted
+		self.status = status
 		self.isAchieved = isAchieved
 		self.matchType = matchType
 		self.icon = icon

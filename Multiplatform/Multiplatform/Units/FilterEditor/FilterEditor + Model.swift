@@ -13,6 +13,7 @@ extension FilterEditor {
 	struct Model {
 		var name: String
 		var icon: Icon
+		var status: Status
 		var matchType: MatchType
 		var tags: Set<PersistentIdentifier>
 	}

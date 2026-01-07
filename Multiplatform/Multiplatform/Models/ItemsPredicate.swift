@@ -8,10 +8,24 @@
 import Foundation
 import SwiftData
 
-enum ItemsPredicate {
-	case all
-	case inProject(id: PersistentIdentifier)
-	case filter(tags: Set<UUID>, matchType: MatchType)
+struct ItemsPredicate {
+
+	var type: `Type`
+	var status: Status
+
+	init(type: Type, status: Status = .any) {
+		self.type = type
+		self.status = status
+	}
+}
+
+extension ItemsPredicate {
+
+	enum `Type`: Hashable {
+		case all
+		case inProject(id: PersistentIdentifier)
+		case filter(tags: Set<UUID>, matchType: MatchType)
+	}
 }
 
 extension ItemsPredicate: Hashable { }
@@ -19,36 +33,104 @@ extension ItemsPredicate: Hashable { }
 extension ItemsPredicate {
 
 	var predicate: Predicate<Item> {
-		switch self {
+		switch type {
 		case .all:
-			let predicate = #Predicate<Item> { _ in true }
-			return predicate
-		case let .inProject(id):
-			let predicate = #Predicate<Item> { item in
-				item.project?.id == id
+			switch status {
+			case .any:
+				return #Predicate<Item> { _ in true }
+			case .completed:
+				return #Predicate<Item> { $0.isCompleted }
+			case .incomplete:
+				return #Predicate<Item> { !$0.isCompleted }
 			}
-			return predicate
+		case let .inProject(id):
+			switch status {
+			case .any:
+				return #Predicate<Item> { item in
+					item.project?.id == id
+				}
+			case .completed:
+				return #Predicate<Item> { item in
+					item.project?.id == id && item.isCompleted
+				}
+			case .incomplete:
+				return #Predicate<Item> { item in
+					item.project?.id == id && !item.isCompleted
+				}
+			}
 		case let .filter(tags, matchType):
 			guard !tags.isEmpty else {
-				return #Predicate<Item> { _ in true }
+				switch status {
+				case .any:
+					return #Predicate<Item> { _ in true }
+				case .completed:
+					return #Predicate<Item> { $0.isCompleted }
+				case .incomplete:
+					return #Predicate<Item> { !$0.isCompleted }
+				}
 			}
 			switch matchType {
 			case .any:
-				return #Predicate<Item> { item in
-					item.tags.contains { tag in
-						tags.contains(tag.uuid)
+				switch status {
+				case .any:
+					return #Predicate<Item> { item in
+						item.tags.contains { tag in
+						 tags.contains(tag.uuid)
+					 }
+				 }
+				case .completed:
+					return #Predicate<Item> { item in
+						item.tags.contains { tag in
+							tags.contains(tag.uuid)
+						} && item.isCompleted
+					}
+				case .incomplete:
+					return #Predicate<Item> { item in
+						item.tags.contains { tag in
+							tags.contains(tag.uuid)
+						} && !item.isCompleted
 					}
 				}
 			case .all:
-				return #Predicate<Item> { item in
-					item.tags.filter { tag in
-						tags.contains(tag.uuid)
-					}.count == tags.count
+				switch status {
+				case .any:
+					return #Predicate<Item> { item in
+						item.tags.filter { tag in
+							tags.contains(tag.uuid)
+						}.count == tags.count
+				 }
+				case .completed:
+					return #Predicate<Item> { item in
+						item.tags.filter { tag in
+							tags.contains(tag.uuid)
+						}.count == tags.count && item.isCompleted
+					}
+				case .incomplete:
+					return #Predicate<Item> { item in
+						item.tags.filter { tag in
+							tags.contains(tag.uuid)
+						}.count == tags.count && !item.isCompleted
+					}
 				}
 			case .not:
-				return #Predicate<Item> { item in
-					!item.tags.contains { tag in
-						tags.contains(tag.uuid)
+				switch status {
+				case .any:
+					return #Predicate<Item> { item in
+						!item.tags.contains { tag in
+							tags.contains(tag.uuid)
+						}
+				 }
+				case .completed:
+					return #Predicate<Item> { item in
+						!item.tags.contains { tag in
+							tags.contains(tag.uuid)
+						} && item.isCompleted
+					}
+				case .incomplete:
+					return #Predicate<Item> { item in
+						!item.tags.contains { tag in
+							tags.contains(tag.uuid)
+						} && !item.isCompleted
 					}
 				}
 			}

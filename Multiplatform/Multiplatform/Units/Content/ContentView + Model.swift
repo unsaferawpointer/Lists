@@ -27,7 +27,7 @@ extension ContentView {
 extension ContentView.Model {
 
 	var moveDisabled: Bool {
-		guard case .inProject = predicate else {
+		guard case .inProject = predicate.type else {
 			return true
 		}
 		return false
@@ -62,7 +62,7 @@ extension ContentView.Model {
 			newItem.index = last.index + 1
 		}
 
-		switch predicate {
+		switch predicate.type {
 		case .all:
 			break
 		case let .inProject(id):

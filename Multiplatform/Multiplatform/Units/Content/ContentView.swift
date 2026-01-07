@@ -181,6 +181,6 @@ private extension ContentView {
 }
 
 #Preview {
-	ContentView(predicate: .all)
+	ContentView(predicate: .init(type: .all, status: .any))
 		.modelContainer(for: Item.self, inMemory: true)
 }
